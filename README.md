@@ -1,2 +1,2 @@
 # pipeline
-pipeline for cosmological analyses using galaxy clusters
+pipeline for cosmological analyses of galaxy clusters 

@@ -18,7 +18,7 @@ The CosmoBolognaLib are implemented in C++, and then converted to python using S
 
 
 - the required external libraries are the following:
-GSL (GNU Scientific Library)
-FFTW (Fastest Fourier Transform in the West)
-OpenMP (Open Multiprocessing)
+  - GSL (GNU Scientific Library)
+  - FFTW (Fastest Fourier Transform in the West)
+  - OpenMP (Open Multiprocessing)
 

@@ -1,6 +1,4 @@
-# pipeline
-
-pipeline for the cosmological analyses of galaxy cluster catalogs
+# pipeline for cosmological analyses of galaxy cluster catalogs
 
 The implemented C++/Python software (will) perform the following analyses :
 - construction of the cluster catalog(s) 
@@ -17,13 +15,10 @@ Output/  :  all the output files
  
 At present, the only internal libraries are the CosmoBolognaLib, and a slightly modified version of the Numerical recipes in C++.
 The CosmoBolognaLib are implemented in C++, and then converted to python using SWIG.
- 
-Notes:
+
+
 - the required external libraries are the following:
 GSL (GNU Scientific Library)
 FFTW (Fastest Fourier Transform in the West)
 OpenMP (Open Multiprocessing)
 
-- the documentation of the CosmoBolognaLib is provided here: CBL
-
-- it is desirable that the pipeline implementation is done according to the Science Data Center coding rules, used for the official Euclid pipeline

@@ -35,6 +35,7 @@ int main () {
   // ----------------------------------------------------------------
 
   double N_R = 1.; // random/object ratio
+  
   Catalogue random_catalogue {catalogue, N_R};
 
   
@@ -42,27 +43,30 @@ int main () {
   // ---------------- measure the monopole of the two-point correlation function ----------------
   // --------------------------------------------------------------------------------------------
 
-  // binning parameters
+  // binning parameters and output data
 
   double rMin = 1.;   // minimum separation 
   double rMax = 50.;  // maximum separation 
   int nbins = 20;     // number of bins
-  double shift = 0.5; // spatial shift used to set the bin centre 
+  double shift = 0.5; // spatial shift used to set the bin centre
+  
+  string dir = par::DirLoc+"../output/";
+  string file = "xi.dat";
 
   
   // measure the monopole
 
   TwoPointCorrelation1D_monopole TwoP {catalogue, random_catalogue, _logarithmic_, rMin, rMax, nbins, shift};
-  TwoP.measure(par::DirLoc+"../output/");
+  
+  TwoP.measure(ErrorType::_Poisson_, dir);
 
   
   // store the output data
   
-  string dir_output = par::DirLoc+"../output/";
-  string file_xi = "xi.dat";
-  TwoP.write(dir_output, file_xi);
+  TwoP.write(dir, file);
   
   
   return 0;
+  
 }
 

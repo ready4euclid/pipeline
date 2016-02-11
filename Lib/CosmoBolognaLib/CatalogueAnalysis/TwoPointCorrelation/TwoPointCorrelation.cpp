@@ -35,6 +35,7 @@
 #include "TwoPointCorrelation1D_angular.h"
 #include "TwoPointCorrelation_deprojected.h"
 #include "TwoPointCorrelation_multipoles.h"
+#include "TwoPointCorrelation_wedges.h"
 
 using namespace cosmobl;
 using namespace catalogue;
@@ -110,7 +111,9 @@ shared_ptr<TwoPointCorrelation> cosmobl::twopt::TwoPointCorrelation::Create (con
   else if (type==_1D_deprojected_) return move(unique_ptr<TwoPointCorrelation_deprojected>(new TwoPointCorrelation_deprojected(data, random, Min_D1, Max_D1, nbins_D1, shift_D1, Min_D2, Max_D2, nbins_D2, shift_D2)));
 
   else if (type==_1D_multipoles_) return move(unique_ptr<TwoPointCorrelation_multipoles>(new TwoPointCorrelation_multipoles(data, random, binType_D1, Min_D1, Max_D1, nbins_D1, shift_D1, Min_D2, Max_D2, nbins_D2, shift_D2)));
-  
+
+  else if (type==_1D_wedges_) return move(unique_ptr<TwoPointCorrelation_wedges>(new TwoPointCorrelation_wedges(data, random, binType_D1, Min_D1, Max_D1, nbins_D1, shift_D1, Min_D2, Max_D2, nbins_D2, shift_D2)));
+
   else ErrorMsg("Error in cosmobl::twopt::TwoPointCorrelation::Create of TwoPointCorrelation.cpp: no such type of object, or error in the input parameters!!");
   
   return NULL;
@@ -127,11 +130,14 @@ shared_ptr<TwoPointCorrelation> cosmobl::twopt::TwoPointCorrelation::Create (con
   else if (type==_1D_deprojected_) return move(unique_ptr<TwoPointCorrelation_deprojected>(new TwoPointCorrelation_deprojected(data, random, Min_D1, Max_D1, binSize_D1, shift_D1, Min_D2, Max_D2, binSize_D2, shift_D2)));
 
   else if (type==_1D_multipoles_) return move(unique_ptr<TwoPointCorrelation_multipoles>(new TwoPointCorrelation_multipoles(data, random, binType_D1, Min_D1, Max_D1, binSize_D1, shift_D1, Min_D2, Max_D2, binSize_D2, shift_D2)));
-  
+
+  else if (type==_1D_wedges_) return move(unique_ptr<TwoPointCorrelation_wedges>(new TwoPointCorrelation_wedges(data, random, binType_D1, Min_D1, Max_D1, binSize_D1, shift_D1, Min_D2, Max_D2, binSize_D2, shift_D2)));
+
   else ErrorMsg("Error in cosmobl::twopt::TwoPointCorrelation::Create of TwoPointCorrelation.cpp: no such type of object, or error in the input parameters!!");
   
   return NULL;
 }
+
 
 // ============================================================================
 
@@ -242,7 +248,7 @@ void cosmobl::twopt::TwoPointCorrelation::count_pairs (const shared_ptr<Catalogu
 
 void cosmobl::twopt::TwoPointCorrelation::count_allPairs (const TwoPType type, const string dir_output_pairs, const vector<string> dir_input_pairs, const int count_dd, const int count_rr, const int count_dr, const bool tcount)  
 {
-  
+
   // ----------- compute polar coordinates, if necessary ----------- 
 
   if (!isSet(m_data->var(Var::_RA_)) || !isSet(m_data->var(Var::_DEC_)) || !isSet(m_data->var(Var::_DC_))) 
@@ -251,7 +257,11 @@ void cosmobl::twopt::TwoPointCorrelation::count_allPairs (const TwoPType type, c
   if (!isSet(m_random->var(Var::_RA_)) || !isSet(m_random->var(Var::_DEC_)) || !isSet(m_random->var(Var::_DC_))) 
     m_random->computePolarCoordinates();
 
-  
+  if (type == _1D_angular_){
+    m_data->normalizeComovingCoordinates();
+    m_random->normalizeComovingCoordinates();
+  }
+
   // ----------- create the chain-mesh ----------- 
 
   double rMAX = (type==_1D_monopole_ || type==_1D_angular_) ? m_dd->sMax() : m_dd->sMax_D1(); // check!!!
@@ -303,19 +313,21 @@ void cosmobl::twopt::TwoPointCorrelation::count_allPairs (const TwoPType type, c
   }
   else if (count_dr==0) read_pairs(m_dr, dir_input_pairs, file);
 
-
   m_data->Order();
   m_random->Order();
+
+  if (type == _1D_angular_){
+    m_data->restoreComovingCoordinates();
+    m_random->restoreComovingCoordinates();
+  }
 }
 
 
 // ============================================================================
 
 
-double TwoPointCorrelation::PoissonError (const double dd, const double rr, const double dr) const
+double TwoPointCorrelation::PoissonError (const double dd, const double rr, const double dr, double nData, double nRandom) const
 {
-  int nData = m_data->nObjects();
-  int nRandom = m_random->nObjects();
   
   double normDD = 2./(nData*(nData-1.));
   double normRR = 2./(nRandom*(nRandom-1.));
@@ -378,15 +390,14 @@ void cosmobl::twopt::TwoPointCorrelation::count_pairs_region (const shared_ptr<C
       vector<long int> close_objects = ChM.close_objects(cat1->coordinates(i), (cross) ? -1 : i);
 
       for (auto &&j : close_objects) {      
-
 	int reg1 = min(cat1->region(i), cat2->region(j));
 	int reg2 = max(cat1->region(i), cat2->region(j));
 
 	int index = reg1*nRegions+reg2-(reg1-1)*reg1/2-reg1; 
 
 	pp_thread[index]->put(cat1->object(i), cat2->object(j));
-
       }
+      
       // estimate the computational time and update the time count
       time_t end_temp; time (&end_temp); double diff_temp = difftime(end_temp, start);
       if (tcount && tid==0) { cout << "\r..." << float(i)*fact_count << "% completed (" << diff_temp << " seconds)\r"; cout.flush(); }    
@@ -394,17 +405,18 @@ void cosmobl::twopt::TwoPointCorrelation::count_pairs_region (const shared_ptr<C
       if (i==int(nObj*0.5)) cout << "......50% completed" << endl;
       if (i==int(nObj*0.75)) cout << "......75% completed"<< endl;   
     }
+    
 #pragma omp critical
     {
       // sum all the object pairs computed by each thread
       for(size_t i =0;i<pp_regions.size();i++)
 	pp_regions[i]->sum(pp_thread[i]);
-
     }
 
   }
 
   // show the time spent by the method
+
   time_t end; time (&end);
   double diff = difftime(end,start);
   if (tid==0) {
@@ -414,24 +426,24 @@ void cosmobl::twopt::TwoPointCorrelation::count_pairs_region (const shared_ptr<C
   }
   cout.unsetf(ios::fixed); cout.unsetf(ios::showpoint); cout.precision(dp);
 
+  
   // sum pairs for the entire sample
 
   switch (pp->pairDim()) {
 
     case _1D_:
-      for (int i=0;i<pp->nbins();i++)
-	for (size_t r=0;r<pp_regions.size();r++){
+      for (int i=0; i<pp->nbins(); i++)
+	for (size_t r=0; r<pp_regions.size(); r++)
 	  pp->add_PP1D(i,pp_regions[r]->PP1D(i));
-	}
       break;
 
     case _2D_:
-      for (int i=0;i<pp->nbins_D1();i++)
-	for (int j=0;j<pp->nbins_D2();j++)
-	  for (size_t r=0;r<pp_regions.size();r++)
+      for (int i=0; i<pp->nbins_D1(); i++)
+	for (int j=0; j<pp->nbins_D2(); j++)
+	  for (size_t r=0; r<pp_regions.size(); r++)
 	    pp->add_PP2D(i,j,pp_regions[r]->PP2D(i,j));
       break;
-
+      
     default:
       ErrorMsg("Error in count_pairs_region of TwoPointCorrelation.cpp, no such type of Dimension for pair");
       break;
@@ -452,6 +464,10 @@ void cosmobl::twopt::TwoPointCorrelation::count_allPairs_region (vector<shared_p
   if (!isSet(m_random->var(Var::_RA_)) || !isSet(m_random->var(Var::_DEC_)) || !isSet(m_random->var(Var::_DC_))) 
     m_random->computePolarCoordinates();
 
+  if (type == _1D_angular_){
+    m_data->normalizeComovingCoordinates();
+    m_random->normalizeComovingCoordinates();
+  }
 
   // ----------- create the chain-mesh ----------- 
 
@@ -471,7 +487,7 @@ void cosmobl::twopt::TwoPointCorrelation::count_allPairs_region (vector<shared_p
 
   vector<long> region_list = m_data->get_region_list();
   int nRegions = region_list.size();
-  int nP = nRegions*(nRegions+1)/2;
+  int nP = nRegions*nRegions; //nRegions*(nRegions+1)/2;
 
   dd_regions.erase(dd_regions.begin(),dd_regions.end());
   rr_regions.erase(rr_regions.begin(),rr_regions.end());
@@ -500,8 +516,7 @@ void cosmobl::twopt::TwoPointCorrelation::count_allPairs_region (vector<shared_p
       write_pairs(dd_regions,dir_output_pairs,file_regions);
     }
   }
-  else if (count_dd==0){
-
+  else if (count_dd==0) {
     read_pairs(m_dd, dir_input_pairs, file);
     read_pairs(dd_regions, dir_input_pairs, file_regions);
   }
@@ -518,11 +533,9 @@ void cosmobl::twopt::TwoPointCorrelation::count_allPairs_region (vector<shared_p
       write_pairs(rr_regions,dir_output_pairs,file_regions);
     }
   }
-  else if (count_rr==0){
-
+  else if (count_rr==0) {
     read_pairs(m_rr, dir_input_pairs, file);
     read_pairs(rr_regions, dir_input_pairs, file_regions);
-
   }
 
   cout << endl << par::col_green << "data-random" << par::col_default << endl;
@@ -532,23 +545,28 @@ void cosmobl::twopt::TwoPointCorrelation::count_allPairs_region (vector<shared_p
 
   if (count_dr==1) {
     count_pairs_region(m_data, ChM_random, m_dr, dr_regions, 1, tcount);
-    if (dir_output_pairs!="NULL"){
+    if (dir_output_pairs!="NULL") {
       write_pairs(m_dr, dir_output_pairs, file);
       write_pairs(dr_regions,dir_output_pairs,file_regions);
     }
   }
-  else if (count_dr==0){
+  else if (count_dr==0) {
     read_pairs(m_dr, dir_input_pairs, file);
     read_pairs(dr_regions, dir_input_pairs, file_regions);
   }
-
+  
   if (count_dd==1)
     m_data->Order();
+  
   if (count_rr==1 || count_dr==1) 
     m_random->Order();
+ 
+  if (type == _1D_angular_) {
+    m_data->restoreComovingCoordinates();
+    m_random->restoreComovingCoordinates();
+  }
+
 }
-
-
 
 
 

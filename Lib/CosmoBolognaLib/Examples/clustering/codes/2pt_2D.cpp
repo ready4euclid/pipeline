@@ -1,6 +1,6 @@
-// ===============================================================
-// Example code: how to measure 2D two-point correlation functions
-// ===============================================================
+// ==============================================================
+// Example code: how to measure 2D two-point correlation function
+// ==============================================================
 
 #include "RandomCatalogue.h"
 #include "TwoPointCorrelation2D_cartesian.h"
@@ -90,7 +90,7 @@ int main () {
   // (construct the object using a static factory)
   auto xi2DCart = TwoPointCorrelation::Create(_2D_Cartesian_, catalogue, random_catalogue, _linear_, rpMin, rpMax, nbins_D1, shift_D1, _linear_, piMin, piMax, nbins_D2, shift_D2);
   
-  xi2DCart->measure(dir_pairs);
+  xi2DCart->measure(ErrorType::_Poisson_, dir_pairs);
   
   xi2DCart->write(dir_output, "xi_rp_pi_linlin.dat");
   

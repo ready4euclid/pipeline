@@ -131,3 +131,6 @@ static const string col_red = "\033[0;31m";
 static const string col_green = "\033[0;32m";
 static const string col_blue = "\033[0;34m";
 
+%template(IntVector) std::vector<int>;
+%template(DoubleVector) std::vector<double>;
+%template(StringVector) std::vector<std::string>;

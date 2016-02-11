@@ -64,7 +64,7 @@ void cosmobl::threept::ThreePointCorrelation_comoving_reduced::measure (const st
   double binSize = 0.05;
   double shift = 0.5;
   twopt::TwoPointCorrelation1D_monopole TwoP {data, random, _logarithmic_, rMin, rMax, binSize, shift};
-  TwoP.measurePoisson(dir_output_triplets, {}, 1, 1, 1, tcount);
+  TwoP.measure(twopt::ErrorType::_Poisson_,dir_output_triplets, {}, par::defaultString,0, 1, 1, 1, tcount);
 
   vector<double> log_r(TwoP.dd()->nbins()), log_xi(TwoP.dd()->nbins());
   for (int i=0; i<TwoP.dd()->nbins(); i++) {

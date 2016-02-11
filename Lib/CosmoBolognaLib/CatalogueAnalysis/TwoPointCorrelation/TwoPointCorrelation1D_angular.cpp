@@ -96,7 +96,7 @@ void cosmobl::twopt::TwoPointCorrelation1D_angular::write (const string dir, con
 // ============================================================================================
 
 
-void cosmobl::twopt::TwoPointCorrelation1D_angular::measure (const string dir_output_pairs, const vector<string> dir_input_pairs, const ErrorType errorType, const string dir_output_ResampleXi, int nMocks, int count_dd, const int count_rr, const int count_dr, const bool tcount)
+void cosmobl::twopt::TwoPointCorrelation1D_angular::measure (const ErrorType errorType, const string dir_output_pairs, const vector<string> dir_input_pairs,  const string dir_output_ResampleXi, int nMocks, int count_dd, const int count_rr, const int count_dr, const bool tcount)
 {
   switch(errorType){
     case(ErrorType::_Poisson_):
@@ -109,7 +109,7 @@ void cosmobl::twopt::TwoPointCorrelation1D_angular::measure (const string dir_ou
       measureBootstrap(nMocks,dir_output_pairs,dir_input_pairs,dir_output_ResampleXi,count_dd,count_rr,count_dr,tcount);
       break;
     default:
-      ErrorMsg("Error in measure of TwoPointCorrelation1D.cpp, unknown type of error");
+      ErrorMsg("Error in measure() of TwoPointCorrelation1D_angular.cpp, unknown type of error");
   }
 }
 
@@ -125,10 +125,11 @@ void cosmobl::twopt::TwoPointCorrelation1D_angular::measurePoisson (const string
   int nRandom = m_random->weightedN();
   
   if (nData==0 || nRandom==0)  
-    ErrorMsg("Error in cosmobl::twopt::TwoPointCorrelation::measurePoisson of TwoPointCorrelation.cpp!");
+    ErrorMsg("Error in measurePoisson() of TwoPointCorrelation.cpp!");
 
   
   // ----------- count the data-data, random-random and data-random pairs, or read them from file ----------- 
+  cout << m_twoPType << endl;
   
   count_allPairs(m_twoPType, dir_output_pairs, dir_input_pairs, count_dd, count_rr, count_dr, tcount);
   
@@ -160,44 +161,16 @@ void cosmobl::twopt::TwoPointCorrelation1D_angular::measureJackknife (const stri
   vector<shared_ptr<Pair> > dd_regions, rr_regions, dr_regions;
   count_allPairs_region(dd_regions, rr_regions, dr_regions, m_twoPType, dir_output_pairs, dir_input_pairs, count_dd, count_rr, count_dr, tcount);
 
+  vector<shared_ptr<Data> > data_SS = (count_dr) ? XiJackknife(dd_regions,rr_regions,dr_regions) : XiJackknife(dd_regions,rr_regions);
+
   for (int i=0; i<nRegions; i++) {
-    double nData_SubSample = m_data->weightedN_condition(Var::_REGION_, region_list[i], region_list[i]+1, 1);
-    double nRandom_SubSample = m_random->weightedN_condition(Var::_REGION_, region_list[i], region_list[i]+1, 1);
-
-    auto dd_SubSample = Pair::Create(m_dd->pairType(), m_dd->sMin(), m_dd->sMax(), m_dd->nbins(), m_dd->shift());
-    auto rr_SubSample = Pair::Create(m_rr->pairType(), m_rr->sMin(), m_rr->sMax(), m_rr->nbins(), m_rr->shift());
-    auto dr_SubSample = Pair::Create(m_dr->pairType(), m_dr->sMin(), m_dr->sMax(), m_dr->nbins(), m_dr->shift());
-
-    vector<int> w(nRegions, 1);
-    w[i] = 0;
-
-    for (int j=0; j<nRegions; j++) {
-      for (int k=j; k<nRegions; k++) {
-	int index = j*nRegions-(j-1)*j/2+k-j;
-	double ww = w[j]*w[k];
-	if (ww>0) {
-	  for (int bin=0;bin<dd_SubSample->nbins();bin++) {
-	    dd_SubSample->add_PP1D(bin, dd_regions[index]->PP1D(bin));
-	    rr_SubSample->add_PP1D(bin, rr_regions[index]->PP1D(bin));
-	    if (count_dr>-1)
-	      dr_SubSample->add_PP1D(bin, dr_regions[index]->PP1D(bin));
-	  }
-	}
-      }
-    }
-    
-    shared_ptr<Data> data;
-    if(count_dr>-1)
-      data = LandySzalayEstimatorTwoP(dd_SubSample, rr_SubSample, dr_SubSample, nData_SubSample, nRandom_SubSample);
-    else
-      data = NaturalEstimatorTwoP(dd_SubSample, rr_SubSample, nData_SubSample, nRandom_SubSample);
 
     if(dir_output_JackknifeXi !="NULL"){
       string file = "xi_Jackknife_"+conv(i, par::fINT);
-      data->write(dir_output_JackknifeXi, file, "rad", "xi", 0);
+      data_SS[i]->write(dir_output_JackknifeXi, file, "theta", "w", 0);
     }
 
-    xi_SubSamples.push_back(data->fx());
+    xi_SubSamples.push_back(data_SS[i]->fx());
   }
 
   covariance_matrix(xi_SubSamples, covariance, 1);
@@ -228,68 +201,20 @@ void cosmobl::twopt::TwoPointCorrelation1D_angular::measureBootstrap (const int 
     if(system(mkdir.c_str())){}
   }
 
-  vector<long> region_list = m_data->get_region_list();
-  int nRegions = region_list.size();
-
   vector<vector<double> > xi_SubSamples,covariance;
 
   vector<shared_ptr<Pair> > dd_regions, rr_regions, dr_regions;
   count_allPairs_region(dd_regions, rr_regions, dr_regions, m_twoPType, dir_output_pairs, dir_input_pairs, count_dd, count_rr, count_dr, tcount);
-
-  vector<double> nData_Region, nRandom_Region;
-
-  for (int i=0; i<nRegions; i++) {
-    nData_Region.push_back(m_data->weightedN_condition(Var::_REGION_, region_list[i], region_list[i]+1, 0));
-    nRandom_Region.push_back(m_random->weightedN_condition(Var::_REGION_, region_list[i], region_list[i]+1, 0));
-    cout << nData_Region[i] << " " << nRandom_Region[i] << endl;
-
-  }
-
-  uniform_int_distribution<int> uni(0, nRegions-1);
-  default_random_engine rng;
-  int val=3; //See Norberg et al. 2009
+  vector<shared_ptr<Data> > data_SS = (count_dr) ? XiBootstrap(nMocks,dd_regions,rr_regions,dr_regions) : XiBootstrap(nMocks,dd_regions,rr_regions);
 
   for (int i=0; i<nMocks; i++) {
-    auto dd_SubSample = Pair::Create(m_dd->pairType(), m_dd->sMin(), m_dd->sMax(), m_dd->nbins(), m_dd->shift());
-    auto rr_SubSample = Pair::Create(m_rr->pairType(), m_rr->sMin(), m_rr->sMax(), m_rr->nbins(), m_rr->shift());
-    auto dr_SubSample = Pair::Create(m_dr->pairType(), m_dr->sMin(), m_dr->sMax(), m_dr->nbins(), m_dr->shift());
 
-    double nData_SubSample=0, nRandom_SubSample=0;
-
-    vector<int> w(nRegions, 0);
-    for (int n=0; n<val*nRegions; n++)
-      w[uni(rng)] +=1;
-
-    for (int j=0; j<nRegions; j++) {
-      nData_SubSample += w[j]*nData_Region[j];
-      nRandom_SubSample += w[j]*nRandom_Region[j];
-
-      for (int k=j; k<nRegions; k++) {
-	int index = j*nRegions-(j-1)*j/2+k-j;
-	double ww = (k==j) ? w[k] : w[j]*w[k];
-	if (ww>0) {
-	  for (int bin=0; bin<dd_SubSample->nbins(); bin++) {
-	    dd_SubSample->add_PP1D(bin, ww*dd_regions[index]->PP1D(bin));
-	    rr_SubSample->add_PP1D(bin, ww*rr_regions[index]->PP1D(bin));
-	    if (count_dr>-1)
-	      dr_SubSample->add_PP1D(bin, ww*dr_regions[index]->PP1D(bin));
-	  }
-	}
-      }
-    }
-    
-    shared_ptr<Data> data;
-    if (count_dr>-1)
-      data = LandySzalayEstimatorTwoP(dd_SubSample, rr_SubSample, dr_SubSample, nData_SubSample, nRandom_SubSample);
-    else
-      data = NaturalEstimatorTwoP(dd_SubSample, rr_SubSample, nData_SubSample, nRandom_SubSample);
-
-    if (dir_output_BootstrapXi!="NULL") {
+     if (dir_output_BootstrapXi!="NULL") {
       string file = "xi_Bootstrap_"+conv(i, par::fINT);
-      data->write(dir_output_BootstrapXi, file, "rad", "xi", 0);
+      data_SS[i]->write(dir_output_BootstrapXi, file, "theta", "w", 0);
     }
 
-    xi_SubSamples.push_back(data->fx());
+    xi_SubSamples.push_back(data_SS[i]->fx());
   }
 
   covariance_matrix(xi_SubSamples, covariance, 0);

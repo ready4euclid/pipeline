@@ -17,6 +17,7 @@ OBJ1 = 2pt_monopole.o
 OBJ2 = 2pt_2D.o
 OBJ3 = 2pt_jackknife.o
 OBJ4 = 3pt.o 
+OBJ5 = 2pt_projected_jackknife.o
 
 ES = so
 
@@ -36,8 +37,11 @@ endif
 3pt: $(OBJ4) 
 	$(CC) $(OBJ4) -o 3pt $(FLAGS_LIB) 
 
+2pt_projected_jackknife: $(OBJ5) 
+	$(CC) $(OBJ5) -o 2pt_projected_jackknife $(FLAGS_LIB) 
+
 clean:
-	rm *.o 2pt_monopole 2pt_2D 2pt_jackknife 3pt *~ \#* temp* core* -f
+	rm *.o 2pt_monopole 2pt_2D 2pt_jackknife 3pt 2pt_projected_jackknife *~ \#* temp* core* -f
 
 
 2pt_monopole.o: 2pt_monopole.cpp makefile $(dirLib)*.$(ES)
@@ -51,3 +55,7 @@ clean:
 
 3pt.o: 3pt.cpp makefile $(dirLib)*.$(ES)
 	$(CC) $(FLAGS) $(FLAGS_INC) $(varDIR) -c 3pt.cpp 
+
+2pt_projected_jackknife.o: 2pt_projected_jackknife.cpp makefile $(dirLib)*.$(ES)
+	$(CC) $(FLAGS) $(FLAGS_INC) $(varDIR) -c 2pt_projected_jackknife.cpp
+

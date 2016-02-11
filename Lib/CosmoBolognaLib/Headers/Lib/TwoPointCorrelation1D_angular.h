@@ -161,8 +161,8 @@ namespace cosmobl {
       ///@{
 
       /**
-       *  @brief measure the monopole of the two-point correlation
-       *  function, &xi;(r)
+       *  @brief measure the angular the two-point correlation
+       *  function, w(theta)
        *  @param dir_output_pairs output directory used to store the
        *  number of pairs
        *  @param dir_input_pairs vector of input directories used to
@@ -184,10 +184,10 @@ namespace cosmobl {
        *  don't activate the time counter; 
        *  @return none
        */
-      void measure (const string dir_output_pairs=par::defaultString, const vector<string> dir_input_pairs={}, const ErrorType errorType=ErrorType::_Poisson_, const string dir_output_Resample="NULL", const int nMocks=0, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
+      void measure (const ErrorType errorType=ErrorType::_Poisson_, const string dir_output_pairs=par::defaultString, const vector<string> dir_input_pairs={},  const string dir_output_ResampleXi=par::defaultString, const int nMocks=0, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
 
       /**
-       *  @brief measure the monopole of the two-point correlation
+       *  @brief measure the angular two-point correlation
        *  function, &xi;(r) with Poisson error
        *  @param dir_output_pairs output directory used to store the
        *  number of pairs
@@ -209,7 +209,7 @@ namespace cosmobl {
       void measurePoisson (const string dir_output_pairs=par::defaultString, const vector<string> dir_input_pairs={}, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
 
       /**
-       *  @brief measure the monopole of the two-point correlation
+       *  @brief measure the angular two-point correlation
        *  function, &xi;(r), estimate the covariance with Jackknife resampling
        *
        *  @param dir_output_pairs output directory used to store the
@@ -218,8 +218,8 @@ namespace cosmobl {
        *  @param dir_input_pairs vector of input directories used to store the
        *  number of pairs (if the pairs are read from files)
        *
-       *  @param dir_output_JackknifeXi output directory used to store the
-       *  Jackknife resampling Xi, with Poisson error
+       *  @param dir_output_ResampleXi output directory used to store the
+       *  Jackknife resampling, with Poisson error
        *
        *  @param count_dd 1 &rarr; count the number of data-data
        *  opairs; 0 &rarr; read the number of data-data pairs from
@@ -244,10 +244,10 @@ namespace cosmobl {
        *
        *  @return none
        */
-      void measureJackknife (const string dir_output_pairs, const vector<string> dir_input_pairs={}, const string dir_output_JackknifeXi = "NULL", const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
+      void measureJackknife (const string dir_output_pairs=par::defaultString, const vector<string> dir_input_pairs={}, const string dir_output_ResampleXi = par::defaultString, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
 
       /**
-       *  @brief measure the monopole of the two-point correlation
+       *  @brief measure the angular two-point correlation
        *  function, &xi;(r), estimate the covariance with Bootstrap resampling
        *
        *  @param nMocks number of mocks to be generated with bootstrap resampling
@@ -258,8 +258,8 @@ namespace cosmobl {
        *  @param dir_input_pairs vector of input directories used to store the
        *  number of pairs (if the pairs are read from files)
        *
-       *  @param dir_output_BootstrapXi output directory used to store the
-       *  Jackknife resampling Xi, with Poisson error
+       *  @param dir_output_ResampleXi output directory used to store the
+       *  bootstrap resampling,  with Poisson error
        *
        *  @param count_dd 1 &rarr; count the number of data-data
        *  opairs; 0 &rarr; read the number of data-data pairs from
@@ -284,7 +284,7 @@ namespace cosmobl {
        *
        *  @return none
        */
-      void measureBootstrap (const int nMocks, const string dir_output_pairs, const vector<string> dir_input_pairs={}, const string dir_output_BootstrapXi = "NULL", const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
+      void measureBootstrap (const int nMocks, const string dir_output_pairs = par::defaultString, const vector<string> dir_input_pairs={}, const string dir_output_ResampleXi = par::defaultString, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
 
     
       ///@}

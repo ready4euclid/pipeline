@@ -202,32 +202,47 @@ namespace cosmobl {
        *  @name Methods to set the binning parameters
        */
       ///@{
-    
+
       /**
-       *  @brief measure the 2d polar two-point correlation
-       *  function, &xi;(r)
-       *  @param dir_output_pairs output directory used to store the
-       *  number of pairs
-       *  @param dir_input_pairs vector of input directories used to
-       *  @param errorType the type of error to be computed
-       *  store the number of pairs (if the pairs are read from files)
-       *  @param dir_output_ResampleXi output directory used to store xi from
-       *  resampled catalogues
-       *  @param nMocks number of resampling to be generate with bootsrap*
-       *  @param count_dd 1 &rarr; count the number of data-data
-       *  opairs; 0 &rarr; read the number of data-data pairs from
-       *  file
-       *  @param count_rr 1 &rarr; count the number of random-random
-       *  opairs; 0 &rarr; read the number of random-random pairs from
-       *  file
-       *  @param count_dr 1 &rarr; count the number of data-random
-       *  opairs; 0 &rarr; read the number of data-random pairs from
-       *  file
-       *  @param tcount 1 &rarr; activate the time counter; 0 &rarr;
-       *  don't activate the time counter; 
-       *  @return none
-       */
-      void measure (const string dir_output_pairs=par::defaultString, const vector<string> dir_input_pairs={}, const ErrorType errorType=ErrorType::_Poisson_, const string dir_output_Resample="NULL", const int nMocks=0, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
+	 *  @brief measure the 2d polar two-point correlation
+	 *  function, &xi;(r)
+	 *
+	 *  @param errType type of &xi;(r) error
+	 *  
+	 *  @param dir_output_pairs output directory used to store the
+	 *  number of pairs
+	 *
+	 *  @param dir_input_pairs vector of input directories used to store the
+	 *  number of pairs (if the pairs are read from files)
+	 *
+	 *  @param dir_output_ResampleXi output directory of the resampled &xi;(r)
+	 *
+	 *  @param nMocks number of resampling for bootstrap
+	 *
+	 *  @param count_dd 1 &rarr; count the number of data-data
+	 *  opairs; 0 &rarr; read the number of data-data pairs from
+	 *  file
+	 *
+	 *  @param count_rr 1 &rarr; count the number of random-random
+	 *  opairs; 0 &rarr; read the number of random-random pairs from
+	 *  file
+	 *
+	 *  @param count_dd 1 &rarr; count the number of data-random
+	 *  opairs; 0 &rarr; read the number of data-random pairs from
+	 *  file
+	 *
+	 *  @param count_rr 1 &rarr; count the number of random-random
+	 *  pairs; 0 &rarr; read the number of random-random pairs
+	 *
+	 *  @param count_dr 1 &rarr; count the number of data-random
+	 *  pairs; 0 &rarr; read the number of data-random pairs
+	 *
+	 *  @param tcount 1 &rarr; activate the time counter; 0 &rarr;
+	 *  don't activate the time counter; 
+	 *
+	 *  @return none
+	 */
+	void measure (const ErrorType errType=ErrorType::_Poisson_, const string dir_output_pairs=par::defaultString, const vector<string> dir_input_pairs={}, const string dir_output_ResampleXi=par::defaultString, const int nMocks=0, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
 
       /**
        *  @brief measure the 2d polar two-point correlation

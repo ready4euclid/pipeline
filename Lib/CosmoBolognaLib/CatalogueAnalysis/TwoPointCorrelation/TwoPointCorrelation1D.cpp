@@ -104,9 +104,9 @@ void cosmobl::twopt::TwoPointCorrelation1D::write_pairs (const vector<shared_ptr
 
   for (int i=0; i<nRegions; i++) {
    
-    for (int j=i; j<nRegions; j++) {
+    for (int j=0; j<nRegions; j++) {
 
-      int index = i*nRegions-(i-1)*i/2+j-i;
+      int index = i*nRegions+j-(i-1)*i/2-i;
 
       for (int r1=0; r1<PP[index]->nbins(); r1++)
 	if(PP[index]->PP1D(r1)>0)
@@ -138,7 +138,6 @@ void cosmobl::twopt::TwoPointCorrelation1D::read_pairs (vector<shared_ptr<pairs:
 
     while (fin >> I >> J >> bin1 >> pairs) {
       index = I*nRegions-(I-1)*I/2+J-I;
-    //  cout << I << " " << J << " " << index << " " << bin1 << " " << pairs << endl;
       PP[index]->add_PP1D(bin1,pairs);
     }
     fin.clear(); fin.close(); cout << "I read the file " << ff << endl;
@@ -167,7 +166,7 @@ shared_ptr<Data> cosmobl::twopt::TwoPointCorrelation1D::NaturalEstimatorTwoP (sh
       
       xi[i] = max(-1., norm*dd->PP1D(i)/rr->PP1D(i)-1.);
 
-      error[i] = PoissonError(dd->PP1D(i), rr->PP1D(i), 0); 
+      error[i] = PoissonError(dd->PP1D(i), rr->PP1D(i), 0, nData, nRandom); 
     }
   }
 
@@ -196,10 +195,201 @@ shared_ptr<Data> cosmobl::twopt::TwoPointCorrelation1D::LandySzalayEstimatorTwoP
       
       xi[i] = max(-1., norm*dd->PP1D(i)/rr->PP1D(i)-norm1*dr->PP1D(i)/rr->PP1D(i)+1.);
 
-      error[i] = PoissonError(dd->PP1D(i), rr->PP1D(i), dr->PP1D(i)); 
+      error[i] = PoissonError(dd->PP1D(i), rr->PP1D(i), dr->PP1D(i),nData,nRandom); 
     }
   }
 
   return move(unique_ptr<Data1D>(new Data1D(rad,xi,error)));
+
+}
+
+
+// ============================================================================
+
+
+vector<shared_ptr<Data> > cosmobl::twopt::TwoPointCorrelation1D::XiJackknife(const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr)
+{
+  vector<long> region_list = m_data->get_region_list();
+  int nRegions =  region_list.size();
+
+  vector<shared_ptr<Data> > data;
+
+  for(int i=0;i<nRegions;i++){
+    auto dd_SS = Pair::Create(m_dd->pairType(), m_dd->sMin(), m_dd->sMax(), m_dd->nbins(), m_dd->shift());
+    auto rr_SS = Pair::Create(m_rr->pairType(), m_rr->sMin(), m_rr->sMax(), m_rr->nbins(), m_rr->shift());
+
+    double nData_SS = m_data->weightedN_condition(Var::_REGION_, region_list[i], region_list[i]+1, 1);
+    double nRandom_SS = m_random->weightedN_condition(Var::_REGION_, region_list[i], region_list[i]+1, 1);
+
+    vector<int> w(nRegions, 1);
+    w[i] = 0;
+
+    for (int j=0; j<nRegions; j++) {
+      for (int k=j; k<nRegions; k++) {
+	int index = j*nRegions-(j-1)*j/2+k-j;
+	double ww = w[j]*w[k];
+	if (ww>0) {	
+	  for (int bin=0;bin<dd_SS->nbins();bin++) {
+	    dd_SS->add_PP1D(bin, dd[index]->PP1D(bin));
+	    rr_SS->add_PP1D(bin, rr[index]->PP1D(bin));
+	  }
+	}
+      }
+    }
+
+    data.push_back(move(NaturalEstimatorTwoP(dd_SS, rr_SS, nData_SS, nRandom_SS)));
+  }
+  return data;
+
+}
+
+
+// ============================================================================
+
+
+vector<shared_ptr<Data> > cosmobl::twopt::TwoPointCorrelation1D::XiJackknife(const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr)
+{
+  vector<long> region_list = m_data->get_region_list();
+  int nRegions =  region_list.size();
+
+  vector<shared_ptr<Data> > data;
+
+  for(int i=0;i<nRegions;i++){
+    auto dd_SS = Pair::Create(m_dd->pairType(), m_dd->sMin(), m_dd->sMax(), m_dd->nbins(), m_dd->shift());
+    auto rr_SS = Pair::Create(m_rr->pairType(), m_rr->sMin(), m_rr->sMax(), m_rr->nbins(), m_rr->shift());
+    auto dr_SS = Pair::Create(m_dr->pairType(), m_dr->sMin(), m_dr->sMax(), m_dr->nbins(), m_dr->shift());
+
+    double nData_SS = m_data->weightedN_condition(Var::_REGION_, region_list[i], region_list[i]+1, 1);
+    double nRandom_SS = m_random->weightedN_condition(Var::_REGION_, region_list[i], region_list[i]+1, 1);
+
+    vector<int> w(nRegions, 1);
+    w[i] = 0;
+
+    for (int j=0; j<nRegions; j++) {
+      for (int k=j; k<nRegions; k++) {
+	int index = j*nRegions+k-(j-1)*j/2-j;
+	double ww = w[j]*w[k];
+	if (ww>0) {	
+	  for (int bin=0;bin<dd_SS->nbins();bin++) {
+	    dd_SS->add_PP1D(bin, dd[index]->PP1D(bin));
+	    rr_SS->add_PP1D(bin, rr[index]->PP1D(bin));
+	    dr_SS->add_PP1D(bin, dr[index]->PP1D(bin));
+	  }
+	}
+      }
+    }
+
+    data.push_back(move(LandySzalayEstimatorTwoP(dd_SS, rr_SS, dr_SS, nData_SS, nRandom_SS)));
+
+  }
+  return data;
+
+}
+
+
+// ============================================================================
+
+
+vector<shared_ptr<Data> > cosmobl::twopt::TwoPointCorrelation1D::XiBootstrap(const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr)
+{
+  vector<long> region_list = m_data->get_region_list();
+  int nRegions = region_list.size();
+
+  vector<shared_ptr<Data> > data;
+  vector<double> nData_reg, nRandom_reg;
+
+  for(int i=0;i<nMocks;i++){
+    nData_reg.push_back(m_data->weightedN_condition(Var::_REGION_, region_list[i], region_list[i]+1, 0));
+    nRandom_reg.push_back(m_random->weightedN_condition(Var::_REGION_, region_list[i], region_list[i]+1, 0));
+  }
+
+  uniform_int_distribution<int> uni(0, nRegions-1);
+  default_random_engine rng;
+  int val=3; //See Norberg et al. 2009
+
+  for(int i=0;i<nMocks;i++){
+    auto dd_SS = Pair::Create(m_dd->pairType(), m_dd->sMin(), m_dd->sMax(), m_dd->nbins(), m_dd->shift());
+    auto rr_SS = Pair::Create(m_rr->pairType(), m_rr->sMin(), m_rr->sMax(), m_rr->nbins(), m_rr->shift());
+
+    double nData_SS=0, nRandom_SS=0;
+
+    vector<int> w(nRegions, 0);
+    for (int n=0; n<val*nRegions; n++)
+      w[uni(rng)] +=1;
+
+    for (int j=0; j<nRegions; j++) {
+      nData_SS += w[j]*nData_reg[j];
+      nRandom_SS += w[j]*nRandom_reg[j];
+
+      for (int k=j; k<nRegions; k++) {
+	int index = j*nRegions+k-(j-1)*j/2-j;
+	double ww = (k==j) ? w[k] : w[j]*w[k];
+	if (ww>0) {
+	  for (int bin=0; bin<dd_SS->nbins(); bin++) {
+	    dd_SS->add_PP1D(bin, ww*dd[index]->PP1D(bin));
+	    rr_SS->add_PP1D(bin, ww*rr[index]->PP1D(bin));
+	  }
+	}
+      }
+    }
+
+    data.push_back(move(NaturalEstimatorTwoP(dd_SS, rr_SS, nData_SS, nRandom_SS)));
+  }
+  return data;
+
+}
+
+
+// ============================================================================
+
+
+vector<shared_ptr<Data> > cosmobl::twopt::TwoPointCorrelation1D::XiBootstrap(const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr)
+{
+  vector<long> region_list = m_data->get_region_list();
+  int nRegions = region_list.size();
+
+  vector<shared_ptr<Data> > data;
+  vector<double> nData_reg, nRandom_reg;
+
+  for(int i=0;i<nMocks;i++){
+    nData_reg.push_back(m_data->weightedN_condition(Var::_REGION_, region_list[i], region_list[i]+1, 0));
+    nRandom_reg.push_back(m_random->weightedN_condition(Var::_REGION_, region_list[i], region_list[i]+1, 0));
+  }
+
+  uniform_int_distribution<int> uni(0, nRegions-1);
+  default_random_engine rng;
+  int val=3; //See Norberg et al. 2009
+
+  for(int i=0;i<nMocks;i++){
+    auto dd_SS = Pair::Create(m_dd->pairType(), m_dd->sMin(), m_dd->sMax(), m_dd->nbins(), m_dd->shift());
+    auto rr_SS = Pair::Create(m_rr->pairType(), m_rr->sMin(), m_rr->sMax(), m_rr->nbins(), m_rr->shift());
+    auto dr_SS = Pair::Create(m_dr->pairType(), m_dr->sMin(), m_dr->sMax(), m_dr->nbins(), m_dr->shift());
+
+    double nData_SS=0, nRandom_SS=0;
+
+    vector<int> w(nRegions, 0);
+    for (int n=0; n<val*nRegions; n++)
+      w[uni(rng)] +=1;
+
+    for (int j=0; j<nRegions; j++) {
+      nData_SS += w[j]*nData_reg[j];
+      nRandom_SS += w[j]*nRandom_reg[j];
+
+      for (int k=j; k<nRegions; k++) {
+	int index = j*nRegions+k-(j-1)*j/2-j;
+	double ww = (k==j) ? w[k] : w[j]*w[k];
+	if (ww>0) {
+	  for (int bin=0; bin<dd_SS->nbins(); bin++) {
+	    dd_SS->add_PP1D(bin, ww*dd[index]->PP1D(bin));
+	    rr_SS->add_PP1D(bin, ww*rr[index]->PP1D(bin));
+	    dr_SS->add_PP1D(bin, ww*dr[index]->PP1D(bin));
+	  }
+	}
+      }
+    }
+
+    data.push_back(move(LandySzalayEstimatorTwoP(dd_SS, rr_SS, dr_SS, nData_SS, nRandom_SS)));
+  }
+  return data;
 
 }

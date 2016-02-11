@@ -61,304 +61,320 @@ namespace cosmobl {
      */
     class TwoPointCorrelation2D_cartesian : public TwoPointCorrelation2D {
 
-    public:
-    
-      /**
-       *  @name Constructors/destructors
-       */
-      ///@{
+      protected:
+	/**
+	 *  @brief measure the 2d cartesian two-point correlation
+	 *  function, &xi;(r) with Poisson error
+	 *  @param dir_output_pairs output directory used to store the
+	 *  number of pairs
+	 *  @param dir_input_pairs vector of input directories used to
+	 *  store the number of pairs (if the pairs are read from files)
+	 *  @param count_dd 1 &rarr; count the number of data-data
+	 *  opairs; 0 &rarr; read the number of data-data pairs from
+	 *  file
+	 *  @param count_rr 1 &rarr; count the number of random-random
+	 *  opairs; 0 &rarr; read the number of random-random pairs from
+	 *  file
+	 *  @param count_dr 1 &rarr; count the number of data-random
+	 *  opairs; 0 &rarr; read the number of data-random pairs from
+	 *  file
+	 *  @param tcount 1 &rarr; activate the time counter; 0 &rarr;
+	 *  don't activate the time counter; 
+	 *  @return none
+	 */
+	void measurePoisson (const string dir_output_pairs=par::defaultString, const vector<string> dir_input_pairs={}, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
 
-      /**
-       *  @brief default constructor
-       *  @return object of class TwoPointCorrelation2D_cartesian
-       */
-      TwoPointCorrelation2D_cartesian () { m_twoPType = _2D_Cartesian_; }
+	/**
+	 *  @brief measure the 2d cartesian two-point correlation
+	 *  function, &xi;(r), estimate the covariance with Jackknife resampling
+	 *
+	 *  @param dir_output_pairs output directory used to store the
+	 *  number of pairs
+	 *
+	 *  @param dir_input_pairs vector of input directories used to store the
+	 *  number of pairs (if the pairs are read from files)
+	 *
+	 *  @param dir_output_ResampleXi output directory used to store the
+	 *  Jackknife resampling Xi, with Poisson error
+	 *
+	 *  @param count_dd 1 &rarr; count the number of data-data
+	 *  opairs; 0 &rarr; read the number of data-data pairs from
+	 *  file
+	 *
+	 *  @param count_rr 1 &rarr; count the number of random-random
+	 *  opairs; 0 &rarr; read the number of random-random pairs from
+	 *  file
+	 *
+	 *  @param count_dd 1 &rarr; count the number of data-random
+	 *  opairs; 0 &rarr; read the number of data-random pairs from
+	 *  file
+	 *
+	 *  @param count_rr 1 &rarr; count the number of random-random
+	 *  pairs; 0 &rarr; read the number of random-random pairs
+	 *
+	 *  @param count_dr 1 &rarr; count the number of data-random
+	 *  pairs; 0 &rarr; read the number of data-random pairs
+	 *
+	 *  @param tcount 1 &rarr; activate the time counter; 0 &rarr;
+	 *  don't activate the time counter; 
+	 *
+	 *  @return none
+	 */
+	void measureJackknife (const string dir_output_pairs=par::defaultString, const vector<string> dir_input_pairs={}, const string dir_output_ResampleXi=par::defaultString, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
 
-      /**
-       *  @brief constructor
-       *  @param data object of class Catalogue containing the input
-       *  catalogue
-       *  @param random of class Catalogue containing the random data
-       *  catalogue
-       *  @param binType_rp binning type in perpendicular separations:
-       *  0 &rarr; linear; 1 &rarr; logarithmic
-       *  @param rpMin minimum perpendicular separation used to count
-       *  the pairs
-       *  @param rpMax maximum perpendicular separation used to count
-       *  the pairs
-       *  @param nbins_rp number of bins in the perpendicular
-       *  separation
-       *  @param shift_rp shift parameter in the perpendicular
-       *  separation, i.e. the radial shift is binSize*shift
-       *  @param binType_pi binning type in parallel separations:
-       *  0 &rarr; linear; 1 &rarr; logarithmic
-       *  @param piMin minimum parallel separation used to count
-       *  the pairs
-       *  @param piMax maximum parallel separation used to count
-       *  the pairs
-       *  @param nbins_pi number of bins in the parallel
-       *  separation
-       *  @param shift_pi shift parameter in the parallel
-       *  separation, i.e. the radial shift is binSize*shift
-       *  @return object of class TwoPointCorrelation2D_cartesian
-       */
-      TwoPointCorrelation2D_cartesian (catalogue::Catalogue data, catalogue::Catalogue random, const binType binType_rp, const double rpMin, const double rpMax, const int nbins_rp, const double shift_rp, const binType binType_pi, const double piMin, const double piMax, const int nbins_pi, const double shift_pi)
-	: TwoPointCorrelation2D(data, random) { m_twoPType = _2D_Cartesian_; set_parameters(binType_rp, rpMin, rpMax, nbins_rp, shift_rp, binType_pi, piMin, piMax, nbins_pi, shift_pi); }
+	/**
+	 *  @brief measure the 2d cartesian two-point correlation
+	 *  function, &xi;(r), estimate the covariance with Bootstrap resampling
+	 *
+	 *  @param nMocks number of mocks to be generated with bootstrap resampling
+	 *
+	 *  @param dir_output_pairs output directory used to store the
+	 *  number of pairs
+	 *
+	 *  @param dir_input_pairs vector of input directories used to store the
+	 *  number of pairs (if the pairs are read from files)
+	 *
+	 *  @param dir_output_ResampleXi output directory used to store the
+	 *  Jackknife resampling Xi, with Poisson error
+	 *
+	 *  @param count_dd 1 &rarr; count the number of data-data
+	 *  opairs; 0 &rarr; read the number of data-data pairs from
+	 *  file
+	 *
+	 *  @param count_rr 1 &rarr; count the number of random-random
+	 *  opairs; 0 &rarr; read the number of random-random pairs from
+	 *  file
+	 *
+	 *  @param count_dd 1 &rarr; count the number of data-random
+	 *  opairs; 0 &rarr; read the number of data-random pairs from
+	 *  file
+	 *
+	 *  @param count_rr 1 &rarr; count the number of random-random
+	 *  pairs; 0 &rarr; read the number of random-random pairs
+	 *
+	 *  @param count_dr 1 &rarr; count the number of data-random
+	 *  pairs; 0 &rarr; read the number of data-random pairs
+	 *
+	 *  @param tcount 1 &rarr; activate the time counter; 0 &rarr;
+	 *  don't activate the time counter; 
+	 *
+	 *  @return none
+	 */
+	void measureBootstrap (const int nMocks, const string dir_output_pairs=par::defaultString, const vector<string> dir_input_pairs={}, const string dir_output_ResampleXi=par::defaultString, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
 
-      /**
-       *  @brief constructor
-       *  @param data object of class Catalogue containing the input
-       *  catalogue
-       *  @param random of class Catalogue containing the random data
-       *  catalogue
-       *  @param binType_rp binning type in perpendicular separations:
-       *  0 &rarr; linear; 1 &rarr; logarithmic
-       *  @param rpMin minimum perpendicular separation used to count
-       *  the pairs
-       *  @param rpMax maximum perpendicular separation used to count
-       *  the pairs
-       *  @param binSize_rp bin size in the perpendicular separation
-       *  @param shift_rp shift parameter in the perpendicular
-       *  separation, i.e. the radial shift is binSize*shift
-       *  @param binType_pi binning type in parallel separations:
-       *  0 &rarr; linear; 1 &rarr; logarithmic
-       *  @param piMin minimum parallel separation used to count
-       *  the pairs
-       *  @param piMax maximum parallel separation used to count
-       *  the pairs
-       *  @param binSize_pi bin size in the parallel separation
-       *  @param shift_pi shift parameter in the parallel
-       *  separation, i.e. the radial shift is binSize*shift
-       *  @return object of class TwoPointCorrelation2D_cartesian
-       */
-      TwoPointCorrelation2D_cartesian (catalogue::Catalogue data, catalogue::Catalogue random, const binType binType_rp, const double rpMin, const double rpMax, const double binSize_rp, const double shift_rp, const binType binType_pi, const double piMin, const double piMax, const double binSize_pi, const double shift_pi)
-	: TwoPointCorrelation2D(data, random) { m_twoPType = _2D_Cartesian_; set_parameters(binType_rp, rpMin, rpMax, binSize_rp, shift_rp, binType_pi, piMin, piMax, binSize_pi, shift_pi); }
+      public:
 
-      /**
-       *  @brief default destructor
-       *  @return none
-       */
-      ~TwoPointCorrelation2D_cartesian () = default;
+	/**
+	 *  @name Constructors/destructors
+	 */
+	///@{
 
-      ///@}
+	/**
+	 *  @brief default constructor
+	 *  @return object of class TwoPointCorrelation2D_cartesian
+	 */
+	TwoPointCorrelation2D_cartesian () { m_twoPType = _2D_Cartesian_; }
 
-      
-      /**
-       *  @name Member functions to set the binning parameters
-       */
-      ///@{
-      
-      /**
-       *  @brief set the binning parameters
-       *  @param binType_rp binning type in perpendicular separations:
-       *  0 &rarr; linear; 1 &rarr; logarithmic
-       *  @param rpMin minimum perpendicular separation used to count
-       *  the pairs
-       *  @param rpMax maximum perpendicular separation used to count
-       *  the pairs
-       *  @param nbins_rp number of bins in the perpendicular
-       *  separation
-       *  @param shift_rp shift parameter in the perpendicular
-       *  separation, i.e. the radial shift is binSize*shift
-       *  @param binType_pi binning type in parallel separations:
-       *  0 &rarr; linear; 1 &rarr; logarithmic
-       *  @param piMin minimum parallel separation used to count
-       *  the pairs
-       *  @param piMax maximum parallel separation used to count
-       *  the pairs
-       *  @param nbins_pi number of bins in the parallel
-       *  separation
-       *  @param shift_pi shift parameter in the parallel
-       *  separation, i.e. the radial shift is binSize*shift
-       *  @return object of class TwoPointCorrelation2D_cartesian
-       */
-      void set_parameters (const binType binType_rp, const double rpMin, const double rpMax, const int nbins_rp, const double shift_rp, const binType binType_pi, const double piMin, const double piMax, const int nbins_pi, const double shift_pi);
+	/**
+	 *  @brief constructor
+	 *  @param data object of class Catalogue containing the input
+	 *  catalogue
+	 *  @param random of class Catalogue containing the random data
+	 *  catalogue
+	 *  @param binType_rp binning type in perpendicular separations:
+	 *  0 &rarr; linear; 1 &rarr; logarithmic
+	 *  @param rpMin minimum perpendicular separation used to count
+	 *  the pairs
+	 *  @param rpMax maximum perpendicular separation used to count
+	 *  the pairs
+	 *  @param nbins_rp number of bins in the perpendicular
+	 *  separation
+	 *  @param shift_rp shift parameter in the perpendicular
+	 *  separation, i.e. the radial shift is binSize*shift
+	 *  @param binType_pi binning type in parallel separations:
+	 *  0 &rarr; linear; 1 &rarr; logarithmic
+	 *  @param piMin minimum parallel separation used to count
+	 *  the pairs
+	 *  @param piMax maximum parallel separation used to count
+	 *  the pairs
+	 *  @param nbins_pi number of bins in the parallel
+	 *  separation
+	 *  @param shift_pi shift parameter in the parallel
+	 *  separation, i.e. the radial shift is binSize*shift
+	 *  @return object of class TwoPointCorrelation2D_cartesian
+	 */
+	TwoPointCorrelation2D_cartesian (catalogue::Catalogue data, catalogue::Catalogue random, const binType binType_rp, const double rpMin, const double rpMax, const int nbins_rp, const double shift_rp, const binType binType_pi, const double piMin, const double piMax, const int nbins_pi, const double shift_pi)
+	  : TwoPointCorrelation2D(data, random) { m_twoPType = _2D_Cartesian_; set_parameters(binType_rp, rpMin, rpMax, nbins_rp, shift_rp, binType_pi, piMin, piMax, nbins_pi, shift_pi); }
 
-      /**
-       *  @brief set the binning parameters
-       *  @param binType_rp binning type in perpendicular separations:
-       *  0 &rarr; linear; 1 &rarr; logarithmic
-       *  @param rpMin minimum perpendicular separation used to count
-       *  the pairs
-       *  @param rpMax maximum perpendicular separation used to count
-       *  the pairs
-       *  @param binSize_rp bin size in the perpendicular separation
-       *  @param shift_rp shift parameter in the perpendicular
-       *  separation, i.e. the radial shift is binSize*shift
-       *  @param binType_pi binning type in parallel separations:
-       *  0 &rarr; linear; 1 &rarr; logarithmic
-       *  @param piMin minimum parallel separation used to count
-       *  the pairs
-       *  @param piMax maximum parallel separation used to count
-       *  the pairs
-       *  @param binSize_pi bin size in the parallel separation
-       *  @param shift_pi shift parameter in the parallel
-       *  separation, i.e. the radial shift is binSize*shift
-       *  @return none
-       */
-      void set_parameters (const binType binType_rp, const double rpMin, const double rpMax, const double binSize_rp, const double shift_rp, const binType binType_pi, const double piMin, const double piMax, const double binSize_pi, const double shift_pi);
-      
-      ///@}
+	/**
+	 *  @brief constructor
+	 *  @param data object of class Catalogue containing the input
+	 *  catalogue
+	 *  @param random of class Catalogue containing the random data
+	 *  catalogue
+	 *  @param binType_rp binning type in perpendicular separations:
+	 *  0 &rarr; linear; 1 &rarr; logarithmic
+	 *  @param rpMin minimum perpendicular separation used to count
+	 *  the pairs
+	 *  @param rpMax maximum perpendicular separation used to count
+	 *  the pairs
+	 *  @param binSize_rp bin size in the perpendicular separation
+	 *  @param shift_rp shift parameter in the perpendicular
+	 *  separation, i.e. the radial shift is binSize*shift
+	 *  @param binType_pi binning type in parallel separations:
+	 *  0 &rarr; linear; 1 &rarr; logarithmic
+	 *  @param piMin minimum parallel separation used to count
+	 *  the pairs
+	 *  @param piMax maximum parallel separation used to count
+	 *  the pairs
+	 *  @param binSize_pi bin size in the parallel separation
+	 *  @param shift_pi shift parameter in the parallel
+	 *  separation, i.e. the radial shift is binSize*shift
+	 *  @return object of class TwoPointCorrelation2D_cartesian
+	 */
+	TwoPointCorrelation2D_cartesian (catalogue::Catalogue data, catalogue::Catalogue random, const binType binType_rp, const double rpMin, const double rpMax, const double binSize_rp, const double shift_rp, const binType binType_pi, const double piMin, const double piMax, const double binSize_pi, const double shift_pi)
+	  : TwoPointCorrelation2D(data, random) { m_twoPType = _2D_Cartesian_; set_parameters(binType_rp, rpMin, rpMax, binSize_rp, shift_rp, binType_pi, piMin, piMax, binSize_pi, shift_pi); }
+
+	/**
+	 *  @brief default destructor
+	 *  @return none
+	 */
+	~TwoPointCorrelation2D_cartesian () = default;
+
+	///@}
 
 
-      /**
-       *  @name Methods to set the binning parameters
-       */
-      ///@{
-      
-      /**
-       *  @brief measure the 2d cartesian two-point correlation
-       *  function, &xi;(r)
-       *  @param dir_output_pairs output directory used to store the
-       *  number of pairs
-       *  @param dir_input_pairs vector of input directories used to
-       *  @param errorType the type of error to be computed
-       *  store the number of pairs (if the pairs are read from files)
-       *  @param dir_output_ResampleXi output directory used to store xi from
-       *  resampled catalogues
-       *  @param nMocks number of resampling to be generate with bootsrap*
-       *  @param count_dd 1 &rarr; count the number of data-data
-       *  opairs; 0 &rarr; read the number of data-data pairs from
-       *  file
-       *  @param count_rr 1 &rarr; count the number of random-random
-       *  opairs; 0 &rarr; read the number of random-random pairs from
-       *  file
-       *  @param count_dr 1 &rarr; count the number of data-random
-       *  opairs; 0 &rarr; read the number of data-random pairs from
-       *  file
-       *  @param tcount 1 &rarr; activate the time counter; 0 &rarr;
-       *  don't activate the time counter; 
-       *  @return none
-       */
-      void measure (const string dir_output_pairs=par::defaultString, const vector<string> dir_input_pairs={}, const ErrorType errorType=ErrorType::_Poisson_, const string dir_output_Resample="NULL", const int nMocks=0, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
+	/**
+	 *  @name Member functions to set the binning parameters
+	 */
+	///@{
 
-      /**
-       *  @brief measure the 2d cartesian two-point correlation
-       *  function, &xi;(r) with Poisson error
-       *  @param dir_output_pairs output directory used to store the
-       *  number of pairs
-       *  @param dir_input_pairs vector of input directories used to
-       *  store the number of pairs (if the pairs are read from files)
-       *  @param count_dd 1 &rarr; count the number of data-data
-       *  opairs; 0 &rarr; read the number of data-data pairs from
-       *  file
-       *  @param count_rr 1 &rarr; count the number of random-random
-       *  opairs; 0 &rarr; read the number of random-random pairs from
-       *  file
-       *  @param count_dr 1 &rarr; count the number of data-random
-       *  opairs; 0 &rarr; read the number of data-random pairs from
-       *  file
-       *  @param tcount 1 &rarr; activate the time counter; 0 &rarr;
-       *  don't activate the time counter; 
-       *  @return none
-       */
-      void measurePoisson (const string dir_output_pairs=par::defaultString, const vector<string> dir_input_pairs={}, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
+	/**
+	 *  @brief set the binning parameters
+	 *  @param binType_rp binning type in perpendicular separations:
+	 *  0 &rarr; linear; 1 &rarr; logarithmic
+	 *  @param rpMin minimum perpendicular separation used to count
+	 *  the pairs
+	 *  @param rpMax maximum perpendicular separation used to count
+	 *  the pairs
+	 *  @param nbins_rp number of bins in the perpendicular
+	 *  separation
+	 *  @param shift_rp shift parameter in the perpendicular
+	 *  separation, i.e. the radial shift is binSize*shift
+	 *  @param binType_pi binning type in parallel separations:
+	 *  0 &rarr; linear; 1 &rarr; logarithmic
+	 *  @param piMin minimum parallel separation used to count
+	 *  the pairs
+	 *  @param piMax maximum parallel separation used to count
+	 *  the pairs
+	 *  @param nbins_pi number of bins in the parallel
+	 *  separation
+	 *  @param shift_pi shift parameter in the parallel
+	 *  separation, i.e. the radial shift is binSize*shift
+	 *  @return object of class TwoPointCorrelation2D_cartesian
+	 */
+	void set_parameters (const binType binType_rp, const double rpMin, const double rpMax, const int nbins_rp, const double shift_rp, const binType binType_pi, const double piMin, const double piMax, const int nbins_pi, const double shift_pi);
 
-      /**
-       *  @brief measure the 2d cartesian two-point correlation
-       *  function, &xi;(r), estimate the covariance with Jackknife resampling
-       *
-       *  @param dir_output_pairs output directory used to store the
-       *  number of pairs
-       *
-       *  @param dir_input_pairs vector of input directories used to store the
-       *  number of pairs (if the pairs are read from files)
-       *
-       *  @param dir_output_JackknifeXi output directory used to store the
-       *  Jackknife resampling Xi, with Poisson error
-       *
-       *  @param count_dd 1 &rarr; count the number of data-data
-       *  opairs; 0 &rarr; read the number of data-data pairs from
-       *  file
-       *
-       *  @param count_rr 1 &rarr; count the number of random-random
-       *  opairs; 0 &rarr; read the number of random-random pairs from
-       *  file
-       *
-       *  @param count_dd 1 &rarr; count the number of data-random
-       *  opairs; 0 &rarr; read the number of data-random pairs from
-       *  file
-       *
-       *  @param count_rr 1 &rarr; count the number of random-random
-       *  pairs; 0 &rarr; read the number of random-random pairs
-       *
-       *  @param count_dr 1 &rarr; count the number of data-random
-       *  pairs; 0 &rarr; read the number of data-random pairs
-       *
-       *  @param tcount 1 &rarr; activate the time counter; 0 &rarr;
-       *  don't activate the time counter; 
-       *
-       *  @return none
-       */
-      void measureJackknife (const string dir_output_pairs, const vector<string> dir_input_pairs={}, const string dir_output_JackknifeXi = "NULL", const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
+	/**
+	 *  @brief set the binning parameters
+	 *  @param binType_rp binning type in perpendicular separations:
+	 *  0 &rarr; linear; 1 &rarr; logarithmic
+	 *  @param rpMin minimum perpendicular separation used to count
+	 *  the pairs
+	 *  @param rpMax maximum perpendicular separation used to count
+	 *  the pairs
+	 *  @param binSize_rp bin size in the perpendicular separation
+	 *  @param shift_rp shift parameter in the perpendicular
+	 *  separation, i.e. the radial shift is binSize*shift
+	 *  @param binType_pi binning type in parallel separations:
+	 *  0 &rarr; linear; 1 &rarr; logarithmic
+	 *  @param piMin minimum parallel separation used to count
+	 *  the pairs
+	 *  @param piMax maximum parallel separation used to count
+	 *  the pairs
+	 *  @param binSize_pi bin size in the parallel separation
+	 *  @param shift_pi shift parameter in the parallel
+	 *  separation, i.e. the radial shift is binSize*shift
+	 *  @return none
+	 */
+	void set_parameters (const binType binType_rp, const double rpMin, const double rpMax, const double binSize_rp, const double shift_rp, const binType binType_pi, const double piMin, const double piMax, const double binSize_pi, const double shift_pi);
 
-      /**
-       *  @brief measure the 2d cartesian two-point correlation
-       *  function, &xi;(r), estimate the covariance with Bootstrap resampling
-       *
-       *  @param nMocks number of mocks to be generated with bootstrap resampling
-       *
-       *  @param dir_output_pairs output directory used to store the
-       *  number of pairs
-       *
-       *  @param dir_input_pairs vector of input directories used to store the
-       *  number of pairs (if the pairs are read from files)
-       *
-       *  @param dir_output_BootstrapXi output directory used to store the
-       *  Jackknife resampling Xi, with Poisson error
-       *
-       *  @param count_dd 1 &rarr; count the number of data-data
-       *  opairs; 0 &rarr; read the number of data-data pairs from
-       *  file
-       *
-       *  @param count_rr 1 &rarr; count the number of random-random
-       *  opairs; 0 &rarr; read the number of random-random pairs from
-       *  file
-       *
-       *  @param count_dd 1 &rarr; count the number of data-random
-       *  opairs; 0 &rarr; read the number of data-random pairs from
-       *  file
-       *
-       *  @param count_rr 1 &rarr; count the number of random-random
-       *  pairs; 0 &rarr; read the number of random-random pairs
-       *
-       *  @param count_dr 1 &rarr; count the number of data-random
-       *  pairs; 0 &rarr; read the number of data-random pairs
-       *
-       *  @param tcount 1 &rarr; activate the time counter; 0 &rarr;
-       *  don't activate the time counter; 
-       *
-       *  @return none
-       */
-      void measureBootstrap (const int nMocks, const string dir_output_pairs, const vector<string> dir_input_pairs={}, const string dir_output_BootstrapXi = "NULL", const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
+	///@}
 
-      ///@}
 
-  
-      /**
-       *  @name Input/Output methods
-       */
-      ///@{
+	/**
+	 *  @name Methods to set the binning parameters
+	 */
+	///@{
 
-      /**
-       *  @brief read the 2D two-point correlation function
-       *  @param dir input directory
-       *  @param file input file
-       *  @return none
-       */
-      void read (const string dir, const string file) override;  
-      
-      /**
-       *  @brief write the 2D two-point correlation function
-       *  @param dir output directory
-       *  @param file output file
-       *  @param rank cpu index (for MPI usage)
-       *  @return none
-       */
-      void write (const string dir=par::defaultString, const string file=par::defaultString, const int rank=0) const override;
-    
-      ///@}
-    
+	/**
+	 *  @brief measure the monopole of the two-point correlation
+	 *  function, &xi;(r)
+	 *
+	 *  @param errType type of &xi;(r) error
+	 *  
+	 *  @param dir_output_pairs output directory used to store the
+	 *  number of pairs
+	 *
+	 *  @param dir_input_pairs vector of input directories used to store the
+	 *  number of pairs (if the pairs are read from files)
+	 *
+	 *  @param dir_output_ResampleXi output directory of the resampled &xi;(r)
+	 *
+	 *  @param nMocks number of resampling for bootstrap
+	 *
+	 *  @param count_dd 1 &rarr; count the number of data-data
+	 *  opairs; 0 &rarr; read the number of data-data pairs from
+	 *  file
+	 *
+	 *  @param count_rr 1 &rarr; count the number of random-random
+	 *  opairs; 0 &rarr; read the number of random-random pairs from
+	 *  file
+	 *
+	 *  @param count_dd 1 &rarr; count the number of data-random
+	 *  opairs; 0 &rarr; read the number of data-random pairs from
+	 *  file
+	 *
+	 *  @param count_rr 1 &rarr; count the number of random-random
+	 *  pairs; 0 &rarr; read the number of random-random pairs
+	 *
+	 *  @param count_dr 1 &rarr; count the number of data-random
+	 *  pairs; 0 &rarr; read the number of data-random pairs
+	 *
+	 *  @param tcount 1 &rarr; activate the time counter; 0 &rarr;
+	 *  don't activate the time counter; 
+	 *
+	 *  @return none
+	 */
+	void measure (const ErrorType errType=ErrorType::_Poisson_, const string dir_output_pairs=par::defaultString, const vector<string> dir_input_pairs={}, const string dir_output_ResampleXi=par::defaultString, const int nMocks=0, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
+
+	///@}
+
+
+	/**
+	 *  @name Input/Output methods
+	 */
+	///@{
+
+	/**
+	 *  @brief read the 2D two-point correlation function
+	 *  @param dir input directory
+	 *  @param file input file
+	 *  @return none
+	 */
+	void read (const string dir, const string file) override;  
+
+	/**
+	 *  @brief write the 2D two-point correlation function
+	 *  @param dir output directory
+	 *  @param file output file
+	 *  @param rank cpu index (for MPI usage)
+	 *  @return none
+	 */
+	void write (const string dir=par::defaultString, const string file=par::defaultString, const int rank=0) const override;
+
+	///@}
+
     };
   }
 }

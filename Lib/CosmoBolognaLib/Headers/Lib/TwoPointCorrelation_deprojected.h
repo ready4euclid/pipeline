@@ -60,6 +60,205 @@ namespace cosmobl {
      */
     class TwoPointCorrelation_deprojected : public TwoPointCorrelation_projected {
     
+    protected:
+      /**
+       *  @brief measure deprojected correlation function
+       *
+       *  @param rp projected separation
+       *
+       *  @param xi 2d cartesian 2pcf
+       *
+       *  @param error_xi error on the 2d cartesian 2pcf
+       *
+       *  @return pointer to an object of type Data
+       */
+      shared_ptr<Data> DeProjectedTwoP(const vector<double> rp, const vector<double> xi, const vector<double> error_xi) override;
+
+      /**
+       *  @brief measure the deprojected two-point correlation
+       *  function, &xi;(r) with Poisson error
+       *
+       *  @param piMax_integral upper limits of the integral
+       *
+       *  @param dir_output_pairs output directory used to store the
+       *  number of pairs
+       *
+       *  @param dir_input_pairs vector of input directories used to store the
+       *  number of pairs (if the pairs are read from files)
+       *
+       *  @param count_dd 1 &rarr; count the number of data-data
+       *  opairs; 0 &rarr; read the number of data-data pairs from
+       *  file
+       *
+       *  @param count_rr 1 &rarr; count the number of random-random
+       *  opairs; 0 &rarr; read the number of random-random pairs from
+       *  file
+       *
+       *  @param count_dd 1 &rarr; count the number of data-random
+       *  opairs; 0 &rarr; read the number of data-random pairs from
+       *  file
+       *
+       *  @param count_rr 1 &rarr; count the number of random-random
+       *  pairs; 0 &rarr; read the number of random-random pairs
+       *
+       *  @param count_dr 1 &rarr; count the number of data-random
+       *  pairs; 0 &rarr; read the number of data-random pairs
+       *
+       *  @param tcount 1 &rarr; activate the time counter; 0 &rarr;
+       *  don't activate the time counter; 
+       *
+       *  @return none
+       */
+      void measurePoisson (const double piMax_integral, const string dir_output_pairs= par::defaultString, const vector<string> dir_input_pairs={}, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
+
+      /**
+       *  @brief measure the deprojected two-point correlation
+       *  function, &xi;(r), estimate the covariance with Jackknife resampling
+       *
+       *  @param piMax_integral upper limits of the integral
+       *
+       *  @param dir_output_pairs output directory used to store the
+       *  number of pairs
+       *
+       *  @param dir_input_pairs vector of input directories used to store the
+       *  number of pairs (if the pairs are read from files)
+       *
+       *  @param dir_output_ResampleXi output directory used to store the
+       *  Jackknife resampling Xi, with Poisson error
+       *
+       *  @param count_dd 1 &rarr; count the number of data-data
+       *  opairs; 0 &rarr; read the number of data-data pairs from
+       *  file
+       *
+       *  @param count_rr 1 &rarr; count the number of random-random
+       *  opairs; 0 &rarr; read the number of random-random pairs from
+       *  file
+       *
+       *  @param count_dd 1 &rarr; count the number of data-random
+       *  opairs; 0 &rarr; read the number of data-random pairs from
+       *  file
+       *
+       *  @param count_rr 1 &rarr; count the number of random-random
+       *  pairs; 0 &rarr; read the number of random-random pairs
+       *
+       *  @param count_dr 1 &rarr; count the number of data-random
+       *  pairs; 0 &rarr; read the number of data-random pairs
+       *
+       *  @param tcount 1 &rarr; activate the time counter; 0 &rarr;
+       *  don't activate the time counter; 
+       *
+       *  @return none
+       */
+      void measureJackknife (const double piMax_integral, const string dir_output_pairs= par::defaultString, const vector<string> dir_input_pairs={}, const string dir_output_ResampleXi= par::defaultString, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
+
+
+      /**
+       *  @brief measure the deprojected two-point correlation
+       *  function, &xi;(r), estimate the covariance with Bootstrap resampling
+       *
+       *  @param piMax_integral upper limits of the integral
+       *
+       *  @param nMocks number of mocks to be generated with
+       *  bootstrap resampling
+       *
+       *  @param dir_output_pairs output directory used to store the
+       *  number of pairs
+       *
+       *  @param dir_input_pairs vector of input directories used to store the
+       *  number of pairs (if the pairs are read from files)
+       *
+       *  @param dir_output_ResampleXi output directory used to store the
+       *  Bootstrap resampling Xi, with Poisson error
+       *
+       *  @param count_dd 1 &rarr; count the number of data-data
+       *  opairs; 0 &rarr; read the number of data-data pairs from
+       *  file
+       *
+       *  @param count_rr 1 &rarr; count the number of random-random
+       *  opairs; 0 &rarr; read the number of random-random pairs from
+       *  file
+       *
+       *  @param count_dd 1 &rarr; count the number of data-random
+       *  opairs; 0 &rarr; read the number of data-random pairs from
+       *  file
+       *
+       *  @param count_rr 1 &rarr; count the number of random-random
+       *  pairs; 0 &rarr; read the number of random-random pairs
+       *
+       *  @param count_dr 1 &rarr; count the number of data-random
+       *  pairs; 0 &rarr; read the number of data-random pairs
+       *
+       *  @param tcount 1 &rarr; activate the time counter; 0 &rarr;
+       *  don't activate the time counter; 
+       *
+       *  @return none
+       */
+      void measureBootstrap (const double piMax_integral, const int nMocks, const string dir_output_pairs, const vector<string> dir_input_pairs={}, const string dir_output_ResampleXi = par::defaultString, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
+
+      /**
+       *  @brief measure the jackknife resampling of the two-point correlation
+       *  function, &xi;(r) 
+       *
+       *  @param piMax_integral upper limits of the integral
+       *
+       *  @param dd vector of data-data pairs, divider per regions
+       *
+       *  @param rr vector of random-random pairs, divider per regions
+       *
+       *  @return none
+       */
+      vector<shared_ptr<Data> > XiJackknife(const double piMax_integral, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr) override;
+
+      /**
+       *  @brief measure the jackknife resampling of the two-point correlation
+       *  function, &xi;(r)         
+       *
+       *  @param piMax_integral upper limits of the integral
+       *
+       *  @param dd vector of data-data pairs, divider per regions
+       *
+       *  @param rr vector of random-random pairs, divider per regions
+       *
+       *  @param dr vector of random-random pairs, divider per regions   *
+       *
+       *  @return none
+       */
+      vector<shared_ptr<Data> > XiJackknife(const double piMax_integral, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr) override;
+
+      /**
+       *  @brief measure the bootstrap resampling of the two-point correlation
+       *  function, &xi;(r)  
+       *
+       *  @param piMax_integral upper limits of the integral
+       *
+       *  @param nMocks number of bootstrap resampling
+       *
+       *  @param dd vector of data-data pairs, divider per regions
+       *
+       *  @param rr vector of random-random pairs, divider per regions      
+       *
+       *  @return none
+       */
+       vector<shared_ptr<Data> > XiBootstrap(const double piMax_integral, const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr) override;
+
+      /**
+       *  @brief measure the bootstrap resampling of the two-point correlation
+       *  function, &xi;(r)  
+       *
+       *  @param piMax_integral upper limits of the integral
+       *
+       *  @param nMocks number of bootstrap resampling
+       *
+       *  @param dd vector of data-data pairs, divider per regions
+       *
+       *  @param rr vector of random-random pairs, divider per regions 
+       *
+       *  @param dr vector of random-random pairs, divider per regions  
+       *
+       *  @return none
+       */
+      vector<shared_ptr<Data> > XiBootstrap(const double piMax_integral, const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr) override;
+
     public:
     
       /**
@@ -144,26 +343,46 @@ namespace cosmobl {
       /**
        *  @brief measure the monopole of the two-point correlation
        *  function, &xi;(r)
+       *
+       *  @param errType type of &xi;(r) error
+       *  
        *  @param piMax_integral upper limit of the integral
+       *
        *  @param dir_output_pairs output directory used to store the
        *  number of pairs
-       *  @param dir_input_pairs vector of input directories used to
-       *  store the number of pairs (if the pairs are read from files)
+       *
+       *  @param dir_input_pairs vector of input directories used to store the
+       *  number of pairs (if the pairs are read from files)
+       *
+       *  @param dir_output_ResampleXi output directory of the resampled &xi;(r)
+       *
+       *  @param nMocks number of resampling for bootstrap
+       *
        *  @param count_dd 1 &rarr; count the number of data-data
        *  opairs; 0 &rarr; read the number of data-data pairs from
        *  file
+       *
        *  @param count_rr 1 &rarr; count the number of random-random
        *  opairs; 0 &rarr; read the number of random-random pairs from
        *  file
-       *  @param count_dr 1 &rarr; count the number of data-random
+       *
+       *  @param count_dd 1 &rarr; count the number of data-random
        *  opairs; 0 &rarr; read the number of data-random pairs from
        *  file
+       *
+       *  @param count_rr 1 &rarr; count the number of random-random
+       *  pairs; 0 &rarr; read the number of random-random pairs
+       *
+       *  @param count_dr 1 &rarr; count the number of data-random
+       *  pairs; 0 &rarr; read the number of data-random pairs
+       *
        *  @param tcount 1 &rarr; activate the time counter; 0 &rarr;
        *  don't activate the time counter; 
+       *
        *  @return none
        */
-      void measure (const double piMax_integral=50., const string dir_output_pairs=par::defaultString, const vector<string> dir_input_pairs={}, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1);
-    
+       void measure (const double piMax_integral=50, const ErrorType errType=ErrorType::_Poisson_, const string dir_output_pairs=par::defaultString, const vector<string> dir_input_pairs={}, const string dir_output_ResampleXi=par::defaultString, const int nMocks = 0., const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
+              
       ///@}
 
     

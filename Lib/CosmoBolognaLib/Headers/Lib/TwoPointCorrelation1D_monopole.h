@@ -62,7 +62,108 @@ namespace cosmobl {
      *  distance r.
      */
     class TwoPointCorrelation1D_monopole : public TwoPointCorrelation1D {
-    
+
+      protected:
+      /**
+       *  @brief measure the monopole of the two-point correlation
+       *  function, &xi;(r) with Poisson error
+       *  @param dir_output_pairs output directory used to store the
+       *  number of pairs
+       *  @param dir_input_pairs vector of input directories used to
+       *  store the number of pairs (if the pairs are read from files)
+       *  @param count_dd 1 &rarr; count the number of data-data
+       *  opairs; 0 &rarr; read the number of data-data pairs from
+       *  file
+       *  @param count_rr 1 &rarr; count the number of random-random
+       *  opairs; 0 &rarr; read the number of random-random pairs from
+       *  file
+       *  @param count_dr 1 &rarr; count the number of data-random
+       *  opairs; 0 &rarr; read the number of data-random pairs from
+       *  file
+       *  @param tcount 1 &rarr; activate the time counter; 0 &rarr;
+       *  don't activate the time counter; 
+       *  @return none
+       */
+      void measurePoisson (const string dir_output_pairs = par::defaultString, const vector<string> dir_input_pairs={}, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
+
+      /**
+       *  @brief measure the monopole of the two-point correlation
+       *  function, &xi;(r), estimate the covariance with Jackknife resampling
+       *
+       *  @param dir_output_pairs output directory used to store the
+       *  number of pairs
+       *
+       *  @param dir_input_pairs vector of input directories used to store the
+       *  number of pairs (if the pairs are read from files)
+       *
+       *  @param dir_output_ResampleXi output directory used to store the
+       *  Jackknife resampling Xi, with Poisson error
+       *
+       *  @param count_dd 1 &rarr; count the number of data-data
+       *  opairs; 0 &rarr; read the number of data-data pairs from
+       *  file
+       *
+       *  @param count_rr 1 &rarr; count the number of random-random
+       *  opairs; 0 &rarr; read the number of random-random pairs from
+       *  file
+       *
+       *  @param count_dd 1 &rarr; count the number of data-random
+       *  opairs; 0 &rarr; read the number of data-random pairs from
+       *  file
+       *
+       *  @param count_rr 1 &rarr; count the number of random-random
+       *  pairs; 0 &rarr; read the number of random-random pairs
+       *
+       *  @param count_dr 1 &rarr; count the number of data-random
+       *  pairs; 0 &rarr; read the number of data-random pairs
+       *
+       *  @param tcount 1 &rarr; activate the time counter; 0 &rarr;
+       *  don't activate the time counter; 
+       *
+       *  @return none
+       */
+      void measureJackknife (const string dir_output_pairs = par::defaultString, const vector<string> dir_input_pairs={}, const string dir_output_ResampleXi = par::defaultString, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
+
+      /**
+       *  @brief measure the monopole of the two-point correlation
+       *  function, &xi;(r), estimate the covariance with Bootstrap resampling
+       *
+       *  @param nMocks number of mocks to be generated with bootstrap resampling
+       *
+       *  @param dir_output_pairs output directory used to store the
+       *  number of pairs
+       *
+       *  @param dir_input_pairs vector of input directories used to store the
+       *  number of pairs (if the pairs are read from files)
+       *
+       *  @param dir_output_ResampleXi output directory used to store the
+       *  Jackknife resampling Xi, with Poisson error
+       *
+       *  @param count_dd 1 &rarr; count the number of data-data
+       *  opairs; 0 &rarr; read the number of data-data pairs from
+       *  file
+       *
+       *  @param count_rr 1 &rarr; count the number of random-random
+       *  opairs; 0 &rarr; read the number of random-random pairs from
+       *  file
+       *
+       *  @param count_dd 1 &rarr; count the number of data-random
+       *  opairs; 0 &rarr; read the number of data-random pairs from
+       *  file
+       *
+       *  @param count_rr 1 &rarr; count the number of random-random
+       *  pairs; 0 &rarr; read the number of random-random pairs
+       *
+       *  @param count_dr 1 &rarr; count the number of data-random
+       *  pairs; 0 &rarr; read the number of data-random pairs
+       *
+       *  @param tcount 1 &rarr; activate the time counter; 0 &rarr;
+       *  don't activate the time counter; 
+       *
+       *  @return none
+       */
+      void measureBootstrap (const int nMocks, const string dir_output_pairs = par::defaultString, const vector<string> dir_input_pairs={}, const string dir_output_ResampleXi = par::defaultString, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
+
     public:
     
       /**
@@ -163,10 +264,10 @@ namespace cosmobl {
       /**
        *  @brief measure the monopole of the two-point correlation
        *  function, &xi;(r)
+       *  @param errorType the type of error to be computed
        *  @param dir_output_pairs output directory used to store the
        *  number of pairs
        *  @param dir_input_pairs vector of input directories used to
-       *  @param errorType the type of error to be computed
        *  store the number of pairs (if the pairs are read from files)
        *  @param dir_output_ResampleXi output directory used to store xi from
        *  resampled catalogues
@@ -184,107 +285,8 @@ namespace cosmobl {
        *  don't activate the time counter; 
        *  @return none
        */
-      void measure (const string dir_output_pairs=par::defaultString, const vector<string> dir_input_pairs={}, const ErrorType errorType=ErrorType::_Poisson_, const string dir_output_Resample="NULL", const int nMocks=0, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
+      void measure (const ErrorType errorType=ErrorType::_Poisson_, const string dir_output_pairs=par::defaultString, const vector<string> dir_input_pairs={},  const string dir_output_ResampleXi=par::defaultString, const int nMocks=0, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
 
-      /**
-       *  @brief measure the monopole of the two-point correlation
-       *  function, &xi;(r) with Poisson error
-       *  @param dir_output_pairs output directory used to store the
-       *  number of pairs
-       *  @param dir_input_pairs vector of input directories used to
-       *  store the number of pairs (if the pairs are read from files)
-       *  @param count_dd 1 &rarr; count the number of data-data
-       *  opairs; 0 &rarr; read the number of data-data pairs from
-       *  file
-       *  @param count_rr 1 &rarr; count the number of random-random
-       *  opairs; 0 &rarr; read the number of random-random pairs from
-       *  file
-       *  @param count_dr 1 &rarr; count the number of data-random
-       *  opairs; 0 &rarr; read the number of data-random pairs from
-       *  file
-       *  @param tcount 1 &rarr; activate the time counter; 0 &rarr;
-       *  don't activate the time counter; 
-       *  @return none
-       */
-      void measurePoisson (const string dir_output_pairs=par::defaultString, const vector<string> dir_input_pairs={}, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
-
-      /**
-       *  @brief measure the monopole of the two-point correlation
-       *  function, &xi;(r), estimate the covariance with Jackknife resampling
-       *
-       *  @param dir_output_pairs output directory used to store the
-       *  number of pairs
-       *
-       *  @param dir_input_pairs vector of input directories used to store the
-       *  number of pairs (if the pairs are read from files)
-       *
-       *  @param dir_output_JackknifeXi output directory used to store the
-       *  Jackknife resampling Xi, with Poisson error
-       *
-       *  @param count_dd 1 &rarr; count the number of data-data
-       *  opairs; 0 &rarr; read the number of data-data pairs from
-       *  file
-       *
-       *  @param count_rr 1 &rarr; count the number of random-random
-       *  opairs; 0 &rarr; read the number of random-random pairs from
-       *  file
-       *
-       *  @param count_dd 1 &rarr; count the number of data-random
-       *  opairs; 0 &rarr; read the number of data-random pairs from
-       *  file
-       *
-       *  @param count_rr 1 &rarr; count the number of random-random
-       *  pairs; 0 &rarr; read the number of random-random pairs
-       *
-       *  @param count_dr 1 &rarr; count the number of data-random
-       *  pairs; 0 &rarr; read the number of data-random pairs
-       *
-       *  @param tcount 1 &rarr; activate the time counter; 0 &rarr;
-       *  don't activate the time counter; 
-       *
-       *  @return none
-       */
-      void measureJackknife (const string dir_output_pairs, const vector<string> dir_input_pairs={}, const string dir_output_JackknifeXi = "NULL", const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
-
-      /**
-       *  @brief measure the monopole of the two-point correlation
-       *  function, &xi;(r), estimate the covariance with Bootstrap resampling
-       *
-       *  @param nMocks number of mocks to be generated with bootstrap resampling
-       *
-       *  @param dir_output_pairs output directory used to store the
-       *  number of pairs
-       *
-       *  @param dir_input_pairs vector of input directories used to store the
-       *  number of pairs (if the pairs are read from files)
-       *
-       *  @param dir_output_BootstrapXi output directory used to store the
-       *  Jackknife resampling Xi, with Poisson error
-       *
-       *  @param count_dd 1 &rarr; count the number of data-data
-       *  opairs; 0 &rarr; read the number of data-data pairs from
-       *  file
-       *
-       *  @param count_rr 1 &rarr; count the number of random-random
-       *  opairs; 0 &rarr; read the number of random-random pairs from
-       *  file
-       *
-       *  @param count_dd 1 &rarr; count the number of data-random
-       *  opairs; 0 &rarr; read the number of data-random pairs from
-       *  file
-       *
-       *  @param count_rr 1 &rarr; count the number of random-random
-       *  pairs; 0 &rarr; read the number of random-random pairs
-       *
-       *  @param count_dr 1 &rarr; count the number of data-random
-       *  pairs; 0 &rarr; read the number of data-random pairs
-       *
-       *  @param tcount 1 &rarr; activate the time counter; 0 &rarr;
-       *  don't activate the time counter; 
-       *
-       *  @return none
-       */
-      void measureBootstrap (const int nMocks, const string dir_output_pairs, const vector<string> dir_input_pairs={}, const string dir_output_BootstrapXi = "NULL", const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
       ///@}
 
     

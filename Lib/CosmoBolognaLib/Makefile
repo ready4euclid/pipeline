@@ -17,7 +17,7 @@ dir_Python = $(PWD)/Python/
 
 HH = $(dir_H)*.h $(dir_O)*.h
 
-FLAGS_INC = -I$(dir_H) -I$(dir_O) -I$(dir_EH) -isystem $(PWD)/Num/
+FLAGS_INC = -I$(dir_H) -I$(dir_O) -I$(dir_EH) -isystem $(HOME)/Numerical/
 FLAGS_FFTW = -lfftw3 -lfftw3_omp
 FLAGS_GSL = -lgsl -lgslcblas -lm
 FLAGS_LINK = -shared
@@ -200,8 +200,10 @@ allExamples:
 	cd $(PWD)/Examples/clustering/codes ; make 2pt_monopole && cd ../..
 	$(call colorecho, "\n"Compiling the example code: 2pt_2D.cpp ... "\n")
 	cd $(PWD)/Examples/clustering/codes ; make 2pt_2D && cd ../..
-#	$(call colorecho, "\n"Compiling the example code: 2pt_jackknife.cpp ... "\n")
-#	cd $(PWD)/Examples/clustering/codes ; make 2pt_jackknife && cd ../..
+	$(call colorecho, "\n"Compiling the example code: 2pt_jackknife.cpp ... "\n")
+	cd $(PWD)/Examples/clustering/codes ; make 2pt_jackknife && cd ../..
+	$(call colorecho, "\n"Compiling the example code: 2pt_projected_jackknife.cpp ... "\n")
+	cd $(PWD)/Examples/clustering/codes ; make 2pt_projected_jackknife && cd ../..
 	$(call colorecho, "\n"Compiling the example code: 3pt.cpp ... "\n")
 	cd $(PWD)/Examples/clustering/codes ; make 3pt && cd ../..
 

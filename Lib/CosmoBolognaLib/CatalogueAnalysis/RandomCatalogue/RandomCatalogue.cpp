@@ -40,7 +40,7 @@ using namespace catalogue;
 // ============================================================================
 
 
-shared_ptr<Catalogue> random_catalogue_fromFile (const vector<string> file, const double nSub) 
+shared_ptr<Catalogue> cosmobl::random_catalogue_fromFile (const vector<string> file, const double nSub) 
 {
   cout <<"I'm reading the random catalogue..."<<endl;
 
@@ -85,7 +85,7 @@ shared_ptr<Catalogue> random_catalogue_fromFile (const vector<string> file, cons
 // ============================================================================
 
 
-shared_ptr<Catalogue> random_catalogue_radecred_fromFile (const string file_in, const double z_min, const double z_max, const Cosmology &cosm, const double nSub, const double fact) 
+shared_ptr<Catalogue> cosmobl::random_catalogue_radecred_fromFile (const string file_in, const double z_min, const double z_max, const Cosmology &cosm, const double nSub, const double fact) 
 {      
   cout <<"I'm reading the random catalogue: "<<file_in<<"..."<<endl;
   
@@ -136,7 +136,7 @@ shared_ptr<Catalogue> random_catalogue_radecred_fromFile (const string file_in, 
 // ============================================================================
 
 
-shared_ptr<Catalogue> random_catalogue_box (const shared_ptr<Catalogue> catalogue, const int nRandom)
+shared_ptr<Catalogue> cosmobl::random_catalogue_box (const shared_ptr<Catalogue> catalogue, const int nRandom)
 {
   // ------ create the random catalogue ------ 
   
@@ -182,7 +182,7 @@ shared_ptr<Catalogue> random_catalogue_box (const shared_ptr<Catalogue> catalogu
 // ============================================================================
 
 
-shared_ptr<Catalogue> warped_random_catalogue (const Cosmology &real_cosm, const Cosmology &test_cosm, const string dir_in, const string dir_out, const double Zguess_min, const double Zguess_max)
+shared_ptr<Catalogue> cosmobl::warped_random_catalogue (const Cosmology &real_cosm, const Cosmology &test_cosm, const string dir_in, const string dir_out, const double Zguess_min, const double Zguess_max)
 {  
   cout <<"I'm creating a random catalogue..."<<endl;
 
@@ -240,7 +240,7 @@ shared_ptr<Catalogue> warped_random_catalogue (const Cosmology &real_cosm, const
 // ============================================================================
 
 
-shared_ptr<Catalogue> random_catalogue_cone (const shared_ptr<Catalogue> catalogue, const int nRandom, const Cosmology &cosm, const double Angle, const int step_redshift, const vector<double> redshift, vector<double> &dc, vector<double> &convol, const int idum)
+shared_ptr<Catalogue> cosmobl::random_catalogue_cone (const shared_ptr<Catalogue> catalogue, const int nRandom, const Cosmology &cosm, const double Angle, const int step_redshift, const vector<double> redshift, vector<double> &dc, vector<double> &convol, const int idum)
 {
   cout <<"I'm creating a random catalogue..."<<endl;
   
@@ -354,7 +354,7 @@ shared_ptr<Catalogue> random_catalogue_cone (const shared_ptr<Catalogue> catalog
 // ============================================================================
 
 
-shared_ptr<Catalogue> random_catalogue_mock (const shared_ptr<Catalogue> catalogue, const int nRandom, const Cosmology &cosm, const string dir, const int step_redshift, const vector<double> redshift, vector<double> &dc, vector<double> &convol, const int idum)
+shared_ptr<Catalogue> cosmobl::random_catalogue_mock (const shared_ptr<Catalogue> catalogue, const int nRandom, const Cosmology &cosm, const string dir, const int step_redshift, const vector<double> redshift, vector<double> &dc, vector<double> &convol, const int idum)
 {
   cout <<"I'm creating a random catalogue..."<<endl;
   
@@ -472,8 +472,9 @@ shared_ptr<Catalogue> random_catalogue_mock (const shared_ptr<Catalogue> catalog
 
 /// @cond extrandom
 
-shared_ptr<Catalogue> random_catalogue_mock_cone (const shared_ptr<Catalogue> catalogue, const int nRandom, const Cosmology &cosm, const string dir, const int step_redshift, vector<double> redshift)
+shared_ptr<Catalogue> cosmobl::random_catalogue_mock_cone (const shared_ptr<Catalogue> catalogue, const int nRandom, const Cosmology &cosm, const string dir, const int step_redshift, const vector<double> redshift)
 {
+  
   cout <<"I'm creating a random catalogue..."<<endl;
 
   shared_ptr<Catalogue> random_catalogue (new Catalogue);
@@ -563,13 +564,15 @@ shared_ptr<Catalogue> random_catalogue_mock_cone (const shared_ptr<Catalogue> ca
   
     if (int(redshift.size())!=nRandom) ErrorMsg("Error in random_catalogue_mock_Euclid of RandomCatalogue.cpp!");
 
-    random_shuffle (redshift.begin(), redshift.end());
+    vector<double> rredshift = redshift;
+
+    random_shuffle (rredshift.begin(), rredshift.end());
     
     int index = 0;
 
     while (int(random_X.size())<nRandom) {
 
-      REDSHIFT = redshift[index];
+      REDSHIFT = rredshift[index];
       DD = cosm.D_C(REDSHIFT);
 
       RA = ra_min+(ra_max-ra_min)*ran(gen);
@@ -603,13 +606,14 @@ shared_ptr<Catalogue> random_catalogue_mock_cone (const shared_ptr<Catalogue> ca
   random_catalogue->set_var(Var::_XX_, random_X); random_catalogue->set_var(Var::_YY_, random_Y); random_catalogue->set_var(Var::_ZZ_, random_Z);
 
   return random_catalogue;
+  
 }
 
 
 // ============================================================================
 
 
-shared_ptr<Catalogue> random_catalogue_VIPERS (const int nRandom, const Cosmology &cosm, const string dir_out, const int step_redshift, const vector<double> dc, const vector<double> convol, const vector<double> lim, const vector<double> redshift, const bool venice, string file_random, const string mask, const string dir_venice, const int idum) 
+shared_ptr<Catalogue> cosmobl::random_catalogue_VIPERS (const int nRandom, const Cosmology &cosm, const string dir_out, const int step_redshift, const vector<double> dc, const vector<double> convol, const vector<double> lim, const vector<double> redshift, const bool venice, string file_random, const string mask, const string dir_venice, const int idum) 
 {
   cout <<"I'm creating a random catalogue..."<<endl;
 
@@ -758,7 +762,7 @@ shared_ptr<Catalogue> random_catalogue_VIPERS (const int nRandom, const Cosmolog
 
 /* ======== Alfonso Veropalumbo ======== */
 
-void random_redshift_distribution (const shared_ptr<Catalogue> random, const shared_ptr<Catalogue> data, const string dir_random, const int nbin, const bool convolution, const double sigma)
+void cosmobl::random_redshift_distribution (const shared_ptr<Catalogue> random, const shared_ptr<Catalogue> data, const string dir_random, const int nbin, const bool convolution, const double sigma)
 {
   if (random->nObjects()==0) ErrorMsg("Error in random_redshift_distribution of RandomCatalogue.cpp: random nObject=0!");
 
@@ -793,7 +797,7 @@ void random_redshift_distribution (const shared_ptr<Catalogue> random, const sha
 // ============================================================================
 
 
-shared_ptr<Catalogue> random_sdss_angular_distribution (const int nRandom, const string out_dir, const string chunk_list, const bool veto)
+shared_ptr<Catalogue> cosmobl::random_sdss_angular_distribution (const int nRandom, const string out_dir, const string chunk_list, const bool veto)
 {
   shared_ptr<Catalogue> random_catalogue (new Catalogue);
 

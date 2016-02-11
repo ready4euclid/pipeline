@@ -81,7 +81,7 @@ void cosmobl::twopt::TwoPointCorrelation1D_filtered::set_parameters (const binTy
 // ============================================================================================
 
 
-void cosmobl::twopt::TwoPointCorrelation1D_filtered::measure (const string dir_output_pairs, const vector<string> dir_input_pairs, const int count_dd, const int count_rr, const int count_dr, const bool tcount)
+void cosmobl::twopt::TwoPointCorrelation1D_filtered::measure (const ErrorType errType, const string dir_output_pairs, const vector<string> dir_input_pairs, const string dir_output_ResampleXi, const int nMocks, const int count_dd, const int count_rr, const int count_dr, const bool tcount)
 {
   TwoPointCorrelation1D_monopole::measurePoisson(dir_output_pairs, dir_input_pairs, count_dd, count_rr, count_dr, tcount);
 

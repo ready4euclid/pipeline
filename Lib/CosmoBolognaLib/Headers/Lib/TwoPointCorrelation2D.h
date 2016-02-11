@@ -106,6 +106,108 @@ namespace cosmobl {
        *  @return none
        */
       void read_pairs (vector<shared_ptr<pairs::Pair> > PP, const vector<string> dir, const string file) const override;
+
+      ///@}
+
+      /**
+       *  @name Member functions to measure the two-point correlation function
+       */
+      ///@{
+
+      /**
+       *  @brief measure the xi with Poisson error using measured pairs
+       *  using the Natural Estimator
+       *  
+       *  @param dd pointer to an object of type Pair containing the
+       *  data-data pairs
+       *
+       *  @param rr pointer to an object of type Pair containing the
+       *  random-random pairs
+       *
+       *  @param nData number of objects in the data catalogue
+       *
+       *  @param nRandom number of objects in the random catalogue
+       *
+       *  @return pointer to an object of type Data
+       */
+      shared_ptr<Data> NaturalEstimatorTwoP (shared_ptr<pairs::Pair> dd, shared_ptr<pairs::Pair> rr, const int nData, const int nRandom) override;
+
+      /**
+       *  @brief measure the xi with Poisson error using measured pairs
+       *  using the Landy-Szalay estimator
+       *  
+       *  @param dd pointer to an object of type Pair containing the
+       *  data-data pairs
+       *
+       *  @param rr pointer to an object of type Pair containing the
+       *  random-random pairs
+       *
+       *  @param dr pointer to an object of type Pair containing the
+       *  data-random pairs
+       *
+       *  @param nData number of objects in the data catalogue
+       *
+       *  @param nRandom number of objects in the random catalogue
+       *
+       *  @return pointer to an object of type Data
+       */
+      shared_ptr<Data> LandySzalayEstimatorTwoP (shared_ptr<pairs::Pair> dd, shared_ptr<pairs::Pair> rr, shared_ptr<pairs::Pair> dr, int nData, int nRandom) override;
+
+      /**
+       *  @brief measure the jackknife resampling of the two-point correlation
+       *  function, &xi;(r) 
+       *
+       *  @param dd vector of data-data pairs, divider per regions
+       *
+       *  @param rr vector of random-random pairs, divider per regions
+       *
+       *  @return none
+       */
+      vector<shared_ptr<Data> > XiJackknife(const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr) override;
+
+      /**
+       *  @brief measure the jackknife resampling of the two-point correlation
+       *  function, &xi;(r)         
+       *
+       *  @param dd vector of data-data pairs, divider per regions
+       *
+       *  @param rr vector of random-random pairs, divider per regions
+       *
+       *  @param dr vector of random-random pairs, divider per regions   *
+       *
+       *  @return none
+       */
+      vector<shared_ptr<Data> > XiJackknife(const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr) override;
+
+      /**
+       *  @brief measure the bootstrap resampling of the two-point correlation
+       *  function, &xi;(r)  
+       *
+       *  @param nMocks number of bootstrap resampling
+       *
+       *  @param dd vector of data-data pairs, divider per regions
+       *
+       *  @param rr vector of random-random pairs, divider per regions      
+       *
+       *  @return none
+       */
+      vector<shared_ptr<Data> > XiBootstrap(const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr) override;
+
+      /**
+       *  @brief measure the bootstrap resampling of the two-point correlation
+       *  function, &xi;(r)  
+       *
+       *  @param nMocks number of bootstrap resampling
+       *
+       *  @param dd vector of data-data pairs, divider per regions
+       *
+       *  @param rr vector of random-random pairs, divider per regions 
+       *
+       *  @param dr vector of random-random pairs, divider per regions  
+       *
+       *  @return none
+       */
+      vector<shared_ptr<Data> > XiBootstrap(const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr) override;
       
       ///@}
 
@@ -174,52 +276,7 @@ namespace cosmobl {
       
       ///@}
 
-      /**
-       *  @name Member functions to count measure the two-point correlation function
-       */
-      ///@{
-
-      /**
-       *  @brief measure the xi with Poisson error using measured pairs
-       *  using the Natural Estimator
-       *  
-       *  @param dd pointer to an object of type Pair containing the
-       *  data-data pairs
-       *
-       *  @param rr pointer to an object of type Pair containing the
-       *  random-random pairs
-       *
-       *  @param nData number of objects in the data catalogue
-       *
-       *  @param nRandom number of objects in the random catalogue
-       *
-       *  @return pointer to an object of type Data
-       */
-      shared_ptr<Data> NaturalEstimatorTwoP (shared_ptr<pairs::Pair> dd, shared_ptr<pairs::Pair> rr, const int nData, const int nRandom) override;
-
-      /**
-       *  @brief measure the xi with Poisson error using measured pairs
-       *  using the Landy-Szalay estimator
-       *  
-       *  @param dd pointer to an object of type Pair containing the
-       *  data-data pairs
-       *
-       *  @param rr pointer to an object of type Pair containing the
-       *  random-random pairs
-       *
-       *  @param dr pointer to an object of type Pair containing the
-       *  data-random pairs
-       *
-       *  @param nData number of objects in the data catalogue
-       *
-       *  @param nRandom number of objects in the random catalogue
-       *
-       *  @return pointer to an object of type Data
-       */
-      shared_ptr<Data> LandySzalayEstimatorTwoP (shared_ptr<pairs::Pair> dd, shared_ptr<pairs::Pair> rr, shared_ptr<pairs::Pair> dr, int nData, int nRandom) override;
-
-      ///@}
-
+    
     };
   }
 }

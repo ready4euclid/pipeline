@@ -637,7 +637,7 @@ void cosmobl::catalogue::Catalogue::write_coordinates (const string file_output)
   ofstream fout(file_output.c_str()); checkIO(file_output, 0);
 
   if (!isSet(ra(0)) || !isSet(dec(0)) || !isSet(redshift(0)) || !isSet(dc(0)))
-    ErrorMsg("Error in cosmobl::catalogue::Catalogue::write_obs_coords of Catalogue.cpp! Polar coordinates are not set!");
+    ErrorMsg("Error in cosmobl::catalogue::Catalogue::write_coordinates of Catalogue.cpp! Polar coordinates are not set!");
   
   for (int i=0; i<nObjects(); i++) 
     fout << xx(i) << "   " << yy(i) << "   " << zz(i) << "   " << ra(i) << "   " << dec(i) << "   " << redshift(i) << "   " << dc(i) << endl;
@@ -654,18 +654,18 @@ shared_ptr<Catalogue> cosmobl::catalogue::Catalogue::cut (const Var var_name, co
 {
   vector<shared_ptr<Object> > objects;
   vector<double> vvar = var(var_name);
+  vector<int> w(vvar.size());
 
-  for (size_t i=0; i<m_sample.size(); i++)   
-    
-    if (!excl) { 
-      if (down<=vvar[i] && vvar[i]<up)
-	objects.push_back(m_sample[i]);
-    }
-    else {
-      if (down>vvar[i] || vvar[i]>up)
-	objects.push_back(m_sample[i]);
-    }
-  
+  for (size_t i=0; i<m_sample.size(); i++){
+      w[i] = (excl) ? 1 : 0;
+    if (vvar[i] >= down && vvar[i] < up)
+      w[i] = (excl) ? 0 : 1;
+  }
+
+  for (size_t i=0; i<m_sample.size(); i++)
+    if (w[i]==1)
+      objects.push_back(m_sample[i]);
+ 
   shared_ptr<Catalogue> cat(new Catalogue{objects});
   return cat;
 }
@@ -829,4 +829,3 @@ double cosmobl::catalogue::Catalogue::weightedN_condition (const Var var_name, c
 
   return nObjw;
 }
-

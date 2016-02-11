@@ -128,7 +128,7 @@ void cosmobl::twopt::TwoPointCorrelation2D_polar::write (const string dir, const
 // ============================================================================================
 
 
-void cosmobl::twopt::TwoPointCorrelation2D_polar::measure (const string dir_output_pairs, const vector<string> dir_input_pairs, const ErrorType errorType, const string dir_output_ResampleXi, int nMocks, int count_dd, const int count_rr, const int count_dr, const bool tcount)
+void cosmobl::twopt::TwoPointCorrelation2D_polar::measure (const ErrorType errorType, const string dir_output_pairs, const vector<string> dir_input_pairs, const string dir_output_ResampleXi, int nMocks, int count_dd, const int count_rr, const int count_dr, const bool tcount)
 {
   switch(errorType){
     case(ErrorType::_Poisson_):
@@ -141,7 +141,7 @@ void cosmobl::twopt::TwoPointCorrelation2D_polar::measure (const string dir_outp
       measureBootstrap(nMocks,dir_output_pairs,dir_input_pairs,dir_output_ResampleXi,count_dd,count_rr,count_dr,tcount);
       break;
     default:
-      ErrorMsg("Error in measure of TwoPointCorrelation2D.cpp, unknown type of error");
+      ErrorMsg("Error in measure() of TwoPointCorrelation2D_polar.cpp, unknown type of error");
   }
 }
 
@@ -157,7 +157,7 @@ void cosmobl::twopt::TwoPointCorrelation2D_polar::measurePoisson (const string d
   int nRandom = m_random->weightedN();
   
   if (nData==0 || nRandom==0)  
-    ErrorMsg("Error in cosmobl::twopt::TwoPointCorrelation::measurePoisson of TwoPointCorrelation.cpp!");
+    ErrorMsg("Error in measurePoisson() of TwoPointCorrelation2D_polar.cpp!");
 
   
   // ----------- count the data-data, random-random and data-random pairs, or read them from file ----------- 
@@ -192,50 +192,20 @@ void cosmobl::twopt::TwoPointCorrelation2D_polar::measureJackknife (const string
   vector<shared_ptr<Pair> > dd_regions, rr_regions, dr_regions;
   count_allPairs_region(dd_regions, rr_regions, dr_regions, m_twoPType, dir_output_pairs, dir_input_pairs, count_dd, count_rr, count_dr, tcount);
 
+  vector<shared_ptr<Data> > data_SS = (count_dr) ? XiJackknife(dd_regions,rr_regions,dr_regions) : XiJackknife(dd_regions,rr_regions) ;
+
   for (int i=0; i<nRegions; i++) {
-    double nData_SubSample = m_data->weightedN_condition(Var::_REGION_, region_list[i], region_list[i]+1, 1);
-    double nRandom_SubSample = m_random->weightedN_condition(Var::_REGION_, region_list[i], region_list[i]+1, 1);
-
-    auto dd_SubSample = Pair::Create(m_dd->pairType(), m_dd->sMin_D1(), m_dd->sMax_D1(), m_dd->nbins_D1(), m_dd->shift_D1(), m_dd->sMin_D2(), m_dd->sMax_D2(), m_dd->nbins_D2(), m_dd->shift_D2());
-    auto rr_SubSample = Pair::Create(m_rr->pairType(), m_rr->sMin_D1(), m_rr->sMax_D1(), m_rr->nbins_D1(), m_rr->shift_D1(), m_rr->sMin_D2(), m_rr->sMax_D2(), m_rr->nbins_D2(), m_rr->shift_D2());
-    auto dr_SubSample = Pair::Create(m_dr->pairType(), m_dr->sMin_D1(), m_dr->sMax_D1(), m_dr->nbins_D1(), m_dr->shift_D1(), m_dr->sMin_D2(), m_dr->sMax_D2(), m_dr->nbins_D2(), m_dr->shift_D2());
-
-    vector<int> w(nRegions, 1);
-    w[i] = 0;
-
-    for (int j=0; j<nRegions; j++) {
-      for (int k=j; k<nRegions; k++) {
-	int index = j*nRegions-(j-1)*j/2+k-j;
-	double ww = w[j]*w[k];
-	if (ww>0) {
-	  for (int bin1=0;bin1<dd_SubSample->nbins_D1();bin1++) {
-	    for (int bin2=0;bin1<dd_SubSample->nbins_D2();bin2++) {
-	      dd_SubSample->add_PP2D(bin1 ,bin2, dd_regions[index]->PP2D(bin1,bin2));
-	      rr_SubSample->add_PP2D(bin1,bin2 , rr_regions[index]->PP2D(bin1,bin2));
-	      if (count_dr>-1)
-		dr_SubSample->add_PP2D(bin1, bin2, dr_regions[index]->PP2D(bin1,bin2));
-	    }
-	  }
-	}
-      }
-    }
-    
-    shared_ptr<Data> data;
-    if(count_dr>-1)
-      data = LandySzalayEstimatorTwoP(dd_SubSample, rr_SubSample, dr_SubSample, nData_SubSample, nRandom_SubSample);
-    else
-      data = NaturalEstimatorTwoP(dd_SubSample, rr_SubSample, nData_SubSample, nRandom_SubSample);
 
     if(dir_output_JackknifeXi !="NULL"){
       string file = "xi_Jackknife_"+conv(i, par::fINT);
-      data->write(dir_output_JackknifeXi, file, "rad", "xi", 0);
+      data_SS[i]->write(dir_output_JackknifeXi, file, "r", "mu", "xi", 0);
     }
 
-    xi_SubSample.push_back(data->fxy());
+    xi_SubSample.push_back(data_SS[i]->fxy());
 
   }
 
-  vector<vector<double> > error;
+  vector<vector<double> > error(m_dd->nbins_D1(),vector<double>(m_dd->nbins_D2(),0));
 
   double fact = pow(nRegions-1,2)/nRegions;
   for(int i=0;i<m_dd->nbins_D1();i++){
@@ -276,77 +246,28 @@ void cosmobl::twopt::TwoPointCorrelation2D_polar::measureBootstrap (const int nM
 
   vector< vector< vector<double > > > xi_SubSample;
 
-  vector<long> region_list = m_data->get_region_list();
-  int nRegions = region_list.size();
-
   vector<shared_ptr<Pair> > dd_regions, rr_regions, dr_regions;
   count_allPairs_region(dd_regions, rr_regions, dr_regions, m_twoPType, dir_output_pairs, dir_input_pairs, count_dd, count_rr, count_dr, tcount);
 
-  vector<double> nData_Region, nRandom_Region;
+  vector<shared_ptr<Data> > data_SS = (count_dr) ? XiBootstrap(nMocks, dd_regions,rr_regions,dr_regions) : XiBootstrap(nMocks, dd_regions,rr_regions);
 
-  for (int i=0; i<nRegions; i++) {
-    nData_Region.push_back(m_data->weightedN_condition(Var::_REGION_, region_list[i], region_list[i]+1, 0));
-    nRandom_Region.push_back(m_random->weightedN_condition(Var::_REGION_, region_list[i], region_list[i]+1, 0));
-    cout << nData_Region[i] << " " << nRandom_Region[i] << endl;
-
-  }
-
-  uniform_int_distribution<int> uni(0, nRegions-1);
-  default_random_engine rng;
-  int val=3; //See Norberg et al. 2009
-
-  for (int i=0; i<nMocks; i++) {
-    auto dd_SubSample = Pair::Create(m_dd->pairType(), m_dd->sMin_D1(), m_dd->sMax_D1(), m_dd->nbins_D1(), m_dd->shift_D1(), m_dd->sMin_D2(), m_dd->sMax_D2(), m_dd->nbins_D2(), m_dd->shift_D2());
-    auto rr_SubSample = Pair::Create(m_rr->pairType(), m_rr->sMin_D1(), m_rr->sMax_D1(), m_rr->nbins_D1(), m_rr->shift_D1(), m_rr->sMin_D2(), m_rr->sMax_D2(), m_rr->nbins_D2(), m_rr->shift_D2());
-    auto dr_SubSample = Pair::Create(m_dr->pairType(), m_dr->sMin_D1(), m_dr->sMax_D1(), m_dr->nbins_D1(), m_dr->shift_D1(), m_dr->sMin_D2(), m_dr->sMax_D2(), m_dr->nbins_D2(), m_dr->shift_D2());
-
-    double nData_SubSample=0, nRandom_SubSample=0;
-
-    vector<int> w(nRegions, 0);
-    for (int n=0; n<val*nRegions; n++)
-      w[uni(rng)] +=1;
-
-    for (int j=0; j<nRegions; j++) {
-      nData_SubSample += w[j]*nData_Region[j];
-      nRandom_SubSample += w[j]*nRandom_Region[j];
-
-      for (int k=j; k<nRegions; k++) {
-	int index = j*nRegions-(j-1)*j/2+k-j;
-	double ww = (k==j) ? w[k] : w[j]*w[k];
-	if (ww>0) {
-	  for (int bin1=0;bin1<dd_SubSample->nbins_D1();bin1++) {
-	    for (int bin2=0;bin1<dd_SubSample->nbins_D2();bin2++) {
-	      dd_SubSample->add_PP2D(bin1 ,bin2, dd_regions[index]->PP2D(bin1,bin2));
-	      rr_SubSample->add_PP2D(bin1, bin2 , rr_regions[index]->PP2D(bin1,bin2));
-	      if (count_dr>-1)
-		dr_SubSample->add_PP2D(bin1, bin2, dr_regions[index]->PP2D(bin1,bin2));
-	    }
-	  }
-	}
-      }
-    }
-    
-    shared_ptr<Data> data;
-    if (count_dr>-1)
-      data = LandySzalayEstimatorTwoP(dd_SubSample, rr_SubSample, dr_SubSample, nData_SubSample, nRandom_SubSample);
-    else
-      data = NaturalEstimatorTwoP(dd_SubSample, rr_SubSample, nData_SubSample, nRandom_SubSample);
+  for(int i=0;i<nMocks;i++){
 
     if (dir_output_BootstrapXi!="NULL") {
       string file = "xi_Bootstrap_"+conv(i, par::fINT);
-      data->write(dir_output_BootstrapXi, file, "rad", "xi", 0);
+      data_SS[i]->write(dir_output_BootstrapXi, file, "r", "mu","xi", 0);
     }
 
-    xi_SubSample.push_back(data->fxy());
+    xi_SubSample.push_back(data_SS[i]->fxy());
 
   }
 
-  vector<vector<double> > error;
+  vector<vector<double> > error(m_dd->nbins_D1(),vector<double>(m_dd->nbins_D2(),0));
 
   for(int i=0;i<m_dd->nbins_D1();i++){
     for(int j=0;j<m_dd->nbins_D2();j++){
       vector<double> temp;
-      for(int nm = 0; nm<nRegions;nm++){
+      for(int nm = 0; nm<nMocks;nm++){
 	temp.push_back(xi_SubSample[nm][i][j]);
       }
       error[i][j] = pow(Sigma(temp),2);

@@ -133,11 +133,10 @@ void cosmobl::pairs::Pair1D_angular_lin::set_parameters_nbins ()
 {
   double binSize = ((m_thetaMax-m_thetaMin)/m_nbins);
   m_binSize_inv = 1./binSize;
-  m_shift *= binSize;
   
   m_scale.resize(m_nbins);
   for (int i=0; i<m_nbins; i++)
-    m_scale[i] = i*binSize+m_shift+m_thetaMin;
+    m_scale[i] = binSize*(i+m_shift)+m_thetaMin;
 }
 
 
@@ -146,13 +145,12 @@ void cosmobl::pairs::Pair1D_angular_lin::set_parameters_nbins ()
 
 void cosmobl::pairs::Pair1D_angular_lin::set_parameters_binSize ()
 {
-  m_shift /= m_binSize_inv;
   m_nbins = nint((m_thetaMax-m_thetaMin)*m_binSize_inv);
-  m_thetaMax = (m_nbins-m_shift)/m_binSize_inv+m_shift+m_thetaMin;
+  m_thetaMax = m_nbins/m_binSize_inv+m_thetaMin;
 
   m_scale.resize(m_nbins);
   for (int i=0; i<m_nbins; i++)
-    m_scale[i] = i/m_binSize_inv+m_shift+m_thetaMin;
+    m_scale[i] = (i+m_shift)/m_binSize_inv+m_thetaMin;
 }
 
 
@@ -166,11 +164,10 @@ void cosmobl::pairs::Pair1D_angular_log::set_parameters_nbins ()
   
   double binSize = ((log10(m_thetaMax)-log10(m_thetaMin))/m_nbins);
   m_binSize_inv = 1./binSize;
-  m_shift *= binSize;
 
   m_scale.resize(m_nbins);
   for (int i=0; i<m_nbins; i++)
-    m_scale[i] = pow(10.,i*binSize+m_shift+log10(m_thetaMin));
+    m_scale[i] = pow(10.,(i+m_shift)*binSize+log10(m_thetaMin));
 }
 
 
@@ -181,13 +178,12 @@ void cosmobl::pairs::Pair1D_angular_log::set_parameters_binSize ()
 {
   if (m_thetaMin<1.e-30) ErrorMsg("Error in cosmobl::pairs::Pair1D_angular_log::set_parameters_binSize of Pair.cpp: Min must be >0!");
 
-  m_shift /= m_binSize_inv;
   m_nbins = nint((log10(m_thetaMax)-log10(m_thetaMin))*m_binSize_inv);
-  m_thetaMax = pow(10.,(m_nbins-m_shift)/m_binSize_inv+m_shift+log10(m_thetaMin));
+  m_thetaMax = pow(10.,m_nbins/m_binSize_inv+log10(m_thetaMin));
 
   m_scale.resize(m_nbins);
   for (int i=0; i<m_nbins; i++)
-    m_scale[i] = pow(10.,i/m_binSize_inv+m_shift+log10(m_thetaMin));
+    m_scale[i] = pow(10.,(i+m_shift)/m_binSize_inv+log10(m_thetaMin));
 }
 
 
@@ -199,11 +195,10 @@ void cosmobl::pairs::Pair1D_comoving_lin::set_parameters_nbins ()
 {
   double binSize = ((m_rMax-m_rMin)/m_nbins);
   m_binSize_inv = 1./binSize;
-  m_shift *= binSize;
 
   m_scale.resize(m_nbins);
   for (int i=0; i<m_nbins; i++)
-    m_scale[i] = i*binSize+m_shift+m_rMin;
+    m_scale[i] = (i+m_shift)*binSize+m_rMin;
 }
 
 
@@ -212,13 +207,12 @@ void cosmobl::pairs::Pair1D_comoving_lin::set_parameters_nbins ()
 
 void cosmobl::pairs::Pair1D_comoving_lin::set_parameters_binSize ()
 {
-  m_shift /= m_binSize_inv;
   m_nbins = nint((m_rMax-m_rMin)*m_binSize_inv);
-  m_rMax = (m_nbins-m_shift)/m_binSize_inv+m_shift+m_rMin;
+  m_rMax = m_nbins/m_binSize_inv+m_rMin;
   
   m_scale.resize(m_nbins);
   for (int i=0; i<m_nbins; i++)
-    m_scale[i] = i/m_binSize_inv+m_shift+m_rMin;
+    m_scale[i] = (i+m_shift)/m_binSize_inv+m_rMin;
 }
 
 
@@ -232,11 +226,10 @@ void cosmobl::pairs::Pair1D_comoving_log::set_parameters_nbins ()
   
   double binSize = ((log10(m_rMax)-log10(m_rMin))/m_nbins);
   m_binSize_inv = 1./binSize;
-  m_shift *= binSize;
 
   m_scale.resize(m_nbins);
   for (int i=0; i<m_nbins; i++)
-    m_scale[i] = pow(10.,i*binSize+m_shift+log10(m_rMin));
+    m_scale[i] = pow(10.,(i+m_shift)*binSize+log10(m_rMin));
 }
 
 
@@ -247,13 +240,12 @@ void cosmobl::pairs::Pair1D_comoving_log::set_parameters_binSize ()
 {
   if (m_rMin<1.e-30) ErrorMsg("Error in cosmobl::pairs::Pair1D_comoving_log::set_parameters_binSize of Pair.cpp: Min must be >0!");
   
-  m_shift /= m_binSize_inv;
   m_nbins = nint((log10(m_rMax)-log10(m_rMin))*m_binSize_inv);
-  m_rMax = pow(10.,(m_nbins-m_shift)/m_binSize_inv+m_shift+log10(m_rMin));
+  m_rMax = pow(10.,m_nbins/m_binSize_inv+log10(m_rMin));
 
   m_scale.resize(m_nbins);
   for (int i=0; i<m_nbins; i++)
-    m_scale[i] = pow(10.,i/m_binSize_inv+m_shift+log10(m_rMin));
+    m_scale[i] = pow(10.,(i+m_shift)/m_binSize_inv+log10(m_rMin));
 }
 
 
@@ -265,17 +257,15 @@ void cosmobl::pairs::Pair2D_comovingCartesian_linlin::set_parameters_nbins ()
 {
   double binSize_D1 = ((m_rpMax-m_rpMin)/m_nbins_D1);
   m_binSize_inv_D1 = 1./binSize_D1;
-  m_shift_D1 *= binSize_D1;
 
   double binSize_D2 = ((m_piMax-m_piMin)/m_nbins_D2);
   m_binSize_inv_D2 = 1./binSize_D2;
-  m_shift_D2 *= binSize_D2;
 
   m_scale_D1.resize(m_nbins_D1); m_scale_D2.resize(m_nbins_D2);
   for (int i=0; i<m_nbins_D1; i++) 
-    m_scale_D1[i] = i*binSize_D1+m_shift_D1+m_rpMin;
+    m_scale_D1[i] = (i+m_shift_D1)*binSize_D1+m_rpMin;
   for (int i=0; i<m_nbins_D2; i++) 
-    m_scale_D2[i] = i*binSize_D2+m_shift_D2+m_piMin;
+    m_scale_D2[i] = (i+m_shift_D2)*binSize_D2+m_piMin;
 }
 
 
@@ -284,19 +274,17 @@ void cosmobl::pairs::Pair2D_comovingCartesian_linlin::set_parameters_nbins ()
 
 void cosmobl::pairs::Pair2D_comovingCartesian_linlin::set_parameters_binSize ()
 {
-  m_shift_D1 /= m_binSize_inv_D1;
   m_nbins_D1 = nint((m_rpMax-m_rpMin)*m_binSize_inv_D1);
-  m_rpMax = (m_nbins_D1-m_shift_D1)/m_binSize_inv_D1+m_shift_D1+m_rpMin;
+  m_rpMax = m_nbins_D1/m_binSize_inv_D1+m_rpMin;
 
-  m_shift_D2 /= m_binSize_inv_D2;
   m_nbins_D2 = nint((m_piMax-m_piMin)*m_binSize_inv_D2);
-  m_piMax = (m_nbins_D2-m_shift_D2)/m_binSize_inv_D2+m_shift_D2+m_piMin;
+  m_piMax = m_nbins_D2/m_binSize_inv_D2+m_piMin;
 
   m_scale_D1.resize(m_nbins_D1); m_scale_D2.resize(m_nbins_D2);
   for (int i=0; i<m_nbins_D1; i++) 
-    m_scale_D1[i] = i/m_binSize_inv_D1+m_shift_D1+m_rpMin;
+    m_scale_D1[i] = (i+m_shift_D1)/m_binSize_inv_D1+m_rpMin;
   for (int i=0; i<m_nbins_D2; i++) 
-    m_scale_D2[i] = i/m_binSize_inv_D2+m_shift_D2+m_piMin;
+    m_scale_D2[i] = (i+m_shift_D2)/m_binSize_inv_D2+m_piMin;
 }
 
 
@@ -311,17 +299,15 @@ void cosmobl::pairs::Pair2D_comovingCartesian_linlog::set_parameters_nbins ()
   
   double binSize_D1 = ((m_rpMax-m_rpMin)/m_nbins_D1);
   m_binSize_inv_D1 = 1./binSize_D1;
-  m_shift_D1 *= binSize_D1;
 
   double binSize_D2 = ((log10(m_piMax)-log10(m_piMin))/m_nbins_D2);
   m_binSize_inv_D2 = 1./binSize_D2;
-  m_shift_D2 *= binSize_D2;
 
   m_scale_D1.resize(m_nbins_D1); m_scale_D2.resize(m_nbins_D2);
   for (int i=0; i<m_nbins_D1; i++) 
-    m_scale_D1[i] = i*binSize_D1+m_shift_D1+m_rpMin;
+    m_scale_D1[i] = (i+m_shift_D1)*binSize_D1+m_rpMin;
   for (int i=0; i<m_nbins_D2; i++) 
-    m_scale_D2[i] = pow(10.,i*binSize_D2+m_shift_D2+log10(m_piMin));
+    m_scale_D2[i] = pow(10.,(i+m_shift_D2)*binSize_D2+log10(m_piMin));
 }
 
 
@@ -333,19 +319,17 @@ void cosmobl::pairs::Pair2D_comovingCartesian_linlog::set_parameters_binSize ()
   if (m_piMin<1.e-30)
     ErrorMsg("Error in cosmobl::pairs::Pair2D_comovingCartesian_linlog::set_parameters_binSize of Pair.cpp: m_piMin must be >0!");
   
-  m_shift_D1 /= m_binSize_inv_D1;
   m_nbins_D1 = nint((m_rpMax-m_rpMin)*m_binSize_inv_D1);
-  m_rpMax = (m_nbins_D1-m_shift_D1)/m_binSize_inv_D1+m_shift_D1+m_rpMin;
+  m_rpMax = m_nbins_D1/m_binSize_inv_D1+m_rpMin;
 
-  m_shift_D2 /= m_binSize_inv_D2;
   m_nbins_D2 = nint((log10(m_piMax)-log10(m_piMin))*m_binSize_inv_D2);
-  m_piMax = pow(10.,(m_nbins_D2-m_shift_D2)/m_binSize_inv_D2+m_shift_D2+log10(m_piMin));
+  m_piMax = pow(10.,m_nbins_D2/m_binSize_inv_D2+log10(m_piMin));
 
   m_scale_D1.resize(m_nbins_D1); m_scale_D2.resize(m_nbins_D2);
   for (int i=0; i<m_nbins_D1; i++) 
-    m_scale_D1[i] = i/m_binSize_inv_D1+m_shift_D1+m_rpMin;
+    m_scale_D1[i] = (i+m_shift_D1)/m_binSize_inv_D1+m_rpMin;
   for (int i=0; i<m_nbins_D2; i++) 
-    m_scale_D2[i] = pow(10.,i/m_binSize_inv_D2+m_shift_D2+log10(m_piMin));
+    m_scale_D2[i] = pow(10.,(i+m_shift_D2)/m_binSize_inv_D2+log10(m_piMin));
 }
 
 
@@ -360,17 +344,15 @@ void cosmobl::pairs::Pair2D_comovingCartesian_loglin::set_parameters_nbins ()
   
   double binSize_D1 = ((log10(m_rpMax)-log10(m_rpMin))/m_nbins_D1);
   m_binSize_inv_D1 = 1./binSize_D1;
-  m_shift_D1 *= binSize_D1;
   
   double binSize_D2 = ((m_piMax-m_piMin)/m_nbins_D2);
   m_binSize_inv_D2 = 1./binSize_D2;
-  m_shift_D2 *= binSize_D2;
 
   m_scale_D1.resize(m_nbins_D1); m_scale_D2.resize(m_nbins_D2);
   for (int i=0; i<m_nbins_D1; i++) 
-    m_scale_D1[i] = pow(10.,i*binSize_D1+m_shift_D1+log10(m_rpMin)); 
+    m_scale_D1[i] = pow(10.,(i+m_shift_D1)*binSize_D1+log10(m_rpMin)); 
   for (int i=0; i<m_nbins_D2; i++) 
-    m_scale_D2[i] = i*binSize_D2+m_shift_D2+m_piMin;
+    m_scale_D2[i] = (i+m_shift_D2)*binSize_D2+m_piMin;
 }
 
 
@@ -382,19 +364,17 @@ void cosmobl::pairs::Pair2D_comovingCartesian_loglin::set_parameters_binSize ()
   if (m_rpMin<1.e-30)
     ErrorMsg("Error in cosmobl::pairs::Pair2D_comovingCartesian_linlin::set_parameters_binSize of Pair.cpp: m_rpMin must be >0!");
   
-  m_shift_D1 /= m_binSize_inv_D1;
   m_nbins_D1 = nint((log10(m_rpMax)-log10(m_rpMin))*m_binSize_inv_D1);
-  m_rpMax = pow(10.,(m_nbins_D1-m_shift_D1)/m_binSize_inv_D1+m_shift_D1+log10(m_rpMin));
+  m_rpMax = pow(10.,m_nbins_D1/m_binSize_inv_D1+log10(m_rpMin));
   
-  m_shift_D2 /= m_binSize_inv_D2;
   m_nbins_D2 = nint((m_piMax-m_piMin)*m_binSize_inv_D2);
-  m_piMax = (m_nbins_D2-m_shift_D2)/m_binSize_inv_D2+m_shift_D2+m_piMin;
+  m_piMax = m_nbins_D2/m_binSize_inv_D2+m_piMin;
 
   m_scale_D1.resize(m_nbins_D1); m_scale_D2.resize(m_nbins_D2);
   for (int i=0; i<m_nbins_D1; i++) 
-    m_scale_D1[i] = pow(10.,i/m_binSize_inv_D1+m_shift_D1+log10(m_rpMin));
+    m_scale_D1[i] = pow(10.,(i+m_shift_D1)/m_binSize_inv_D1+log10(m_rpMin));
   for (int i=0; i<m_nbins_D2; i++) 
-    m_scale_D2[i] = i/m_binSize_inv_D2+m_shift_D2+m_piMin;
+    m_scale_D2[i] = (i+m_shift_D2)/m_binSize_inv_D2+m_piMin;
 }
 
 
@@ -409,17 +389,15 @@ void cosmobl::pairs::Pair2D_comovingCartesian_loglog::set_parameters_nbins ()
   
   double binSize_D1 = ((log10(m_rpMax)-log10(m_rpMin))/m_nbins_D1);
   m_binSize_inv_D1 = 1./binSize_D1;
-  m_shift_D1 *= binSize_D1;
   
   double binSize_D2 = ((log10(m_piMax)-log10(m_piMin))/m_nbins_D2);
   m_binSize_inv_D2 = 1./binSize_D2;
-  m_shift_D2 *= binSize_D2;
 
   m_scale_D1.resize(m_nbins_D1); m_scale_D2.resize(m_nbins_D2);
   for (int i=0; i<m_nbins_D1; i++) 
-    m_scale_D1[i] = pow(10.,i*binSize_D1+m_shift_D1+log10(m_rpMin)); 
+    m_scale_D1[i] = pow(10.,(i+m_shift_D1)*binSize_D1+log10(m_rpMin)); 
   for (int i=0; i<m_nbins_D2; i++) 
-    m_scale_D2[i] = pow(10.,i*binSize_D2+m_shift_D2+log10(m_piMin)); 
+    m_scale_D2[i] = pow(10.,(i+m_shift_D2)*binSize_D2+log10(m_piMin)); 
 }
 
 
@@ -431,19 +409,17 @@ void cosmobl::pairs::Pair2D_comovingCartesian_loglog::set_parameters_binSize ()
   if (m_rpMin<1.e-30 || m_piMin<1.e-30)
     ErrorMsg("Error in cosmobl::pairs::Pair2D_comovingCartesian_loglog::set_parameters_binSize of Pair.cpp: m_rpMin and m_piMin must be >0!");
   
-  m_shift_D1 /= m_binSize_inv_D1;
   m_nbins_D1 = nint((log10(m_rpMax)-log10(m_rpMin))*m_binSize_inv_D1);
-  m_rpMax = pow(10.,(m_nbins_D1-m_shift_D1)/m_binSize_inv_D1+m_shift_D1+log10(m_rpMin));
+  m_rpMax = pow(10.,m_nbins_D1/m_binSize_inv_D1+log10(m_rpMin));
   
-  m_shift_D2 /= m_binSize_inv_D2;
   m_nbins_D2 = nint((log10(m_piMax)-log10(m_piMin))*m_binSize_inv_D2);
-  m_piMax = pow(10.,(m_nbins_D2-m_shift_D2)/m_binSize_inv_D2+m_shift_D2+log10(m_piMin));
+  m_piMax = pow(10.,m_nbins_D2/m_binSize_inv_D2+log10(m_piMin));
 
   m_scale_D1.resize(m_nbins_D1); m_scale_D2.resize(m_nbins_D2);
   for (int i=0; i<m_nbins_D1; i++) 
-    m_scale_D1[i] = pow(10.,i/m_binSize_inv_D1+m_shift_D1+log10(m_rpMin));
+    m_scale_D1[i] = pow(10.,(i+m_shift_D1)/m_binSize_inv_D1+log10(m_rpMin));
   for (int i=0; i<m_nbins_D2; i++) 
-    m_scale_D2[i] = pow(10.,i/m_binSize_inv_D2+m_shift_D2+log10(m_piMin));
+    m_scale_D2[i] = pow(10.,(i+m_shift_D2)/m_binSize_inv_D2+log10(m_piMin));
 }
 
 
@@ -455,17 +431,15 @@ void cosmobl::pairs::Pair2D_comovingPolar_linlin::set_parameters_nbins ()
 { 
   double binSize_D1 = ((m_rMax-m_rMin)/m_nbins_D1);
   m_binSize_inv_D1 = 1./binSize_D1;
-  m_shift_D1 *= binSize_D1;
 
   double binSize_D2 = ((m_muMax-m_muMin)/m_nbins_D2);
   m_binSize_inv_D2 = 1./binSize_D2;
-  m_shift_D2 *= binSize_D2;
 
   m_scale_D1.resize(m_nbins_D1); m_scale_D2.resize(m_nbins_D2);
   for (int i=0; i<m_nbins_D1; i++) 
-    m_scale_D1[i] = i*binSize_D1+m_shift_D1+m_rMin;
+    m_scale_D1[i] = (i+m_shift_D1)*binSize_D1+m_rMin;
   for (int i=0; i<m_nbins_D2; i++) 
-    m_scale_D2[i] = i*binSize_D2+m_shift_D2+m_muMin;
+    m_scale_D2[i] = (i+m_shift_D2)*binSize_D2+m_muMin;
 }
 
 
@@ -474,19 +448,17 @@ void cosmobl::pairs::Pair2D_comovingPolar_linlin::set_parameters_nbins ()
 
 void cosmobl::pairs::Pair2D_comovingPolar_linlin::set_parameters_binSize ()
 {
-  m_shift_D1 /= m_binSize_inv_D1;
   m_nbins_D1 = nint((m_rMax-m_rMin)*m_binSize_inv_D1);
-  m_rMax = (m_nbins_D1-m_shift_D1)/m_binSize_inv_D1+m_shift_D1+m_rMin;
+  m_rMax = m_nbins_D1/m_binSize_inv_D1+m_rMin;
 
-  m_shift_D2 /= m_binSize_inv_D2;
   m_nbins_D2 = nint((m_muMax-m_muMin)*m_binSize_inv_D2);
-  m_muMax = (m_nbins_D2-m_shift_D2)/m_binSize_inv_D2+m_shift_D2+m_muMin;
+  m_muMax = m_nbins_D2/m_binSize_inv_D2+m_muMin;
 
   m_scale_D1.resize(m_nbins_D1); m_scale_D2.resize(m_nbins_D2);
   for (int i=0; i<m_nbins_D1; i++) 
-    m_scale_D1[i] = i/m_binSize_inv_D1+m_shift_D1+m_rMin;
+    m_scale_D1[i] = (i+m_shift_D1)/m_binSize_inv_D1+m_rMin;
   for (int i=0; i<m_nbins_D2; i++) 
-    m_scale_D2[i] = i/m_binSize_inv_D2+m_shift_D2+m_muMin;
+    m_scale_D2[i] = (i+m_shift_D2)/m_binSize_inv_D2+m_muMin;
 }
 
 
@@ -501,17 +473,15 @@ void cosmobl::pairs::Pair2D_comovingPolar_linlog::set_parameters_nbins ()
   
   double binSize_D1 = ((m_rMax-m_rMin)/m_nbins_D1);
   m_binSize_inv_D1 = 1./binSize_D1;
-  m_shift_D1 *= binSize_D1;
 
   double binSize_D2 = ((log10(m_muMax)-log10(m_muMin))/m_nbins_D2);
   m_binSize_inv_D2 = 1./binSize_D2;
-  m_shift_D2 *= binSize_D2;
 
   m_scale_D1.resize(m_nbins_D1); m_scale_D2.resize(m_nbins_D2);
   for (int i=0; i<m_nbins_D1; i++) 
-    m_scale_D1[i] = i*binSize_D1+m_shift_D1+m_rMin;
+    m_scale_D1[i] = (i+m_shift_D1)*binSize_D1+m_rMin;
   for (int i=0; i<m_nbins_D2; i++) 
-    m_scale_D2[i] = pow(10.,i*binSize_D2+m_shift_D2+log10(m_muMin));
+    m_scale_D2[i] = pow(10.,(i+m_shift_D2)*binSize_D2+log10(m_muMin));
 }
 
 
@@ -523,19 +493,17 @@ void cosmobl::pairs::Pair2D_comovingPolar_linlog::set_parameters_binSize ()
   if (m_muMin<1.e-30)
     ErrorMsg("Error in cosmobl::pairs::Pair2D_comovingPolar_linlog::set_parameters_linlog of Pair.cpp: m_muMin must be >0!");
   
-  m_shift_D1 /= m_binSize_inv_D1;
   m_nbins_D1 = nint((m_rMax-m_rMin)*m_binSize_inv_D1);
-  m_rMax = (m_nbins_D1-m_shift_D1)/m_binSize_inv_D1+m_shift_D1+m_rMin;
+  m_rMax = m_nbins_D1/m_binSize_inv_D1+m_rMin;
 
-  m_shift_D2 /= m_binSize_inv_D2;
   m_nbins_D2 = nint((log10(m_muMax)-log10(m_muMin))*m_binSize_inv_D2);
-  m_muMax = pow(10.,(m_nbins_D2-m_shift_D2)/m_binSize_inv_D2+m_shift_D2+log10(m_muMin));
+  m_muMax = pow(10.,(m_nbins_D2-m_shift_D2)/m_binSize_inv_D2+log10(m_muMin));
 
   m_scale_D1.resize(m_nbins_D1); m_scale_D2.resize(m_nbins_D2);
   for (int i=0; i<m_nbins_D1; i++) 
-    m_scale_D1[i] = i/m_binSize_inv_D1+m_shift_D1+m_rMin;
+    m_scale_D1[i] = (i+m_shift_D1)/m_binSize_inv_D1+m_rMin;
   for (int i=0; i<m_nbins_D2; i++) 
-    m_scale_D2[i] = pow(10.,i/m_binSize_inv_D2+m_shift_D2+log10(m_muMin));
+    m_scale_D2[i] = pow(10.,(i+m_shift_D2)/m_binSize_inv_D2+log10(m_muMin));
 }
 
 
@@ -550,17 +518,15 @@ void cosmobl::pairs::Pair2D_comovingPolar_loglin::set_parameters_nbins ()
   
   double binSize_D1 = ((log10(m_rMax)-log10(m_rMin))/m_nbins_D1);
   m_binSize_inv_D1 = 1./binSize_D1;
-  m_shift_D1 *= binSize_D1;
   
   double binSize_D2 = ((m_muMax-m_muMin)/m_nbins_D2);
   m_binSize_inv_D2 = 1./binSize_D2;
-  m_shift_D2 *= binSize_D2;
 
   m_scale_D1.resize(m_nbins_D1); m_scale_D2.resize(m_nbins_D2);
   for (int i=0; i<m_nbins_D1; i++) 
-    m_scale_D1[i] = pow(10.,i*binSize_D1+m_shift_D1+log10(m_rMin)); 
+    m_scale_D1[i] = pow(10.,(i+m_shift_D1)*binSize_D1+log10(m_rMin)); 
   for (int i=0; i<m_nbins_D2; i++) 
-    m_scale_D2[i] = i*binSize_D2+m_shift_D2+m_muMin;
+    m_scale_D2[i] = (i+m_shift_D2)*binSize_D2+m_muMin;
 }
 
 
@@ -572,19 +538,17 @@ void cosmobl::pairs::Pair2D_comovingPolar_loglin::set_parameters_binSize ()
   if (m_rMin<1.e-30)
     ErrorMsg("Error in cosmobl::pairs::Pair2D_comovingPolar_loglin::set_parameters_binSize of Pair.cpp: m_rMin must be >0!");
   
-  m_shift_D1 /= m_binSize_inv_D1;
   m_nbins_D1 = nint((log10(m_rMax)-log10(m_rMin))*m_binSize_inv_D1);
-  m_rMax = pow(10.,(m_nbins_D1-m_shift_D1)/m_binSize_inv_D1+m_shift_D1+log10(m_rMin));
+  m_rMax = pow(10.,m_nbins_D1/m_binSize_inv_D1+log10(m_rMin));
   
-  m_shift_D2 /= m_binSize_inv_D2;
   m_nbins_D2 = nint((m_muMax-m_muMin)*m_binSize_inv_D2);
-  m_muMax = (m_nbins_D2-m_shift_D2)/m_binSize_inv_D2+m_shift_D2+m_muMin;
+  m_muMax = m_nbins_D2/m_binSize_inv_D2+m_muMin;
 
   m_scale_D1.resize(m_nbins_D1); m_scale_D2.resize(m_nbins_D2);
   for (int i=0; i<m_nbins_D1; i++) 
-    m_scale_D1[i] = pow(10.,i/m_binSize_inv_D1+m_shift_D1+log10(m_rMin));
+    m_scale_D1[i] = pow(10.,(i+m_shift_D1)/m_binSize_inv_D1+log10(m_rMin));
   for (int i=0; i<m_nbins_D2; i++) 
-    m_scale_D2[i] = i/m_binSize_inv_D2+m_shift_D2+m_muMin;
+    m_scale_D2[i] = (i+m_shift_D2)/m_binSize_inv_D2+m_muMin;
 }
 
 
@@ -599,17 +563,15 @@ void cosmobl::pairs::Pair2D_comovingPolar_loglog::set_parameters_nbins ()
   
   double binSize_D1 = ((log10(m_rMax)-log10(m_rMin))/m_nbins_D1);
   m_binSize_inv_D1 = 1./binSize_D1;
-  m_shift_D1 *= binSize_D1;
   
   double binSize_D2 = ((log10(m_muMax)-log10(m_muMin))/m_nbins_D2);
   m_binSize_inv_D2 = 1./binSize_D2;
-  m_shift_D2 *= binSize_D2;
 
   m_scale_D1.resize(m_nbins_D1); m_scale_D2.resize(m_nbins_D2);
   for (int i=0; i<m_nbins_D1; i++) 
-    m_scale_D1[i] = pow(10.,i*binSize_D1+m_shift_D1+log10(m_rMin)); 
+    m_scale_D1[i] = pow(10.,(i+m_shift_D1)*binSize_D1+log10(m_rMin)); 
   for (int i=0; i<m_nbins_D2; i++) 
-    m_scale_D2[i] = pow(10.,i*binSize_D2+m_shift_D2+log10(m_muMin)); 
+    m_scale_D2[i] = pow(10.,(i+m_shift_D2)*binSize_D2+log10(m_muMin)); 
 }
 
 
@@ -621,19 +583,17 @@ void cosmobl::pairs::Pair2D_comovingPolar_loglog::set_parameters_binSize ()
   if (m_rMin<1.e-30 || m_muMin<1.e-30)
     ErrorMsg("Error in cosmobl::pairs::Pair2D_comovingPolar_loglog::set_parameters_binSize of Pair.cpp: m_rMin and m_muMin must be >0!");
   
-  m_shift_D1 /= m_binSize_inv_D1;
   m_nbins_D1 = nint((log10(m_rMax)-log10(m_rMin))*m_binSize_inv_D1);
-  m_rMax = pow(10.,(m_nbins_D1-m_shift_D1)/m_binSize_inv_D1+m_shift_D1+log10(m_rMin));
+  m_rMax = pow(10.,m_nbins_D1/m_binSize_inv_D1+log10(m_rMin));
   
-  m_shift_D2 /= m_binSize_inv_D2;
   m_nbins_D2 = nint((log10(m_muMax)-log10(m_muMin))*m_binSize_inv_D2);
-  m_muMax = pow(10.,(m_nbins_D2-m_shift_D2)/m_binSize_inv_D2+m_shift_D2+log10(m_muMin));
+  m_muMax = pow(10.,m_nbins_D2/m_binSize_inv_D2+log10(m_muMin));
 
   m_scale_D1.resize(m_nbins_D1); m_scale_D2.resize(m_nbins_D2);
   for (int i=0; i<m_nbins_D1; i++) 
-    m_scale_D1[i] = pow(10.,i/m_binSize_inv_D1+m_shift_D1+log10(m_rMin));
+    m_scale_D1[i] = pow(10.,(i+m_shift_D1)/m_binSize_inv_D1+log10(m_rMin));
   for (int i=0; i<m_nbins_D2; i++) 
-    m_scale_D2[i] = pow(10.,i/m_binSize_inv_D2+m_shift_D2+log10(m_muMin));
+    m_scale_D2[i] = pow(10.,(i+m_shift_D2)/m_binSize_inv_D2+log10(m_muMin));
 }
 
 

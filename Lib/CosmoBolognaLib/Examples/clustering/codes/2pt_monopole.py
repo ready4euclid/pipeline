@@ -56,7 +56,7 @@ shift = 0.5 # spatial shift used to set the bin centre
 TwoP = cbl.TwoPointCorrelation1D_monopole(catalogue, random_catalogue, cbl._logarithmic_, rMin, rMax, nbins, shift)
 
 # measure the two-point correlation function #
-TwoP.measure(dir_pairs)
+TwoP.measure(cbl._Poisson_,dir_pairs)
   
 # store the output data #
 file_xi = "xi.dat"

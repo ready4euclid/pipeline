@@ -82,10 +82,8 @@ shared_ptr<Data> cosmobl::twopt::TwoPointCorrelation_projected::ProjectedTwoP (c
 
 void cosmobl::twopt::TwoPointCorrelation_projected::read(const string dir, const string file) 
 {
-
   m_dataset->read(dir+file);
 }
-
 
 
 // ============================================================================================
@@ -139,7 +137,6 @@ void cosmobl::twopt::TwoPointCorrelation_projected::measurePoisson (const double
 
 void cosmobl::twopt::TwoPointCorrelation_projected::measureJackknife (const double piMax_integral, const string dir_output_pairs, const vector<string> dir_input_pairs, const string dir_output_ResampleXi, const int count_dd, const int count_rr, const int count_dr, const bool tcount)
 {
-
   if (dir_output_ResampleXi != par::defaultString){
     string mkdir = "mkdir -p "+dir_output_ResampleXi;
     if(system(mkdir.c_str())){}
@@ -187,6 +184,7 @@ void cosmobl::twopt::TwoPointCorrelation_projected::measureJackknife (const doub
 
 }
 
+
 // ============================================================================================
 
 
@@ -204,34 +202,35 @@ void cosmobl::twopt::TwoPointCorrelation_projected::measureBootstrap (const doub
   shared_ptr<Pair> rr_cart = move(Pair::Create(m_rr->pairType(), m_rr->sMin_D1(), m_rr->sMax_D1(), m_rr->nbins_D1(), m_rr->shift_D1(), m_rr->sMin_D2(), m_rr->sMax_D2(), m_rr->nbins_D2(), m_rr->shift_D2()));
   shared_ptr<Pair> dr_cart = move(Pair::Create(m_dr->pairType(), m_dr->sMin_D1(), m_dr->sMax_D1(), m_dr->nbins_D1(), m_dr->shift_D1(), m_dr->sMin_D2(), m_dr->sMax_D2(), m_dr->nbins_D2(), m_dr->shift_D2()));
 
-  for(size_t k=0;k<dd_regions.size();k++)
-    for(int i=0;i<dd_regions[k]->nbins_D1();i++)
-      for(int j=0;j<dd_regions[k]->nbins_D2();j++){
+  for (size_t k=0; k<dd_regions.size(); k++)
+    for (int i=0; i<dd_regions[k]->nbins_D1(); i++)
+      for (int j=0; j<dd_regions[k]->nbins_D2(); j++) {
 	dd_cart->add_PP2D(i,j,dd_regions[k]->PP2D(i,j));
 	rr_cart->add_PP2D(i,j,rr_regions[k]->PP2D(i,j));
 	dr_cart->add_PP2D(i,j,dr_regions[k]->PP2D(i,j));
       }
   
-  auto data_cart = (count_dr>=0) ? LandySzalayEstimatorTwoP(dd_cart,rr_cart,dr_cart,m_data->weightedN(),m_random->weightedN()) : NaturalEstimatorTwoP(dd_cart,rr_cart,m_data->weightedN(),m_random->weightedN());
+  auto data_cart = (count_dr>=0) ? LandySzalayEstimatorTwoP(dd_cart, rr_cart, dr_cart, m_data->weightedN(), m_random->weightedN()) : NaturalEstimatorTwoP(dd_cart, rr_cart, m_data->weightedN(), m_random->weightedN());
 
   if (count_dr==1) 
     data = XiBootstrap(piMax_integral, nMocks, dd_regions, rr_regions,dr_regions);
   else
     data = XiBootstrap(piMax_integral, nMocks, dd_regions, rr_regions);
 
-  vector<vector<double> > ww,covariance;
-  for(size_t i=0;i<data.size();i++){
+  vector<vector<double> > ww, covariance;
+  for (size_t i=0; i<data.size(); i++) {
     ww.push_back(data[i]->fx());
-    if (dir_output_ResampleXi != par::defaultString){
-      string filename = "xi_projected_Jackkknife_"+conv(i,par::fINT);
-      data[i]->write(dir_output_ResampleXi,filename,"rp","xi_projected",0);
+    if (dir_output_ResampleXi != par::defaultString) {
+      string filename = "xi_projected_Jackkknife_"+conv(i, par::fINT);
+      data[i]->write(dir_output_ResampleXi, filename, "rp", "xi_projected", 0);
     }
   }
-  covariance_matrix(ww,covariance,0);
+  covariance_matrix(ww, covariance, 0);
 
-  m_dataset = ProjectedTwoP(piMax_integral,TwoPointCorrelation2D_cartesian::xx(),TwoPointCorrelation2D_cartesian::yy(),TwoPointCorrelation2D_cartesian::xi2D(),TwoPointCorrelation2D_cartesian::error2D());
+  m_dataset = ProjectedTwoP(piMax_integral, TwoPointCorrelation2D_cartesian::xx(), TwoPointCorrelation2D_cartesian::yy(), TwoPointCorrelation2D_cartesian::xi2D(), TwoPointCorrelation2D_cartesian::error2D());
   m_dataset->set_covariance_fx(covariance);
 }
+
 
 // ============================================================================================
 
@@ -239,12 +238,15 @@ void cosmobl::twopt::TwoPointCorrelation_projected::measureBootstrap (const doub
 vector<shared_ptr<Data> > cosmobl::twopt::TwoPointCorrelation_projected::XiJackknife(const double piMax_integral, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr)
 {
   vector<shared_ptr<Data> > data;
-  auto data2d = TwoPointCorrelation2D_cartesian::XiJackknife(dd,rr);
-  for (size_t i=0;i<data2d.size();i++){
+
+  auto data2d = TwoPointCorrelation2D_cartesian::XiJackknife(dd, rr);
+
+  for (size_t i=0; i<data2d.size(); i++)
     data.push_back(move(ProjectedTwoP(piMax_integral, data2d[i]->xx(), data2d[i]->yy(), data2d[i]->fxy(), data2d[i]->error_fxy())));
-  }
+
   return data;
 }
+
 
 // ============================================================================================
 
@@ -252,12 +254,15 @@ vector<shared_ptr<Data> > cosmobl::twopt::TwoPointCorrelation_projected::XiJackk
 vector<shared_ptr<Data> > cosmobl::twopt::TwoPointCorrelation_projected::XiJackknife(const double piMax_integral, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr)
 {
   vector<shared_ptr<Data> > data;
-  auto data2d = TwoPointCorrelation2D_cartesian::XiJackknife(dd,rr,dr);
-  for (size_t i=0;i<data2d.size();i++){
+
+  auto data2d = TwoPointCorrelation2D_cartesian::XiJackknife(dd, rr, dr);
+
+  for (size_t i=0; i<data2d.size(); i++)
     data.push_back(move(ProjectedTwoP(piMax_integral, data2d[i]->xx(), data2d[i]->yy(), data2d[i]->fxy(), data2d[i]->error_fxy())));
-  }
+  
   return data;
 }
+
 
 // ============================================================================================
 
@@ -265,12 +270,15 @@ vector<shared_ptr<Data> > cosmobl::twopt::TwoPointCorrelation_projected::XiJackk
 vector<shared_ptr<Data> > cosmobl::twopt::TwoPointCorrelation_projected::XiBootstrap(const double piMax_integral, const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr)
 {
   vector<shared_ptr<Data> > data;
-  auto data2d = TwoPointCorrelation2D_cartesian::XiBootstrap(nMocks,dd,rr);
-  for (size_t i=0;i<data2d.size();i++){
+
+  auto data2d = TwoPointCorrelation2D_cartesian::XiBootstrap(nMocks, dd, rr);
+
+  for (size_t i=0; i<data2d.size(); i++)
     data.push_back(move(ProjectedTwoP(piMax_integral, data2d[i]->xx(), data2d[i]->yy(), data2d[i]->fxy(), data2d[i]->error_fxy())));
-  }
+
   return data;
 }
+
 
 // ============================================================================================
 
@@ -278,9 +286,11 @@ vector<shared_ptr<Data> > cosmobl::twopt::TwoPointCorrelation_projected::XiBoots
 vector<shared_ptr<Data> > cosmobl::twopt::TwoPointCorrelation_projected::XiBootstrap(const double piMax_integral, const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr)
 {
   vector<shared_ptr<Data> > data;
-  auto data2d = TwoPointCorrelation2D_cartesian::XiBootstrap(nMocks,dd,rr,dr);
-  for (size_t i=0;i<data2d.size();i++){
+
+  auto data2d = TwoPointCorrelation2D_cartesian::XiBootstrap(nMocks, dd, rr, dr);
+  
+  for (size_t i=0; i<data2d.size(); i++)
     data.push_back(move(ProjectedTwoP(piMax_integral, data2d[i]->xx(), data2d[i]->yy(), data2d[i]->fxy(), data2d[i]->error_fxy())));
-  }
+  
   return data;
 }

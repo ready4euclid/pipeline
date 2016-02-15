@@ -557,7 +557,7 @@ void cosmobl::catalogue::Catalogue::Order (const vector<int> vv)
   
   m_index.resize(nObj);
   
-  for (unsigned int i=0; i<vv.size(); i++) {
+  for (size_t i=0; i<vv.size(); i++) {
     m_index[i] = vv[i];
     obj[i] = m_sample[vv[i]];
   }
@@ -575,7 +575,8 @@ void cosmobl::catalogue::Catalogue::Order ()
   
   vector<shared_ptr<Object>> obj(nObj);
   
-  m_index.resize(nObj);
+  if (m_index.size() != nObj) 
+    ErrorMsg("Error in Catalogue::Order() of Catalogue.cpp, order not found!");
   
   obj = m_sample;
   

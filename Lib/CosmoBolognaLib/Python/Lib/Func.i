@@ -8,7 +8,21 @@
 
 %{
 #include "Func.h"
-  
+
+  class EnumTypes {
+    public:
+      enum {_1D_, _2D_}; // dimension
+      enum {_linear_, _logarithmic_}; // binType
+      enum {_1D_data_, _2D_data_, _1D_collection_data}; // dataType
+      enum {_angular_lin_,  _angular_log_,  _comoving_lin_,   _comoving_log_,   _comovingCartesian_linlin_,  _comovingCartesian_linlog_,  _comovingCartesian_loglin_,  _comovingCartesian_loglog_,  _comovingPolar_linlin_,  _comovingPolar_linlog_,  _comovingPolar_loglin_, _comovingPolar_loglog_}; // PairType
+      enum { _1D_monopole_, _1D_projected_, _1D_deprojected_, _1D_multipoles_, _1D_wedges_, _1D_filtered_, _1D_angular_, _2D_Cartesian_, _2D_polar_}; // TwoPType
+      enum {_Poisson_, _Jackknife_, _Bootstrap_}; // ErrorType
+      enum {_comoving_theta_, _comoving_side_}; // TripletType
+      enum {_angular_connected_,  _angular_reduced_,  _comoving_connected_,  _comoving_reduced_}; // ThreeType
+      enum { _GenericObject_, _RandomObject_, _Mock_, _Halo_, _Galaxy_, _Cluster_, _Void_}; // ObjType
+      enum {_XX_, _YY_, _ZZ_, _RA_, _DEC_, _REDSHIFT_,  _DC_, _WEIGHT_, _MASS_}; // Var
+  };
+
   string cosmobl::par::DirCosmo = "~/CosmoBolognaLib/";
   string cosmobl::par::DirLoc = "./";
 
@@ -69,6 +83,7 @@
   static const string col_red = "\033[0;31m";
   static const string col_green = "\033[0;32m";
   static const string col_blue = "\033[0;34m";
+
   %}
 
 %include "Func.h"
@@ -134,3 +149,18 @@ static const string col_blue = "\033[0;34m";
 %template(IntVector) std::vector<int>;
 %template(DoubleVector) std::vector<double>;
 %template(StringVector) std::vector<std::string>;
+%template(DoubleVectorVector) std::vector<std::vector<double> >;
+
+class EnumTypes {
+ public:
+  enum {_1D_, _2D_}; // dimension
+  enum {_linear_, _logarithmic_}; // binType
+  enum {_1D_data_, _2D_data_, _1D_collection_data}; // dataType
+  enum {_angular_lin_,  _angular_log_,  _comoving_lin_,   _comoving_log_,   _comovingCartesian_linlin_,  _comovingCartesian_linlog_,  _comovingCartesian_loglin_,  _comovingCartesian_loglog_,  _comovingPolar_linlin_,  _comovingPolar_linlog_,  _comovingPolar_loglin_, _comovingPolar_loglog_}; // PairType
+  enum { _1D_monopole_, _1D_projected_, _1D_deprojected_, _1D_multipoles_, _1D_wedges_, _1D_filtered_, _1D_angular_, _2D_Cartesian_, _2D_polar_}; // TwoPType
+  enum {_Poisson_, _Jackknife_, _Bootstrap_}; // ErrorType
+  enum {_comoving_theta_, _comoving_side_}; // TripletType
+  enum {_angular_connected_,  _angular_reduced_,  _comoving_connected_,  _comoving_reduced_}; // ThreeType
+  enum { _GenericObject_, _RandomObject_, _Mock_, _Halo_, _Galaxy_, _Cluster_, _Void_}; // ObjType
+  enum {_XX_, _YY_, _ZZ_, _RA_, _DEC_, _REDSHIFT_,  _DC_, _WEIGHT_, _MASS_}; // Var
+};

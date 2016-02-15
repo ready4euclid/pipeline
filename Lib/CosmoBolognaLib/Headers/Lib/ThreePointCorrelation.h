@@ -186,7 +186,7 @@ namespace cosmobl {
        *
        *  @return none
        */
-      void count_allTriplets (const string dir_output_triplets="NULL", const vector<string> dir_input_triplets={}, const int count_ddd=1, const int count_rrr=1, const int count_ddr=1, const int count_drr=1, const bool tcount=0);
+      void count_allTriplets (const string dir_output_triplets=par::defaultString, const vector<string> dir_input_triplets={}, const int count_ddd=1, const int count_rrr=1, const int count_ddr=1, const int count_drr=1, const bool tcount=0);
       
       /**
        *  @name Internal input/output member functions (customized in all the derived classes)

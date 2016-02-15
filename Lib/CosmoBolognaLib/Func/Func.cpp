@@ -1042,7 +1042,6 @@ int cosmobl::check_memory (const double frac, const bool exit, const string func
   return 1;
   
 #endif
-  
 }
 
   
@@ -1769,7 +1768,7 @@ void cosmobl::distribution (vector<double> &xx, vector<double> &fx, const vector
   if (xx.size()>0 || fx.size()>0 || FF.size()<=0 || nbin<=0) ErrorMsg("Error in distribution of Func.cpp!");
 
   ofstream fout;
-  if (file_out!="NULL") { fout.open (file_out.c_str()); checkIO(file_out,0); }
+  if (file_out!=par::defaultString) { fout.open (file_out.c_str()); checkIO(file_out,0); }
   
   double minFF = (V1>-1.e29) ? V1 : Min(FF)*0.9999;
   double maxFF = (V2>-1.e29) ? V2 : Max(FF)*1.0001;
@@ -1803,7 +1802,7 @@ void cosmobl::distribution (vector<double> &xx, vector<double> &fx, const vector
     else fx.push_back(val/((log10(x2)-log10(x1))*fact));
   }
   
-  if (file_out!="NULL") {
+  if (file_out!=par::defaultString) {
     for (size_t i=0; i<xx.size(); i++)
       fout << xx[i] << "   " << fx[i] << endl;
     fout.clear(); fout.close(); cout <<"I wrote the file: "<<file_out<<endl;

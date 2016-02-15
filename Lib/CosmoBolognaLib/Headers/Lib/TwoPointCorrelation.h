@@ -1360,7 +1360,7 @@ namespace cosmobl {
        *
        *  @return none
        */
-      virtual void measure (const double piMax_integral, const ErrorType errType=ErrorType::_Poisson_, const string dir_output_pairs=par::defaultString, const vector<string> dir_input_pairs={}, const string dir_output_ResampleXi="NULL", const int nMocks = 0, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1)
+      virtual void measure (const double piMax_integral, const ErrorType errType=ErrorType::_Poisson_, const string dir_output_pairs=par::defaultString, const vector<string> dir_input_pairs={}, const string dir_output_ResampleXi=par::defaultString, const int nMocks = 0, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1)
       { cosmobl::ErrorMsg("Error in void measure() of TwoPointCorrelation.h!"); }
 
       ///@}

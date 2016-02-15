@@ -127,7 +127,7 @@ double cosmobl::Cosmology::SSM (const double MM, const string method_Pk, const d
     bool do_nonlinear = 0;
     double RHO = Rho(m_Omega_matter,m_Omega_neutrinos); 
     
-    if (file_par!="NULL") {
+    if (file_par!=par::defaultString) {
       string Warn = "Check that in the parameter file Omega_matter = " + conv(m_Omega_matter,par::fDP3) + " and Omega_neutrinos = " + conv(m_Omega_neutrinos,par::fDP3) + "!";
       WarningMsg(Warn);
     }

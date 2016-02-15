@@ -775,7 +775,7 @@ void cosmobl::random_redshift_distribution (const shared_ptr<Catalogue> random, 
    vector<double> zminmax;
 
    data->MinMax_var(Var::_REDSHIFT_, zminmax);
-   data->var_distr(Var::_REDSHIFT_, var, distr, nbin, 1, "NULL", -1.e30, -1.e30, convolution, sigma);
+   data->var_distr(Var::_REDSHIFT_, var, distr, nbin, 1, par::defaultString, -1.e30, -1.e30, convolution, sigma);
 
    fill_distr(nRan, var, distr, random_redshift, zminmax[0], zminmax[1], 112312);
    

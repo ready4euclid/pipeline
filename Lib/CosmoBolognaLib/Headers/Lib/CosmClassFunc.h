@@ -455,7 +455,7 @@ namespace cosmobl {
       string m_file_par;
 
     public:
-      func_SSRd (double Omega_matter, double Omega_baryon, double Omega_neutrinos, double massless_neutrinos, int massive_neutrinos, double Omega_DE, double Omega_radiation, double hh, double scalar_amp, double n_spec, double w0, double wa, double fNL, int type_NG, string model, bool unit, string method_Pk, double redshift, string output_root, double kmax=1000., string file_par="NULL")
+      func_SSRd (double Omega_matter, double Omega_baryon, double Omega_neutrinos, double massless_neutrinos, int massive_neutrinos, double Omega_DE, double Omega_radiation, double hh, double scalar_amp, double n_spec, double w0, double wa, double fNL, int type_NG, string model, bool unit, string method_Pk, double redshift, string output_root, double kmax=1000., string file_par=par::defaultString)
 	: m_Omega_matter(Omega_matter), m_Omega_baryon(Omega_baryon), m_Omega_neutrinos(Omega_neutrinos), m_massless_neutrinos(massless_neutrinos), m_massive_neutrinos(massive_neutrinos), m_Omega_DE(Omega_DE), m_Omega_radiation(Omega_radiation), m_hh(hh), m_scalar_amp(scalar_amp), m_n_spec(n_spec), m_w0(w0), m_wa(wa), m_fNL(fNL), m_type_NG(type_NG), m_model(model), m_unit(unit), m_method_Pk(method_Pk), m_redshift(redshift), m_output_root(output_root), m_kmax(kmax), m_file_par(file_par) {}  
 
       double operator() (double RR) 
@@ -496,7 +496,7 @@ namespace cosmobl {
       string m_file_par;
 
     public:
-      func_SSMd (double Omega_matter, double Omega_baryon, double Omega_neutrinos, double massless_neutrinos, int massive_neutrinos, double Omega_DE, double Omega_radiation, double hh, double scalar_amp, double n_spec, double w0, double wa, double fNL, int type_NG, string model, bool unit, string method_Pk, double redshift, string output_root, double kmax=1000., string file_par="NULL")
+      func_SSMd (double Omega_matter, double Omega_baryon, double Omega_neutrinos, double massless_neutrinos, int massive_neutrinos, double Omega_DE, double Omega_radiation, double hh, double scalar_amp, double n_spec, double w0, double wa, double fNL, int type_NG, string model, bool unit, string method_Pk, double redshift, string output_root, double kmax=1000., string file_par=par::defaultString)
 	: m_Omega_matter(Omega_matter), m_Omega_baryon(Omega_baryon), m_Omega_neutrinos(Omega_neutrinos), m_massless_neutrinos(massless_neutrinos), m_massive_neutrinos(massive_neutrinos), m_Omega_DE(Omega_DE), m_Omega_radiation(Omega_radiation), m_hh(hh), m_scalar_amp(scalar_amp), m_n_spec(n_spec), m_w0(w0), m_wa(wa), m_fNL(fNL), m_type_NG(type_NG), m_model(model), m_unit(unit), m_method_Pk(method_Pk), m_redshift(redshift), m_output_root(output_root), m_kmax(kmax), m_file_par(file_par) {}
 
       double operator() (double MM) 

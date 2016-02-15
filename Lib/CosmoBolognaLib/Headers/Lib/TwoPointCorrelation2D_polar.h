@@ -302,7 +302,7 @@ namespace cosmobl {
        *
        *  @return none
        */
-      void measureJackknife (const string dir_output_pairs, const vector<string> dir_input_pairs={}, const string dir_output_JackknifeXi = "NULL", const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
+      void measureJackknife (const string dir_output_pairs, const vector<string> dir_input_pairs={}, const string dir_output_JackknifeXi = par::defaultString, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
 
       /**
        *  @brief measure the 2d polar two-point correlation
@@ -342,7 +342,7 @@ namespace cosmobl {
        *
        *  @return none
        */
-      void measureBootstrap (const int nMocks, const string dir_output_pairs, const vector<string> dir_input_pairs={}, const string dir_output_BootstrapXi = "NULL", const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
+      void measureBootstrap (const int nMocks, const string dir_output_pairs, const vector<string> dir_input_pairs={}, const string dir_output_BootstrapXi = par::defaultString, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
 
 
       ///@}

@@ -184,7 +184,7 @@ void cosmobl::threept::ThreePointCorrelation::count_allTriplets (const string di
   
   if (count_ddd==1) { 
     count_triplets(m_data, ChainMesh_data_rMAX1, ChainMesh_data_rMAX2, m_ddd, tcount);
-    if (dir_output_triplets!="NULL") write_triplets(m_ddd, dir_output_triplets, file);
+    if (dir_output_triplets!=par::defaultString) write_triplets(m_ddd, dir_output_triplets, file);
   } 
   else if (count_ddd==0) read_triplets (m_ddd, dir_input_triplets, file);
 
@@ -195,7 +195,7 @@ void cosmobl::threept::ThreePointCorrelation::count_allTriplets (const string di
   
   if (count_rrr==1) {
     count_triplets(m_random, ChainMesh_random_rMAX1, ChainMesh_random_rMAX2, m_rrr, tcount);
-    if (dir_output_triplets!="NULL") write_triplets(m_rrr, dir_output_triplets, file);
+    if (dir_output_triplets!=par::defaultString) write_triplets(m_rrr, dir_output_triplets, file);
   } 
   else if (count_rrr==0) read_triplets (m_rrr, dir_input_triplets, file);
  
@@ -216,7 +216,7 @@ void cosmobl::threept::ThreePointCorrelation::count_allTriplets (const string di
 
     m_ddr->sum(ddr1); m_ddr->sum(ddr2); m_ddr->sum(ddr3); 
    
-    if (dir_output_triplets!="NULL") write_triplets (m_ddr, dir_output_triplets, file);
+    if (dir_output_triplets!=par::defaultString) write_triplets (m_ddr, dir_output_triplets, file);
   } 
 
   else if (count_ddr==0) read_triplets (m_ddr, dir_input_triplets, file);
@@ -238,7 +238,7 @@ void cosmobl::threept::ThreePointCorrelation::count_allTriplets (const string di
 
     m_drr->sum(drr1); m_drr->sum(drr2); m_drr->sum(drr3);
     
-    if (dir_output_triplets!="NULL") write_triplets (m_drr, dir_output_triplets, file);
+    if (dir_output_triplets!=par::defaultString) write_triplets (m_drr, dir_output_triplets, file);
   } 
 
   else if (count_drr==0) 

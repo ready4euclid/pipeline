@@ -74,7 +74,7 @@ void cosmobl::Cosmology::run_CAMB (const bool NL, const double redshift, const s
 
   string File_par = file_par;
 
-  if (File_par=="NULL") {
+  if (File_par==par::defaultString) {
 
     // --------------------------------------------------------------------------
     // --------- set the cosmological parameters in the file params.ini ---------
@@ -159,7 +159,7 @@ void cosmobl::Cosmology::Table_PkCodes (const string code, const bool NL, vector
     string dirCr = (code!="MPTbreeze-v1") ? dir : dirC;
     if (chdir (dirCr.c_str())) {};
     
-    if (file_par=="NULL") {
+    if (file_par==par::defaultString) {
       
       // --------------------------------------------------------------------------
       // --------- set the cosmological parameters in the file params.ini ---------

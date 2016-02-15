@@ -130,18 +130,18 @@ void cosmobl::twopt::TwoPointCorrelation2D_polar::write (const string dir, const
 
 void cosmobl::twopt::TwoPointCorrelation2D_polar::measure (const ErrorType errorType, const string dir_output_pairs, const vector<string> dir_input_pairs, const string dir_output_ResampleXi, int nMocks, int count_dd, const int count_rr, const int count_dr, const bool tcount)
 {
-  switch(errorType){
-    case(ErrorType::_Poisson_):
-      measurePoisson(dir_output_pairs,dir_input_pairs,count_dd,count_rr,count_dr,tcount);
-      break;
-    case(ErrorType::_Jackknife_):
-      measureJackknife(dir_output_pairs,dir_input_pairs,dir_output_ResampleXi,count_dd,count_rr,count_dr,tcount);
-      break;
-    case(ErrorType::_Bootstrap_):
-      measureBootstrap(nMocks,dir_output_pairs,dir_input_pairs,dir_output_ResampleXi,count_dd,count_rr,count_dr,tcount);
-      break;
-    default:
-      ErrorMsg("Error in measure() of TwoPointCorrelation2D_polar.cpp, unknown type of error");
+  switch (errorType) {
+  case (ErrorType::_Poisson_) :
+    measurePoisson(dir_output_pairs, dir_input_pairs, count_dd, count_rr, count_dr, tcount);
+    break;
+  case (ErrorType::_Jackknife_) :
+    measureJackknife(dir_output_pairs, dir_input_pairs, dir_output_ResampleXi, count_dd, count_rr, count_dr, tcount);
+    break;
+  case (ErrorType::_Bootstrap_) :
+    measureBootstrap(nMocks, dir_output_pairs, dir_input_pairs, dir_output_ResampleXi, count_dd, count_rr, count_dr, tcount);
+    break;
+  default:
+    ErrorMsg("Error in measure() of TwoPointCorrelation2D_polar.cpp, unknown type of error");
   }
 }
 
@@ -163,10 +163,11 @@ void cosmobl::twopt::TwoPointCorrelation2D_polar::measurePoisson (const string d
   // ----------- count the data-data, random-random and data-random pairs, or read them from file ----------- 
   
   count_allPairs(m_twoPType, dir_output_pairs, dir_input_pairs, count_dd, count_rr, count_dr, tcount);
+
   
   // ----------- compute the monopole of the two-point correlation function ----------- 
 
-  if(count_dr>-1)
+  if (count_dr>-1)
     m_dataset = LandySzalayEstimatorTwoP(m_dd, m_rr, m_dr, nData, nRandom);
   else
     m_dataset = NaturalEstimatorTwoP(m_dd, m_rr, nData, nRandom);
@@ -179,11 +180,11 @@ void cosmobl::twopt::TwoPointCorrelation2D_polar::measurePoisson (const string d
 
 void cosmobl::twopt::TwoPointCorrelation2D_polar::measureJackknife (const string dir_output_pairs, const vector<string> dir_input_pairs, const string dir_output_JackknifeXi, const int count_dd, const int count_rr, const int count_dr, const bool tcount)
 {
-
-  if(dir_output_JackknifeXi!="NULL"){
+  if (dir_output_JackknifeXi!=par::defaultString) { 
     string mkdir = "mkdir -p "+dir_output_JackknifeXi;
-    if(system(mkdir.c_str())){}
+    if (system(mkdir.c_str())) {}
   }
+  
   vector<long> region_list = m_data->get_region_list();
   int nRegions = region_list.size();
 
@@ -196,7 +197,7 @@ void cosmobl::twopt::TwoPointCorrelation2D_polar::measureJackknife (const string
 
   for (int i=0; i<nRegions; i++) {
 
-    if(dir_output_JackknifeXi !="NULL"){
+    if (dir_output_JackknifeXi !=par::defaultString) {
       string file = "xi_Jackknife_"+conv(i, par::fINT);
       data_SS[i]->write(dir_output_JackknifeXi, file, "r", "mu", "xi", 0);
     }
@@ -208,12 +209,11 @@ void cosmobl::twopt::TwoPointCorrelation2D_polar::measureJackknife (const string
   vector<vector<double> > error(m_dd->nbins_D1(),vector<double>(m_dd->nbins_D2(),0));
 
   double fact = pow(nRegions-1,2)/nRegions;
-  for(int i=0;i<m_dd->nbins_D1();i++){
-    for(int j=0;j<m_dd->nbins_D2();j++){
+  for (int i=0; i<m_dd->nbins_D1(); i++) {
+    for (int j=0; j<m_dd->nbins_D2(); j++) {
       vector<double> temp;
-      for(int nm = 0; nm<nRegions;nm++){
+      for (int nm = 0; nm<nRegions; nm++) 
 	temp.push_back(xi_SubSample[nm][i][j]);
-      }
       error[i][j] = pow(Sigma(temp),2)*fact;
     }
   }
@@ -222,7 +222,7 @@ void cosmobl::twopt::TwoPointCorrelation2D_polar::measureJackknife (const string
   double nData = m_data->weightedN();
   double nRandom = m_random->weightedN();
 
-  if(count_dr>-1)
+  if (count_dr>-1)
     m_dataset = LandySzalayEstimatorTwoP(m_dd, m_rr, m_dr, nData, nRandom);
   else
     m_dataset = NaturalEstimatorTwoP(m_dd, m_rr, nData, nRandom);
@@ -239,9 +239,9 @@ void cosmobl::twopt::TwoPointCorrelation2D_polar::measureBootstrap (const int nM
   if (nMocks <=0)
     ErrorMsg("Error in measureBootstrap() of TwoPointCorrelation2D_polar.cpp, number of mocks must be >0");
 
-  if(dir_output_BootstrapXi!="NULL"){
+  if (dir_output_BootstrapXi!=par::defaultString) {
     string mkdir = "mkdir -p "+dir_output_BootstrapXi;
-    if(system(mkdir.c_str())){}
+    if (system(mkdir.c_str())) {}
   }
 
   vector< vector< vector<double > > > xi_SubSample;
@@ -251,25 +251,23 @@ void cosmobl::twopt::TwoPointCorrelation2D_polar::measureBootstrap (const int nM
 
   vector<shared_ptr<Data> > data_SS = (count_dr) ? XiBootstrap(nMocks, dd_regions,rr_regions,dr_regions) : XiBootstrap(nMocks, dd_regions,rr_regions);
 
-  for(int i=0;i<nMocks;i++){
+  for (int i=0; i<nMocks; i++) {
 
-    if (dir_output_BootstrapXi!="NULL") {
+    if (dir_output_BootstrapXi!=par::defaultString) {
       string file = "xi_Bootstrap_"+conv(i, par::fINT);
-      data_SS[i]->write(dir_output_BootstrapXi, file, "r", "mu","xi", 0);
+      data_SS[i]->write(dir_output_BootstrapXi, file, "r", "mu", "xi", 0);
     }
 
     xi_SubSample.push_back(data_SS[i]->fxy());
-
   }
 
   vector<vector<double> > error(m_dd->nbins_D1(),vector<double>(m_dd->nbins_D2(),0));
 
-  for(int i=0;i<m_dd->nbins_D1();i++){
-    for(int j=0;j<m_dd->nbins_D2();j++){
+  for (int i=0; i<m_dd->nbins_D1(); i++) {
+    for (int j=0; j<m_dd->nbins_D2(); j++) {
       vector<double> temp;
-      for(int nm = 0; nm<nMocks;nm++){
+      for (int nm=0; nm<nMocks; nm++)
 	temp.push_back(xi_SubSample[nm][i][j]);
-      }
       error[i][j] = pow(Sigma(temp),2);
     }
   }

@@ -158,6 +158,13 @@ using namespace std;
  * class cosmobl::TwoPointCorrelation
  */
 /**
+ * @example 2pt_projected_jackknife.cpp 
+ *
+ * This example shows how to measure the projected two-point
+ * correlation function, estimating the errors with the jackknife
+ * method, using the class cosmobl::TwoPointCorrelation
+ */
+/**
  * @example 3pt.cpp 
  *
  * This example shows how to measure the three-point correlation

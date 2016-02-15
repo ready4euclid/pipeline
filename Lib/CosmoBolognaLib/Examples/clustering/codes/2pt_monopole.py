@@ -33,7 +33,7 @@ os.system("mkdir -p "+dir_output+" "+dir_pairs)
 
 print ("I'm reading the input catalogue...")
 
-catalogue = cbl.Catalogue(file_catalogue, cosmology, cbl._Galaxy_)
+catalogue = cbl.Catalogue(file_catalogue, cosmology, cbl.EnumTypes._Galaxy_)
 
 
 ### construct the random catalogue ###
@@ -53,11 +53,11 @@ nbins = 20  # number of bins
 shift = 0.5 # spatial shift used to set the bin centre 
 
 # create the object used to measure the two-point correlation function #
-TwoP = cbl.TwoPointCorrelation1D_monopole(catalogue, random_catalogue, cbl._logarithmic_, rMin, rMax, nbins, shift)
+TwoP = cbl.TwoPointCorrelation1D_monopole(catalogue, random_catalogue, cbl.EnumTypes._logarithmic_, rMin, rMax, nbins, shift)
 
 # measure the two-point correlation function #
-TwoP.measure(cbl._Poisson_,dir_pairs)
-  
+TwoP.measure(cbl.EnumTypes._Poisson_, dir_pairs)
+
 # store the output data #
 file_xi = "xi.dat"
 TwoP.write(dir_output, file_xi)

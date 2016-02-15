@@ -248,7 +248,6 @@ void cosmobl::twopt::TwoPointCorrelation::count_pairs (const shared_ptr<Catalogu
 
 void cosmobl::twopt::TwoPointCorrelation::count_allPairs (const TwoPType type, const string dir_output_pairs, const vector<string> dir_input_pairs, const int count_dd, const int count_rr, const int count_dr, const bool tcount)  
 {
-
   // ----------- compute polar coordinates, if necessary ----------- 
 
   if (!isSet(m_data->var(Var::_RA_)) || !isSet(m_data->var(Var::_DEC_)) || !isSet(m_data->var(Var::_DC_))) 
@@ -262,6 +261,7 @@ void cosmobl::twopt::TwoPointCorrelation::count_allPairs (const TwoPType type, c
     m_random->normalizeComovingCoordinates();
   }
 
+  
   // ----------- create the chain-mesh ----------- 
 
   double rMAX = (type==_1D_monopole_ || type==_1D_angular_) ? m_dd->sMax() : m_dd->sMax_D1(); // check!!!
@@ -287,7 +287,7 @@ void cosmobl::twopt::TwoPointCorrelation::count_allPairs (const TwoPType type, c
  
   if (count_dd==1) {
     count_pairs(m_data, ChM_data, m_dd, 0, tcount);
-    if (dir_output_pairs!="NULL") write_pairs(m_dd, dir_output_pairs, file);
+    if (dir_output_pairs!=par::defaultString) write_pairs(m_dd, dir_output_pairs, file);
   }
   else if (count_dd==0) read_pairs(m_dd, dir_input_pairs, file);
   
@@ -298,7 +298,7 @@ void cosmobl::twopt::TwoPointCorrelation::count_allPairs (const TwoPType type, c
  
   if (count_rr==1) {
     count_pairs(m_random, ChM_random, m_rr, 0, tcount);
-    if (dir_output_pairs!="NULL") write_pairs(m_rr, dir_output_pairs, file);
+    if (dir_output_pairs!=par::defaultString) write_pairs(m_rr, dir_output_pairs, file);
   }
   else if (count_rr==0) read_pairs(m_rr, dir_input_pairs, file);
 
@@ -309,17 +309,21 @@ void cosmobl::twopt::TwoPointCorrelation::count_allPairs (const TwoPType type, c
  
   if (count_dr==1) {
     count_pairs(m_data, ChM_random, m_dr, 1, tcount);
-    if (dir_output_pairs!="NULL") write_pairs(m_dr, dir_output_pairs, file);
+    if (dir_output_pairs!=par::defaultString) write_pairs(m_dr, dir_output_pairs, file);
   }
   else if (count_dr==0) read_pairs(m_dr, dir_input_pairs, file);
 
-  m_data->Order();
-  m_random->Order();
+  if (count_dd==1)
+    m_data->Order();
+  
+  if (count_rr==1 || count_dr==1)
+    m_random->Order();
 
-  if (type == _1D_angular_){
+  if (type==_1D_angular_) {
     m_data->restoreComovingCoordinates();
     m_random->restoreComovingCoordinates();
   }
+  
 }
 
 
@@ -489,14 +493,18 @@ void cosmobl::twopt::TwoPointCorrelation::count_allPairs_region (vector<shared_p
   int nRegions = region_list.size();
   int nP = nRegions*nRegions; //nRegions*(nRegions+1)/2;
 
-  dd_regions.erase(dd_regions.begin(),dd_regions.end());
-  rr_regions.erase(rr_regions.begin(),rr_regions.end());
-  dr_regions.erase(dr_regions.begin(),dr_regions.end());
+  dd_regions.erase(dd_regions.begin(), dd_regions.end());
+  rr_regions.erase(rr_regions.begin(), rr_regions.end());
+  dr_regions.erase(dr_regions.begin(), dr_regions.end());
 
-  for(int i=0;i<nP;i++){
-    dd_regions.push_back( (m_dd->pairDim()==_1D_) ? move(Pair::Create(m_dd->pairType(), m_dd->sMin(), m_dd->sMax(), m_dd->nbins(), m_dd->shift())) : move(Pair::Create(m_dd->pairType(), m_dd->sMin_D1(), m_dd->sMax_D1(), m_dd->nbins_D1(), m_dd->shift_D1(), m_dd->sMin_D2(), m_dd->sMax_D2(), m_dd->nbins_D2(), m_dd->shift_D2())));
-    rr_regions.push_back( (m_rr->pairDim()==_1D_) ? move(Pair::Create(m_rr->pairType(), m_rr->sMin(), m_rr->sMax(), m_rr->nbins(), m_rr->shift())) : move(Pair::Create(m_rr->pairType(), m_rr->sMin_D1(), m_rr->sMax_D1(), m_rr->nbins_D1(), m_rr->shift_D1(), m_rr->sMin_D2(), m_rr->sMax_D2(), m_rr->nbins_D2(), m_rr->shift_D2())));
-    dr_regions.push_back( (m_dr->pairDim()==_1D_) ? move(Pair::Create(m_dr->pairType(), m_dr->sMin(), m_dr->sMax(), m_dr->nbins(), m_dr->shift())) : move(Pair::Create(m_dr->pairType(), m_dr->sMin_D1(), m_dr->sMax_D1(), m_dr->nbins_D1(), m_dr->shift_D1(), m_dr->sMin_D2(), m_dr->sMax_D2(), m_dr->nbins_D2(), m_dr->shift_D2())));
+  for (int i=0; i<nP; i++) {
+
+    dd_regions.push_back((m_dd->pairDim()==_1D_) ? move(Pair::Create(m_dd->pairType(), m_dd->sMin(), m_dd->sMax(), m_dd->nbins(), m_dd->shift())) : move(Pair::Create(m_dd->pairType(), m_dd->sMin_D1(), m_dd->sMax_D1(), m_dd->nbins_D1(), m_dd->shift_D1(), m_dd->sMin_D2(), m_dd->sMax_D2(), m_dd->nbins_D2(), m_dd->shift_D2())));
+    
+    rr_regions.push_back((m_rr->pairDim()==_1D_) ? move(Pair::Create(m_rr->pairType(), m_rr->sMin(), m_rr->sMax(), m_rr->nbins(), m_rr->shift())) : move(Pair::Create(m_rr->pairType(), m_rr->sMin_D1(), m_rr->sMax_D1(), m_rr->nbins_D1(), m_rr->shift_D1(), m_rr->sMin_D2(), m_rr->sMax_D2(), m_rr->nbins_D2(), m_rr->shift_D2())));
+
+    dr_regions.push_back((m_dr->pairDim()==_1D_) ? move(Pair::Create(m_dr->pairType(), m_dr->sMin(), m_dr->sMax(), m_dr->nbins(), m_dr->shift())) : move(Pair::Create(m_dr->pairType(), m_dr->sMin_D1(), m_dr->sMax_D1(), m_dr->nbins_D1(), m_dr->shift_D1(), m_dr->sMin_D2(), m_dr->sMax_D2(), m_dr->nbins_D2(), m_dr->shift_D2())));
+
   }
 
 
@@ -511,7 +519,7 @@ void cosmobl::twopt::TwoPointCorrelation::count_allPairs_region (vector<shared_p
 
   if (count_dd==1) {
     count_pairs_region(m_data, ChM_data, m_dd, dd_regions, 0, tcount);
-    if (dir_output_pairs!="NULL"){
+    if (dir_output_pairs!=par::defaultString) {
       write_pairs(m_dd, dir_output_pairs, file);
       write_pairs(dd_regions,dir_output_pairs,file_regions);
     }
@@ -528,7 +536,7 @@ void cosmobl::twopt::TwoPointCorrelation::count_allPairs_region (vector<shared_p
 
   if (count_rr==1) {
     count_pairs_region(m_random, ChM_random, m_rr, rr_regions, 0, tcount);
-    if (dir_output_pairs!="NULL"){
+    if (dir_output_pairs!=par::defaultString) {
       write_pairs(m_rr, dir_output_pairs, file);
       write_pairs(rr_regions,dir_output_pairs,file_regions);
     }
@@ -545,9 +553,9 @@ void cosmobl::twopt::TwoPointCorrelation::count_allPairs_region (vector<shared_p
 
   if (count_dr==1) {
     count_pairs_region(m_data, ChM_random, m_dr, dr_regions, 1, tcount);
-    if (dir_output_pairs!="NULL") {
+    if (dir_output_pairs!=par::defaultString) {
       write_pairs(m_dr, dir_output_pairs, file);
-      write_pairs(dr_regions,dir_output_pairs,file_regions);
+      write_pairs(dr_regions, dir_output_pairs, file_regions);
     }
   }
   else if (count_dr==0) {

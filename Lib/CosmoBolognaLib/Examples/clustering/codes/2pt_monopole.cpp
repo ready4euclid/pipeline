@@ -21,22 +21,22 @@ int main () {
   Cosmology cosmology;
 
   
-  // ----------------------------------------------------------
-  // ---------------- read the input catalogue ----------------
-  // ----------------------------------------------------------
+  // ------------------------------------------------------------------------------------------------------
+  // ---------------- read the input catalogue (with polar coordinates: RA, Dec, redshift) ----------------
+  // ------------------------------------------------------------------------------------------------------
   
   string file_catalogue = par::DirLoc+"../input/cat.dat";
 
-  Catalogue catalogue {file_catalogue, cosmology, _Galaxy_};
+  Catalogue catalogue {_Galaxy_, {file_catalogue}, cosmology};
 
   
-  // ----------------------------------------------------------------
-  // ---------------- construct the random catalogue ----------------
-  // ----------------------------------------------------------------
+  // --------------------------------------------------------------------------------------
+  // ---------------- construct the random catalogue (with cubic geometry) ----------------
+  // --------------------------------------------------------------------------------------
 
   double N_R = 1.; // random/object ratio
   
-  Catalogue random_catalogue {catalogue, N_R};
+  Catalogue random_catalogue {_Box_, catalogue, N_R};
 
   
   // --------------------------------------------------------------------------------------------
@@ -54,11 +54,11 @@ int main () {
   string file = "xi.dat";
 
   
-  // measure the monopole
+  // measure the monopole and compute Poisson errors 
 
   TwoPointCorrelation1D_monopole TwoP {catalogue, random_catalogue, _logarithmic_, rMin, rMax, nbins, shift};
   
-  TwoP.measure(ErrorType::_Poisson_, dir);
+  TwoP.measure(_Poisson_, dir);
 
   
   // store the output data
@@ -67,6 +67,5 @@ int main () {
   
   
   return 0;
-  
 }
 

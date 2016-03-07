@@ -149,7 +149,7 @@ void cosmobl::twopt::TwoPointCorrelation1D::read_pairs (vector<shared_ptr<pairs:
 // ============================================================================
 
 
-shared_ptr<Data> cosmobl::twopt::TwoPointCorrelation1D::NaturalEstimatorTwoP (shared_ptr<pairs::Pair> dd, shared_ptr<pairs::Pair> rr, int nData, int nRandom){
+shared_ptr<Data> cosmobl::twopt::TwoPointCorrelation1D::NaturalEstimatorTwoP (const shared_ptr<pairs::Pair> dd, const shared_ptr<pairs::Pair> rr, const int nData, const int nRandom){
 
   vector<double> rad,xi,error;
   rad.resize(m_dd->nbins()); xi.resize(m_dd->nbins()); error.resize(m_dd->nbins());
@@ -160,7 +160,7 @@ shared_ptr<Data> cosmobl::twopt::TwoPointCorrelation1D::NaturalEstimatorTwoP (sh
   
     rad[i] = dd->scale(i);
     xi[i] = -1.;
-    error[i] = 1.e30;
+    error[i] = 1000.;
     
     if (dd->PP1D(i)>0 && rr->PP1D(i)>0) {
       
@@ -177,7 +177,7 @@ shared_ptr<Data> cosmobl::twopt::TwoPointCorrelation1D::NaturalEstimatorTwoP (sh
 // ============================================================================
 
 
-shared_ptr<Data> cosmobl::twopt::TwoPointCorrelation1D::LandySzalayEstimatorTwoP (shared_ptr<pairs::Pair> dd, shared_ptr<pairs::Pair> rr, shared_ptr<pairs::Pair> dr, int nData, int nRandom){
+shared_ptr<Data> cosmobl::twopt::TwoPointCorrelation1D::LandySzalayEstimatorTwoP (const shared_ptr<pairs::Pair> dd, const shared_ptr<pairs::Pair> rr, const shared_ptr<pairs::Pair> dr, const int nData, const int nRandom){
 
   vector<double> rad,xi,error;
   rad.resize(m_dd->nbins()); xi.resize(m_dd->nbins()); error.resize(m_dd->nbins());
@@ -189,7 +189,7 @@ shared_ptr<Data> cosmobl::twopt::TwoPointCorrelation1D::LandySzalayEstimatorTwoP
   
     rad[i] = dd->scale(i);
     xi[i] = -1.;
-    error[i] = 1.e30;
+    error[i] = 1000.;
     
     if (dd->PP1D(i)>0 && rr->PP1D(i)>0) {
       

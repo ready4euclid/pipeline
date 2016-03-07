@@ -59,7 +59,7 @@ void cosmobl::set_ObjectRegion_SubBoxes (catalogue::Catalogue &data, catalogue::
       int j1 = min(int((data.yy(i)-Lim[2])/Cell_Y), ny-1);
       int z1 = min(int((data.zz(i)-Lim[4])/Cell_Z), nz-1);
       int index = z1+nz*(j1+ny*i1);
-      data.object(i)->set_region(index);
+      data.catalogue_object(i)->set_region(index);
     }
 
 #pragma omp for schedule(static, 2) 
@@ -68,7 +68,7 @@ void cosmobl::set_ObjectRegion_SubBoxes (catalogue::Catalogue &data, catalogue::
       int j1 = min(int((random.yy(i)-Lim[2])/Cell_Y), ny-1);
       int z1 = min(int((random.zz(i)-Lim[4])/Cell_Z), nz-1);
       int index = z1+nz*(j1+ny*i1);
-      random.object(i)->set_region(index);
+      random.catalogue_object(i)->set_region(index);
     }
   }
   
@@ -151,11 +151,11 @@ void cosmobl::set_ObjectRegion_mangle (catalogue::Catalogue &data, catalogue::Ca
   for (size_t i=1; i<boundaries.size(); i++) {
     for (size_t j=0; j<poly_data.size(); j++) 
       if (poly_data[j]>=boundaries[i-1] && poly_data[j] <boundaries[i])
-	data.object(j)->set_region(i-1);
+	data.catalogue_object(j)->set_region(i-1);
     
     for (size_t j=0; j<poly_random.size(); j++) 
       if (poly_random[j]>=boundaries[i-1] && poly_random[j]<boundaries[i]) 
-	random.object(j)->set_region(i-1);
+	random.catalogue_object(j)->set_region(i-1);
   }
   
   string RM = "rm -rf "+dir+"temp/";

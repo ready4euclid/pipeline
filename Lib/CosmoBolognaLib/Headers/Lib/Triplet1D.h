@@ -1,23 +1,23 @@
-/*******************************************************************
- *  Copyright (C) 2015 by Federico Marulli, Michele Moresco,       *
- *  and Alfonso Veropalumbo                                        *
- *                                                                 *
- *  federico.marulli3@unibo.it                                     *
- *                                                                 *
- *  This program is free software; you can redistribute it and/or  *
- *  modify it under the terms of the GNU General Public License as *
- *  published by the Free Software Foundation; either version 2 of *
- *  the License, or (at your option) any later version.            *
- *                                                                 *
- *  This program is distributed in the hope that it will be useful,*
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the  *
- *  GNU General Public License for more details.                   *
- *                                                                 *
- *  You should have received a copy of the GNU General Public      *
- *  License along with this program; if not, write to the Free     *
- *  Software Foundation, Inc.,                                     *
- *  59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.      *
+/********************************************************************
+ *  Copyright (C) 2015 by Federico Marulli, Michele Moresco,        *
+ *  and Alfonso Veropalumbo                                         *
+ *                                                                  *
+ *  federico.marulli3@unibo.it                                      *
+ *                                                                  *
+ *  This program is free software; you can redistribute it and/or   *
+ *  modify it under the terms of the GNU General Public License as  *
+ *  published by the Free Software Foundation; either version 2 of  *
+ *  the License, or (at your option) any later version.             *
+ *                                                                  *
+ *  This program is distributed in the hope that it will be useful, *
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of  *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the   *
+ *  GNU General Public License for more details.                    *
+ *                                                                  *
+ *  You should have received a copy of the GNU General Public       *
+ *  License along with this program; if not, write to the Free      *
+ *  Software Foundation, Inc.,                                      *
+ *  59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.       *
  *******************************************************************/
 
 /**
@@ -61,6 +61,22 @@ namespace cosmobl {
      */
     class Triplet1D : public Triplet {
 
+    private:
+      
+      /**
+       *  @name Member functions used to set the binning parameters (customized in all the derived classes) 
+       */
+      ///@{
+  
+      /**
+       *  @brief set the binning parameters
+       *  @return none
+       */
+      virtual void set_parameters () = 0;
+  
+      ///@}
+
+      
     protected:
 
       /// the binned scales
@@ -230,7 +246,7 @@ namespace cosmobl {
        *  @param ww the weight
        *  @return none
        */
-      void sum (const shared_ptr<Triplet> tt, const double ww=1) override;
+      void Sum (const shared_ptr<Triplet> tt, const double ww=1) override;
 
       ///@}
     
@@ -253,7 +269,22 @@ namespace cosmobl {
      */
     class Triplet1D_comoving : public Triplet1D {
 
+    private:
+      
+      /**
+       *  @name Member functions used to set the binning parameters (customized in all the derived classes) 
+       */
+      ///@{
   
+      /**
+       *  @brief set the binning parameters
+       *  @return none
+       */
+      virtual void set_parameters () = 0;
+  
+      ///@}
+
+      
     public:
     
       /**
@@ -510,7 +541,7 @@ namespace cosmobl {
        *
        *  @warning This method has not been implemented yet
        */
-      void set_parameters () override { ErrorMsg("Work in progress..."); }
+      virtual void set_parameters () = 0;
 
       ///@}
 
@@ -537,8 +568,7 @@ namespace cosmobl {
        *  @return object of class Triplet1D_angular
        */
       Triplet1D_angular (const double side_s, const double side_u, const double perc_increase, const int nbins) 
-	: Triplet1D(side_s, side_u, perc_increase, nbins)
-	{ set_parameters(); }
+	: Triplet1D(side_s, side_u, perc_increase, nbins) {}
 
       /**
        *  @brief default destructor

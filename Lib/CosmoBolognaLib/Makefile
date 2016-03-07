@@ -7,7 +7,7 @@ FLAGS = -O3 -unroll -Wall -Wextra -pedantic -Wno-unused-parameter
 
 Dir_H = Headers/Lib/
 Dir_O = Headers/Objects/
-Dir_EH = Cosmology/EH/
+Dir_EH = External/EH/
 
 dir_H = $(addprefix $(PWD)/,$(Dir_H))
 dir_O = $(addprefix $(PWD)/,$(Dir_O))
@@ -51,13 +51,12 @@ Dir_COSM = Cosmology/Lib/
 Dir_CM = ChainMesh/
 Dir_CAT = Catalogue/
 Dir_LN = LogNormal/
-Dir_RANDOM = CatalogueAnalysis/RandomCatalogue/
 Dir_TWOP = CatalogueAnalysis/TwoPointCorrelation/
 Dir_THREEP = CatalogueAnalysis/ThreePointCorrelation/
 Dir_MODEL = Modelling/
 Dir_GLOB = GlobalFunc/
 
-Dir_CBL = $(Dir_H) $(Dir_O) $(Dir_FUNC) $(Dir_STAT) $(Dir_COSM) $(Dir_CM) $(Dir_CAT) $(Dir_LN) $(Dir_RANDOM) $(Dir_TWOP) $(Dir_THREEP) $(Dir_MODEL) $(Dir_GLOB)
+Dir_CBL = $(Dir_H) $(Dir_O) $(Dir_FUNC) $(Dir_STAT) $(Dir_COSM) $(Dir_CM) $(Dir_CAT) $(Dir_LN) $(Dir_TWOP) $(Dir_THREEP) $(Dir_MODEL) $(Dir_GLOB)
 Dir_ALL = $(Dir_CBL) $(Dir_EH) Headers/ Cosmology/ CatalogueAnalysis/ 
 
 dir_FUNC = $(addprefix $(PWD)/,$(Dir_FUNC))
@@ -66,7 +65,6 @@ dir_COSM = $(addprefix $(PWD)/,$(Dir_COSM))
 dir_CM = $(addprefix $(PWD)/,$(Dir_CM))
 dir_CAT = $(addprefix $(PWD)/,$(Dir_CAT))
 dir_LN = $(addprefix $(PWD)/,$(Dir_LN))
-dir_RANDOM = $(addprefix $(PWD)/,$(Dir_RANDOM))
 dir_TWOP = $(addprefix $(PWD)/,$(Dir_TWOP))
 dir_THREEP = $(addprefix $(PWD)/,$(Dir_THREEP))
 dir_MODEL = $(addprefix $(PWD)/,$(Dir_MODEL))
@@ -83,16 +81,15 @@ OBJ_FUNC = $(dir_FUNC)Func.o $(dir_FUNC)FuncXi.o $(dir_FUNC)FuncMultipoles.o $(d
 OBJ_STAT = $(dir_STAT)Chain.o $(dir_STAT)Prior.o $(dir_STAT)Parameter.o $(dir_STAT)Model.o $(dir_STAT)Data.o $(dir_STAT)Data1D.o $(dir_STAT)Data1D_collection.o $(dir_STAT)Data2D.o $(dir_STAT)Chi2.o $(dir_STAT)Likelihood.o
 OBJ_COSM = $(dir_EH)power_whu.o $(dir_COSM)Cosmology.o $(dir_COSM)Sigma.o $(dir_COSM)PkXi.o $(dir_COSM)PkXizSpace.o $(dir_COSM)Bias.o $(dir_COSM)RSD.o $(dir_COSM)Velocities.o $(dir_COSM)MassGrowth.o $(dir_COSM)NG.o $(dir_COSM)BAO.o $(dir_COSM)MassFunction.o $(dir_COSM)SizeFunction.o
 OBJ_CM = $(dir_CM)ChainMesh.o
-OBJ_CAT = $(dir_CAT)Object.o $(dir_CAT)Catalogue.o $(dir_CAT)ChainMesh_Catalogue.o
+OBJ_CAT = $(dir_CAT)Object.o $(dir_CAT)Catalogue.o $(dir_CAT)RandomCatalogue.o $(dir_CAT)ChainMesh_Catalogue.o
 OBJ_LN = $(dir_LN)LogNormal.o
-OBJ_RANDOM = $(dir_RANDOM)RandomCatalogue.o
 OBJ_TWOP = $(dir_TWOP)Pair.o $(dir_TWOP)TwoPointCorrelation.o $(dir_TWOP)TwoPointCorrelation1D.o $(dir_TWOP)TwoPointCorrelation1D_monopole.o $(dir_TWOP)TwoPointCorrelation1D_angular.o $(dir_TWOP)TwoPointCorrelation2D.o $(dir_TWOP)TwoPointCorrelation2D_cartesian.o $(dir_TWOP)TwoPointCorrelation2D_polar.o $(dir_TWOP)TwoPointCorrelation_projected.o $(dir_TWOP)TwoPointCorrelation_deprojected.o $(dir_TWOP)TwoPointCorrelation_multipoles.o $(dir_TWOP)TwoPointCorrelation_wedges.o $(dir_TWOP)TwoPointCorrelation1D_filtered.o
 OBJ_THREEP = $(dir_THREEP)Triplet.o $(dir_THREEP)ThreePointCorrelation.o $(dir_THREEP)ThreePointCorrelation_angular_connected.o $(dir_THREEP)ThreePointCorrelation_angular_reduced.o $(dir_THREEP)ThreePointCorrelation_comoving_connected.o $(dir_THREEP)ThreePointCorrelation_comoving_reduced.o 
 OBJ_MODEL = $(dir_MODEL)Modelling.o
 OBJ_GLOB = $(dir_GLOB)FuncCosmology.o $(dir_GLOB)Func.o $(dir_GLOB)SubSample.o
 
-OBJ_CBL = $(OBJ_FUNC) $(OBJ_STAT) $(OBJ_COSM) $(OBJ_CM) $(OBJ_CAT) $(OBJ_LN) $(OBJ_RANDOM) $(OBJ_TWOP) $(OBJ_THREEP) $(OBJ_MODEL) $(OBJ_GLOB)
-OBJ_ALL = $(OBJ_CBL) $(dir_FUNC)conv.o $(PWD)/Cosmology/CAMB/*.o $(PWD)/Cosmology/classgal_v1/*.o
+OBJ_CBL = $(OBJ_FUNC) $(OBJ_STAT) $(OBJ_COSM) $(OBJ_CM) $(OBJ_CAT) $(OBJ_LN) $(OBJ_TWOP) $(OBJ_THREEP) $(OBJ_MODEL) $(OBJ_GLOB)
+OBJ_ALL = $(OBJ_CBL) $(dir_FUNC)conv.o $(PWD)/External/CAMB/*.o $(PWD)/External/classgal_v1/*.o $(PWD)/External/mangle/*.o $(PWD)/External/MPTbreeze-v1/*.o 
 
 
 ##### CBL source files #####
@@ -122,8 +119,6 @@ ALL:
 	make -j3 libCAT
 	$(call colorecho, "\n"Compiling the library: libLN... "\n")
 	make -j3 libLN
-	$(call colorecho, "\n"Compiling the library: libRANDOM... "\n")
-	make -j3 libRANDOM
 	$(call colorecho, "\n"Compiling the library: libTWOP... "\n")
 	make -j3 libTWOP
 	$(call colorecho, "\n"Compiling the library: libTHREEP... "\n")
@@ -153,20 +148,17 @@ libCAT: $(OBJ_CAT) $(PWD)/Makefile
 libLN: $(OBJ_LN) $(PWD)/Makefile
 	$(C) $(FLAGS_LINK) -o $(PWD)/libLN.$(ES) $(OBJ_LN) $(FLAGS_GSL) -lgomp $(FLAGS_FFTW) -Wl,-rpath,$(PWD) -L$(PWD)/ -lFUNC -lSTAT -lCOSM -lCM -lCAT 
 
-libRANDOM: $(OBJ_RANDOM) $(PWD)/Makefile
-	$(C) $(FLAGS_LINK) -o $(PWD)/libRANDOM.$(ES) $(OBJ_RANDOM) $(FLAGS_GSL) -lgomp -Wl,-rpath,$(PWD) -L$(PWD)/ -lFUNC -lSTAT -lCOSM -lCM -lCAT -lLN
-
 libTWOP: $(OBJ_TWOP) $(PWD)/Makefile
-	$(C) $(FLAGS_LINK) -o $(PWD)/libTWOP.$(ES) $(OBJ_TWOP) $(FLAGS_GSL) -lgomp -Wl,-rpath,$(PWD) -L$(PWD)/ -lFUNC -lSTAT -lCOSM -lCM -lCAT -lLN -lRANDOM
+	$(C) $(FLAGS_LINK) -o $(PWD)/libTWOP.$(ES) $(OBJ_TWOP) $(FLAGS_GSL) -lgomp -Wl,-rpath,$(PWD) -L$(PWD)/ -lFUNC -lSTAT -lCOSM -lCM -lCAT -lLN
 
 libTHREEP: $(OBJ_THREEP) $(PWD)/Makefile
-	$(C) $(FLAGS_LINK) -o $(PWD)/libTHREEP.$(ES) $(OBJ_THREEP) $(FLAGS_GSL) -lgomp -Wl,-rpath,$(PWD) -L$(PWD)/ -lFUNC -lSTAT -lCOSM -lCM -lCAT -lLN -lRANDOM -lTWOP
+	$(C) $(FLAGS_LINK) -o $(PWD)/libTHREEP.$(ES) $(OBJ_THREEP) $(FLAGS_GSL) -lgomp -Wl,-rpath,$(PWD) -L$(PWD)/ -lFUNC -lSTAT -lCOSM -lCM -lCAT -lLN -lTWOP
 
 libMODEL: $(OBJ_MODEL) $(PWD)/Makefile
-	$(C) $(FLAGS_LINK) -o $(PWD)/libMODEL.$(ES) $(OBJ_MODEL) $(FLAGS_GSL) -lgomp -Wl,-rpath,$(PWD) -L$(PWD)/ -lFUNC -lSTAT -lCOSM -lCM -lCAT -lLN -lRANDOM -lTWOP -lTHREEP
+	$(C) $(FLAGS_LINK) -o $(PWD)/libMODEL.$(ES) $(OBJ_MODEL) $(FLAGS_GSL) -lgomp -Wl,-rpath,$(PWD) -L$(PWD)/ -lFUNC -lSTAT -lCOSM -lCM -lCAT -lLN -lTWOP -lTHREEP
 
 libGLOB: $(OBJ_GLOB) $(PWD)/Makefile
-	$(C) $(FLAGS_LINK) -o $(PWD)/libGLOB.$(ES) $(OBJ_GLOB) $(FLAGS_GSL) -lgomp -Wl,-rpath,$(PWD) -L$(PWD)/ -lFUNC -lSTAT -lCOSM -lCM -lCAT -lLN -lRANDOM -lTWOP -lTHREEP -lMODEL 
+	$(C) $(FLAGS_LINK) -o $(PWD)/libGLOB.$(ES) $(OBJ_GLOB) $(FLAGS_GSL) -lgomp -Wl,-rpath,$(PWD) -L$(PWD)/ -lFUNC -lSTAT -lCOSM -lCM -lCAT -lLN -lTWOP -lTHREEP -lMODEL 
 
 libCBL: $(OBJ_CBL) $(PWD)/Makefile
 	$(C) $(FLAGS_LINK) -o $(PWD)/libCBL.$(ES) $(OBJ_CBL) $(FLAGS_GSL) -lgomp $(FLAGS_FFTW)
@@ -176,16 +168,16 @@ conv: $(dir_FUNC)conv.o
 	$(F) -o $(dir_FUNC)conv $(dir_FUNC)conv.o 
 
 CAMB:
-	cd $(PWD)/Cosmology/CAMB ; make clean && make && make clean && cd ../..
+	cd $(PWD)/External/CAMB ; make clean && make && make clean && cd ../..
 
 CLASS:
-	cd $(PWD)/Cosmology/classgal_v1 ; make clean && make && make clean && cd ../..
+	cd $(PWD)/External/classgal_v1 ; make clean && make && make clean && cd ../..
 
 CLASSpy:
-	cd $(PWD)/Cosmology/classgal_v1/python/ ; python setup.py install --user
+	cd $(PWD)/External/classgal_v1/python/ ; python setup.py install --user
 
 MPTbreeze:
-	cd $(PWD)/Cosmology/MPTbreeze-v1 ; ./compile.sh && cd ../..
+	cd $(PWD)/External/MPTbreeze-v1 ; ./compile.sh && cd ../..
 
 allExamples:
 	$(call colorecho, "\n"Compiling the example code: vector.cpp ... "\n")
@@ -223,7 +215,6 @@ python2: $(dir_Python)CBL_wrap.cxx $(dir_Python)CBL.i $(dir_Python)setup.py $(HH
 	rsync -av $(dir_CM)*.cpp $(dir_Python)CosmoBolognaLib/$(Dir_CM)
 	rsync -av $(dir_CAT)*.cpp $(dir_Python)CosmoBolognaLib/$(Dir_CAT)
 	rsync -av $(dir_LN)*.cpp $(dir_Python)CosmoBolognaLib/$(Dir_LN)
-	rsync -av $(dir_RANDOM)*.cpp $(dir_Python)CosmoBolognaLib/$(Dir_RANDOM)
 	rsync -av $(dir_TWOP)*.cpp $(dir_Python)CosmoBolognaLib/$(Dir_TWOP)
 	rsync -av $(dir_THREEP)*.cpp $(dir_Python)CosmoBolognaLib/$(Dir_THREEP)
 	rsync -av $(dir_MODEL)*.cpp $(dir_Python)CosmoBolognaLib/$(Dir_MODEL)
@@ -263,7 +254,7 @@ purgepy:
 
 clean:
 	make cleanExamples
-	rm -f $(OBJ_ALL) core* $(PWD)/*~ $(dir_FUNC)*~ $(dir_STAT)/*~ $(dir_STAT)/*~  $(dir_STAT)/*~ $(dir_STAT)/*~ $(dir_STAT)/*~ $(dir_STAT)/*~ $(dir_STAT)/*~ $(dir_COSM)*~ $(dir_CM)*~ $(dir_CAT)*~ $(dir_LN)*~ $(dir_RANDOM)*~ $(dir_TWOP)*~ $(dir_MODEL)*~ $(dir_THREEP)*~ $(dir_GLOB)*~ $(dir_H)*~ $(dir_O)*~ $(PWD)/\#* $(dir_FUNC)\#* $(dir_STAT)\#* $(dir_COSM)\#* $(dir_CM)\#* $(dir_CAT)\#* $(dir_LN)\#* $(dir_RANDOM)\#* $(dir_TWOP)\#* $(dir_MODEL)\#* $(dir_THREEP)\#* $(dir_GLOB)\#* $(dir_H)\#* $(dir_O)\#* $(PWD)/Doc/WARNING_LOGFILE*
+	rm -f $(OBJ_ALL) core* $(PWD)/*~ $(dir_FUNC)*~ $(dir_STAT)/*~ $(dir_STAT)/*~  $(dir_STAT)/*~ $(dir_STAT)/*~ $(dir_STAT)/*~ $(dir_STAT)/*~ $(dir_STAT)/*~ $(dir_COSM)*~ $(dir_CM)*~ $(dir_CAT)*~ $(dir_LN)*~ $(dir_TWOP)*~ $(dir_MODEL)*~ $(dir_THREEP)*~ $(dir_GLOB)*~ $(dir_H)*~ $(dir_O)*~ $(PWD)/\#* $(dir_FUNC)\#* $(dir_STAT)\#* $(dir_COSM)\#* $(dir_CM)\#* $(dir_CAT)\#* $(dir_LN)\#* $(dir_TWOP)\#* $(dir_MODEL)\#* $(dir_THREEP)\#* $(dir_GLOB)\#* $(dir_H)\#* $(dir_O)\#* $(PWD)/Doc/WARNING_LOGFILE*
 
 purge:
 	make clean
@@ -272,17 +263,17 @@ purge:
 purgeALL:
 	make purge
 	make cleanpy
-	rm -rf Cosmology/grid_SigmaM/* ;
-	rm -rf Cosmology/Tables/* ;
-	rm -rf Cosmology/table_dc/* ;
-	rm -rf Cosmology/EisensteinHu/output_linear/* ;
-	rm -rf Cosmology/CAMB/output_linear/* ;
-	rm -rf Cosmology/CAMB/output_nonlinear/* ;
-	rm -rf Cosmology/grid_NG/* ;
-	rm -rf Cosmology/MPTbreeze-v1/output_linear/* ;
-	rm -rf Cosmology/MPTbreeze-v1/output_nonlinear/* ;
-	rm -rf Cosmology/classgal_v1/output_linear/* ;
-	rm -rf Cosmology/classgal_v1/output_nonlinear/* ;
+	rm -rf External/grid_SigmaM/* ;
+	rm -rf External/Tables/* ;
+	rm -rf External/table_dc/* ;
+	rm -rf External/EisensteinHu/output_linear/* ;
+	rm -rf External/CAMB/output_linear/* ;
+	rm -rf External/CAMB/output_nonlinear/* ;
+	rm -rf External/grid_NG/* ;
+	rm -rf External/MPTbreeze-v1/output_linear/* ;
+	rm -rf External/MPTbreeze-v1/output_nonlinear/* ;
+	rm -rf External/classgal_v1/output_linear/* ;
+	rm -rf External/classgal_v1/output_nonlinear/* ;
 
 
 #################################################################### 
@@ -397,6 +388,9 @@ $(dir_CAT)Object.o: $(dir_CAT)Object.cpp $(HH) $(PWD)/Makefile
 $(dir_CAT)Catalogue.o: $(dir_CAT)Catalogue.cpp $(HH) $(PWD)/Makefile
 	$(C) $(FLAGST) -c -fPIC $(FLAGS_INC) $(dir_CAT)Catalogue.cpp -o $(dir_CAT)Catalogue.o
 
+$(dir_CAT)RandomCatalogue.o: $(dir_CAT)RandomCatalogue.cpp $(HH) $(PWD)/Makefile
+	$(C) $(FLAGST) -c -fPIC $(FLAGS_INC) $(dir_CAT)RandomCatalogue.cpp -o $(dir_CAT)RandomCatalogue.o
+
 $(dir_CAT)ChainMesh_Catalogue.o: $(dir_CAT)ChainMesh_Catalogue.cpp $(HH) $(PWD)/Makefile
 	$(C) $(FLAGST) -c -fPIC $(FLAGS_INC) $(dir_CAT)ChainMesh_Catalogue.cpp -o $(dir_CAT)ChainMesh_Catalogue.o
 
@@ -406,13 +400,6 @@ $(dir_CAT)ChainMesh_Catalogue.o: $(dir_CAT)ChainMesh_Catalogue.cpp $(HH) $(PWD)/
 
 $(dir_LN)LogNormal.o: $(dir_LN)LogNormal.cpp $(HH) $(PWD)/Makefile
 	$(C) $(FLAGST) -c -fPIC $(FLAGS_INC) $(dir_LN)LogNormal.cpp -o $(dir_LN)LogNormal.o
-
-
-#################################################################### 
-
-
-$(dir_RANDOM)RandomCatalogue.o: $(dir_RANDOM)RandomCatalogue.cpp $(HH) $(PWD)/Makefile
-	$(C) $(FLAGST) -c -fPIC $(FLAGS_INC) $(dir_RANDOM)RandomCatalogue.cpp -o $(dir_RANDOM)RandomCatalogue.o
 
 
 #################################################################### 
@@ -504,7 +491,7 @@ $(dir_GLOB)SubSample.o: $(dir_GLOB)SubSample.cpp $(HH) $(PWD)/Makefile
 
 $(dir_Python)CBL_wrap.o: $(dir_Python)CBL.i $(HH) $(PWD)/Makefile
 	$(call colorecho, "\n"Compiling the python wrapper. It may take a few minutes ... "\n")
-	swig -python -c++ -I$(dir_H) -I$(dir_O) -I$(dir_EH) $(dir_Python)CBL.i
+	swig -Wall -python -c++ -I$(dir_H) -I$(dir_O) -I$(dir_EH) $(dir_Python)CBL.i
 	$(C) $(FLAGST) -Wno-uninitialized $(PFLAGS) -c -fPIC $(FLAGS_INC) $(dir_Python)CBL_wrap.cxx -o $(dir_Python)CBL_wrap.o
 
 $(dir_Python)CBL_wrap.cxx: $(dir_Python)CBL.i $(HH) $(PWD)/Makefile

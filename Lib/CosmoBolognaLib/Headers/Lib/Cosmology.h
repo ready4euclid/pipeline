@@ -45,6 +45,60 @@
 namespace cosmobl {
 
   /**
+   * @enum CosmoPar
+   * @brief the cosmological parameters
+   */
+  enum CosmoPar {
+
+    /// &Omega;<SUB>M</SUB>: the density of baryons, cold dark matter and massive neutrinos (in units of the critical density) at z=0, LCDM case
+    _Omega_matter_LCDM_,
+
+    /// &Omega_,<SUB>M</SUB>: the density of baryons, cold dark matter and massive neutrinos (in units of the critical density) at z=0
+    _Omega_matter_,
+  
+    /// &Omega_,<SUB>b</SUB>: the baryon density at z=0
+    _Omega_baryon_,         
+
+    /// &Omega_,<SUB>&nu_,</SUB>: the density of massive neutrinos at z=0
+    _Omega_neutrinos_,      
+
+    /// N<SUB>eff</SUB>: the effective number (for QED + non-instantaneous decoupling)
+    _massless_neutrinos_,   
+
+    /// the number of degenerate massive neutrino species 
+    _massive_neutrinos_,    
+
+    /// &Omega_,<SUB>DE</SUB>: the dark energy density at z=0
+    _Omega_DE_,             
+
+    /// &Omega_,<SUB>rad</SUB>: the radiation density at z=0
+    _Omega_radiation_,     
+             
+    /// H<SUB>0</SUB>: the Hubble constant at z=0 [km/sec/Mpc] 
+    _H0_,
+
+    /// A<SUB>s</SUB>: the initial scalar amplitude of the power spectrum
+    _scalar_amp_,           
+
+    /// n<SUB>spec</SUB>: the primordial spectral index
+    _n_spec_,               
+
+    /// w<SUB>0</SUB>: the parameter of the dark energy equation of state (CPL parameterisation)
+    _w0_,
+
+    /// w<SUB>a</SUB>: the parameter of the dark energy equation of state (CPL parameterisation)
+    _wa_,             
+
+    /// f<SUB>NL</SUB>: the non-Gaussian amplitude
+    _fNL_,                  
+
+    /// &sigma_,<SUB>8</SUB>: the power spectrum normalization
+    _sigma8_ 
+
+  };
+
+
+  /**
    *  @class Cosmology Cosmology.h "Headers/Lib/Cosmology.h"
    *
    *  @brief The class Cosmology
@@ -116,7 +170,7 @@ namespace cosmobl {
 
     /// w<SUB>a</SUB>: the parameter of the dark energy equation of state (CPL parameterisation)
     double m_wa;             
-
+    
     /// &rho;<SUB>0</SUB>: the mean density of the Universe at z=0 [Msun*Mpc^-3]
     double m_RhoZero;             
 
@@ -406,6 +460,15 @@ namespace cosmobl {
     ///@{
 
     /**
+     *  @brief get the private member specified by the enum CosmoPar
+     *  
+     *  @param parameter the cosmological parameter
+     *
+     *  @return value of the cosmological parameter
+     */
+    double value (const CosmoPar parameter) const;
+
+    /**
      *  @brief get the private member Cosmology::m_Omega_matter
      *
      *  @return &Omega;<SUB>M</SUB>: the matter density, i.e. the
@@ -636,6 +699,28 @@ namespace cosmobl {
     ///@{
 
     /**
+     *  @brief set the value of one cosmological paramter
+     *  
+     *  @param parameter cosmological parameter to set
+     *  @param value the new value for the parameter 
+     *
+     *  @return none
+     */
+    void set_parameter (const CosmoPar parameter, const double value);
+
+    /**
+     *  @brief set the value of some cosmological paramters 
+     *  
+     *  @param parameter vector containing the cosmological parameters
+     *  to set
+     *  @param value vector containing the new values for the
+     *  parameters
+     *
+     *  @return none
+     */
+    void set_parameter (const vector<CosmoPar> parameter, const vector<double> value);
+
+    /**
      *  @brief set the value of &Omega;<SUB>M</SUB>, keeping
      * &Omega;<SUB>DE</SUB>=1-&Omega;<SUB>M</SUB>
      *
@@ -712,13 +797,29 @@ namespace cosmobl {
     };
 
     /**
+     *  @brief set the private member Cosmology::m_Omega_radiation
+     *
+     *  @param Omega_radiation &Omega;<SUB>rad</SUB>: the radiation density
+     *  @return none
+     */
+    void set_Omega_radiation (double Omega_radiation) { 
+      m_Omega_radiation = Omega_radiation;
+      m_Omega_k = 1.-m_Omega_matter-m_Omega_radiation-m_Omega_DE;
+    };
+
+    /**
      *  @brief set the value of H<SUB>0</SUB>
      *
      *  @param H0 H<SUB>0</SUB>: Hubble constant [km/sec/Mpc]
      *
      *  @return none
      */
-    void set_H0 (const double H0=70.) { m_H0 = H0; m_hh = H0/100.; };
+    void set_H0 (const double H0=70.) {
+      m_hh = H0/100.; 
+      m_H0 = (m_unit) ? 100. : m_hh*100.;   
+      m_t_H = 1./m_H0; 
+      m_D_H = par::cc*m_t_H;
+    };
 
     /**
      *  @brief set the value of &sigma;<SUB>8</SUB>
@@ -737,6 +838,15 @@ namespace cosmobl {
      *  @return none
      */
     void set_scalar_amp (const double scalar_amp=2.46e-9) { m_scalar_amp = scalar_amp; }; 
+
+    /**
+     *  @brief set the value of n<SUB>spec</SUB>
+     *
+     *  @param n_spec n<SUB>spec</SUB>: the primordial spectral index
+     *
+     *  @return none
+     */
+    void set_n_spec (const double n_spec) { m_n_spec = n_spec; }; 
 
     /**
      *  @brief set the value of w<SUB>0</SUB>

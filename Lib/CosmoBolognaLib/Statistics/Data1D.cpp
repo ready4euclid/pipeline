@@ -38,61 +38,6 @@ using namespace cosmobl;
 // ======================================================================================
 
 
-void cosmobl::Data1D::set_covariance_fx (const string filename)
-{  
-  m_covariance_fx.erase(m_covariance_fx.begin(), m_covariance_fx.end());
-  m_error_fx.erase(m_error_fx.begin(), m_error_fx.end());
-
-  ifstream fin (filename.c_str());
-  if (!fin) {
-    string Warn = "Attention: the file " + filename + " does not exist!";
-    WarningMsg (Warn);
-  }
-
-  vector<double> vv ;
-  m_covariance_fx.push_back(vv);
-  string line; int i = 0;
-
-  while(getline(fin, line)) {
-    stringstream ss(line);
-    vector<double> num; double NN = -1.e30;
-    while (ss>>NN) num.push_back(NN);
-    if (num.size()==3 && num[2]>-1.e29){
-      m_covariance_fx[i].push_back(num[2]);
-    }
-    else {i++; m_covariance_fx.push_back(vv);}
-  }
-
-  m_covariance_fx.erase(m_covariance_fx.end()-1, m_covariance_fx.end());
-  fin.clear(); fin.close();
-
-  
-  for(size_t i=0;i<m_covariance_fx.size();i++)
-    m_error_fx.push_back(sqrt(m_covariance_fx[i][i]));
-
-  invert_matrix(m_covariance_fx, m_inverse_covariance_fx, m_x_down, m_x_up);
-
-}
-
-
-// ======================================================================================
-
-
-void cosmobl::Data1D::set_covariance_fx (const vector<vector<double> > covariance_fx)
-{
-  m_error_fx.erase(m_error_fx.begin(), m_error_fx.end());
-  m_covariance_fx=covariance_fx;
-
-  for (size_t i=0; i<m_covariance_fx.size(); i++)
-    m_error_fx.push_back(sqrt(m_covariance_fx[i][i]));
-
-  invert_matrix(m_covariance_fx, m_inverse_covariance_fx, m_x_down, m_x_up);
-}
-
-
-// ======================================================================================
-
-
 cosmobl::Data1D::Data1D (const string input_file, const double xmin, const double xmax)
 {
   read(input_file);
@@ -136,7 +81,62 @@ cosmobl::Data1D::Data1D (const vector<double> x, const vector<double> fx, const 
     m_error_fx.push_back(sqrt(m_covariance_fx[i][i]));
 
   find_index(m_x, xmin, xmax, m_x_down, m_x_up);
-  invert_matrix(m_covariance_fx, m_inverse_covariance_fx, m_x_down, m_x_up);
+  //invert_matrix(m_covariance_fx, m_inverse_covariance_fx, m_x_down, m_x_up);
+}
+
+
+// ======================================================================================
+
+
+void cosmobl::Data1D::set_covariance_fx (const string filename)
+{  
+  m_covariance_fx.erase(m_covariance_fx.begin(), m_covariance_fx.end());
+  m_error_fx.erase(m_error_fx.begin(), m_error_fx.end());
+
+  ifstream fin (filename.c_str());
+  if (!fin) {
+    string Warn = "Attention: the file " + filename + " does not exist!";
+    WarningMsg (Warn);
+  }
+
+  vector<double> vv ;
+  m_covariance_fx.push_back(vv);
+  string line; int i = 0;
+
+  while (getline(fin, line)) {
+    stringstream ss(line);
+    vector<double> num; double NN = -1.e30;
+    while (ss>>NN) num.push_back(NN);
+    if (num.size()==3 && num[2]>-1.e29){
+      m_covariance_fx[i].push_back(num[2]);
+    }
+    else {i++; m_covariance_fx.push_back(vv);}
+  }
+
+  m_covariance_fx.erase(m_covariance_fx.end()-1, m_covariance_fx.end());
+  fin.clear(); fin.close();
+
+  
+  for(size_t i=0;i<m_covariance_fx.size();i++)
+    m_error_fx.push_back(sqrt(m_covariance_fx[i][i]));
+
+//  invert_matrix(m_covariance_fx, m_inverse_covariance_fx, m_x_down, m_x_up);
+
+}
+
+
+// ======================================================================================
+
+
+void cosmobl::Data1D::set_covariance_fx (const vector<vector<double> > covariance_fx)
+{
+  m_error_fx.erase(m_error_fx.begin(), m_error_fx.end());
+  m_covariance_fx=covariance_fx;
+
+  for (size_t i=0; i<m_covariance_fx.size(); i++)
+    m_error_fx.push_back(sqrt(m_covariance_fx[i][i]));
+
+//  invert_matrix(m_covariance_fx, m_inverse_covariance_fx, m_x_down, m_x_up);
 }
 
 
@@ -168,7 +168,7 @@ void cosmobl::Data1D::write (const string dir, const string file, const string x
   string file_out = dir+file;
   ofstream fout (file_out.c_str()); checkIO(file_out, 0);
 
-  fout << "### "<<xname<<" "<<fxname<<" error ###" << endl;
+  fout << "### "<< xname << " " << fxname << " error ###" << endl;
 
   for (size_t i=0; i<m_x.size(); i++) 
       fout << setiosflags(ios::fixed) << setprecision(4) << setw(8) << m_x[i] << "  " << setw(8) << m_fx[i] << "  " << setw(8) << m_error_fx[i] << endl;

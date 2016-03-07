@@ -563,8 +563,10 @@ namespace cosmobl {
   template <typename T>
     T closest(T x, T a, T b)
     { 
-      if (a >= b) ErrorMsg("Error in closest, a>=b");
-      return (fabs(x-a) < fabs(x-b)) ? a : b;
+      if (a > b) ErrorMsg("Error in closest, a>b");
+      else if (a==b) return a;
+      else return (fabs(x-a) < fabs(x-b)) ? a : b;
+      return 1;
     }
 
   /**
@@ -578,9 +580,9 @@ namespace cosmobl {
     { 
       if (vv.size()==0) ErrorMsg("Error in index_closest, vv is an empty vector");
       vector<double>::iterator low, up;
-      low = lower_bound(vv.begin(), vv.end(), 0.5);
-      up = upper_bound(vv.begin(), vv.end(), 0.5);
-      int index = (closest(0.5, *low, *up)==*low) ? low-vv.begin() : up-vv.begin();
+      low = lower_bound(vv.begin(), vv.end(), x);
+      up = upper_bound(vv.begin(), vv.end(), x);
+      int index = (closest(x, *low, *up)==*low) ? low-vv.begin() : up-vv.begin();
       return index;
     }
 
@@ -590,7 +592,7 @@ namespace cosmobl {
    *  @param isDir 1--> directory path, 0->otherwise
    *  @return string containing the full path
    */
-  string fullpath (const string, const bool isDir=1);
+  string fullpath (const string path, const bool isDir=1);
 
   /**
    *  @brief filter W(r/r<SUB>c</SUB>), used e.g. for filtering the
@@ -599,7 +601,7 @@ namespace cosmobl {
    *  @param rc the characteristic filter scale
    *  @return the filter
    */
-  double filter (const double r, const double rc);
+  double Filter (const double r, const double rc);
 
   ///@}
 
@@ -1439,7 +1441,7 @@ namespace cosmobl {
    *  @return the top-hat window function
    */
   template <typename T> 
-    T WW (const T kR) 
+    T TopHat_WF (const T kR) 
     {
       return 3.*(sin(kR)-kR*cos(kR))/pow(kR,3);
     }

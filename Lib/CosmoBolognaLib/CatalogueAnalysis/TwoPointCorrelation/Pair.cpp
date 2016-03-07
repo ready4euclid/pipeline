@@ -857,10 +857,10 @@ void cosmobl::pairs::Pair2D_comovingPolar_loglog::put (const shared_ptr<Object> 
 // ============================================================================================
 
 
-void cosmobl::pairs::Pair1D::sum (const shared_ptr<Pair> pp, const double ww)
+void cosmobl::pairs::Pair1D::Sum (const shared_ptr<Pair> pp, const double ww)
 {
   if (m_nbins != pp->nbins()) 
-    ErrorMsg("Error in cosmobl::pairs::Pair1D::sum of Pair.cpp: dimension problems!");
+    ErrorMsg("Error in cosmobl::pairs::Pair1D::Sum of Pair.cpp: dimension problems!");
   
   for (int i=0; i<m_nbins; i++) 
     m_PP1D[i] += ww*pp->PP1D(i);
@@ -871,10 +871,10 @@ void cosmobl::pairs::Pair1D::sum (const shared_ptr<Pair> pp, const double ww)
 // ============================================================================================
 
 
-void cosmobl::pairs::Pair2D::sum (const shared_ptr<Pair> pp, const double ww)
+void cosmobl::pairs::Pair2D::Sum (const shared_ptr<Pair> pp, const double ww)
 {
   if (m_nbins_D1 != pp->nbins_D1() || m_nbins_D2 != pp->nbins_D2()) 
-    ErrorMsg("Error in cosmobl::pairs::Pair2D::sum of Pair.cpp: dimension problems!");
+    ErrorMsg("Error in cosmobl::pairs::Pair2D::Sum of Pair.cpp: dimension problems!");
     
   for (int i=0; i<m_nbins_D1; i++)
     for (int j=0; j<m_nbins_D2; j++)

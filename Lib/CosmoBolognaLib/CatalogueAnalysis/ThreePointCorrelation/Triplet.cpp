@@ -59,7 +59,7 @@ shared_ptr<Triplet> cosmobl::triplets::Triplet::Create (const TripletType type, 
 // ============================================================================================
 
 
-void cosmobl::triplets::Triplet1D::sum (const shared_ptr<Triplet> tt, const double ww)  
+void cosmobl::triplets::Triplet1D::Sum (const shared_ptr<Triplet> tt, const double ww)  
 {
   for (size_t i=0; i<m_TT1D.size(); i++) 
     m_TT1D[i] += ww*tt->TT1D(i);	 

@@ -54,7 +54,7 @@ namespace cosmobl {
   namespace twopt {
 
     /**
-     * @enum TwoPType
+     * @enum ErrorType
      * @brief the two-point correlation function error type
      */
     enum ErrorType { 
@@ -354,7 +354,7 @@ namespace cosmobl {
        *
        *  @return pointer to an object of type Data
        */
-      virtual shared_ptr<Data> NaturalEstimatorTwoP (shared_ptr<pairs::Pair> dd, shared_ptr<pairs::Pair> rr, int nData, int nRandom) = 0;
+      virtual shared_ptr<Data> NaturalEstimatorTwoP (const shared_ptr<pairs::Pair> dd, const shared_ptr<pairs::Pair> rr, const int nData, const int nRandom) = 0;
 
       /**
        *  @brief measure the xi with Poisson error using the Landy-Szalay estimator
@@ -374,7 +374,7 @@ namespace cosmobl {
        *
        *  @return pointer to an object of type Data
        */
-      virtual shared_ptr<Data> LandySzalayEstimatorTwoP (shared_ptr<pairs::Pair> dd, shared_ptr<pairs::Pair> rr, shared_ptr<pairs::Pair> dr, int nData, int nRandom) = 0;
+      virtual shared_ptr<Data> LandySzalayEstimatorTwoP (const shared_ptr<pairs::Pair> dd, const shared_ptr<pairs::Pair> rr, const shared_ptr<pairs::Pair> dr, const int nData, const int nRandom) = 0;
 
       /**
        *  @brief measure projected correlation function
@@ -578,7 +578,7 @@ namespace cosmobl {
        *
        *  @return none
        */
-      virtual vector<shared_ptr<Data> > XiJackknife(const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr)
+      virtual vector<shared_ptr<Data> > XiJackknife (const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr)
       { cosmobl::ErrorMsg("Error in vector<shared_ptr<Data> > XiJackknife of TwoPointCorrelation.h!"); vector<shared_ptr<Data> > data; return data; }
 
       /**
@@ -593,7 +593,7 @@ namespace cosmobl {
        *
        *  @return none
        */
-      virtual vector<shared_ptr<Data> > XiJackknife(const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr)
+      virtual vector<shared_ptr<Data> > XiJackknife (const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr)
       { cosmobl::ErrorMsg("Error in vector<shared_ptr<Data> > XiJackknife of TwoPointCorrelation.h!"); vector<shared_ptr<Data> > data; return data;}
 
       /**
@@ -608,7 +608,7 @@ namespace cosmobl {
        *
        *  @return none
        */
-      virtual vector<shared_ptr<Data> > XiBootstrap(const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr)
+      virtual vector<shared_ptr<Data> > XiBootstrap (const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr)
       { cosmobl::ErrorMsg("Error in vector<shared_ptr<Data> > XiJackknife of TwoPointCorrelation.h!"); vector<shared_ptr<Data> > data; return data;}
 
       /**
@@ -625,7 +625,7 @@ namespace cosmobl {
        *
        *  @return none
        */
-      virtual vector<shared_ptr<Data> > XiBootstrap(const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr)
+      virtual vector<shared_ptr<Data> > XiBootstrap (const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr)
       { cosmobl::ErrorMsg("Error in vector<shared_ptr<Data> > XiBootstrap of TwoPointCorrelation.h!"); vector<shared_ptr<Data> > data; return data;}
 
       /**
@@ -1246,7 +1246,76 @@ namespace cosmobl {
        *  function
        */
       virtual vector<vector<double> > error2D () const { cosmobl::ErrorMsg("Error in error() of TwoPointCorrelation.h!"); vector<vector<double> > vv; return vv; }
-      
+
+      /**
+       *  @brief get the monopole of the polar xi
+       *  @return the xiMonopole
+       */
+      virtual vector<double> xiMonopole () const 
+      { cosmobl::ErrorMsg("Error in xiMonopole() of TwoPointCorrelation.h!"); vector<double> vv; return vv; }
+
+      /**
+       *  @brief get the error on the monopole of the polar xi
+       *  @return the xiMonopole
+       */
+      virtual vector<double> errorMonopole () const 
+      { cosmobl::ErrorMsg("Error in errorMonopole() of TwoPointCorrelation.h!"); vector<double> vv; return vv; }
+
+      /**
+       *  @brief get the quadrupole of the polar xi
+       *  @return the xiQuadrupole
+       */
+      virtual vector<double> xiQuadrupole () const 
+      { cosmobl::ErrorMsg("Error in xiQuadrupole() of TwoPointCorrelation.h!"); vector<double> vv; return vv; }
+
+      /**
+       *  @brief get the error on the quadrupole of the polar xi
+       *  @return the xiQuadrupole
+       */
+      virtual vector<double> errorQuadrupole () const 
+      { cosmobl::ErrorMsg("Error in errorQuadrupole() of TwoPointCorrelation.h!"); vector<double> vv; return vv; }
+      /**
+       *  @brief get the octupole of the polar xi
+       *  @return the xiOctupole
+       */
+      virtual vector<double> xiOctupole () const 
+      { cosmobl::ErrorMsg("Error in xiOctupole() of TwoPointCorrelation.h!"); vector<double> vv; return vv; }
+
+      /**
+       *  @brief get the error on the octupole of the polar xi
+       *  @return the error on xiOctupole
+       */
+      virtual vector<double> errorOctupole () const 
+      { cosmobl::ErrorMsg("Error in xiOctupole() of TwoPointCorrelation.h!"); vector<double> vv; return vv; }
+
+      /**
+       *  @brief get the perpendicular wedge of the polar xi
+       *  @return the perpendicular wedge of the polar xi
+       */
+      virtual vector<double> xiPerpendicular () const 
+      { cosmobl::ErrorMsg("Error in xiPerpendicular() of TwoPointCorrelation.h!"); vector<double> vv; return vv; }
+
+      /**
+       *  @brief get the perpendicular wedge of the polar xi
+       *  @return the error on the perpendicular wedge of the polar xi
+       */
+      virtual vector<double> errorPerpendicular () const 
+      { cosmobl::ErrorMsg("Error in errorPerpendicular() of TwoPointCorrelation.h!"); vector<double> vv; return vv; }
+
+      /**
+       *  @brief get the parallel wedge of the polar xi
+       *  @return the xiPar coordinates
+       */
+      virtual vector<double> xiParallel () const 
+      { cosmobl::ErrorMsg("Error in xiParallel() of TwoPointCorrelation.h!"); vector<double> vv; return vv; }
+
+      /*
+       *  @brief get the error on the parallel wedge of the polar xi
+       *  @return the error on the parallel wedge of the polar xi
+       */
+      virtual vector<double> errorParallel () const 
+      { cosmobl::ErrorMsg("Error in errorParallel() of TwoPointCorrelation.h!"); vector<double> vv; return vv; }
+
       ///@}
       
 

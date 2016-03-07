@@ -211,7 +211,7 @@ void cosmobl::twopt::TwoPointCorrelation::count_pairs (const shared_ptr<Catalogu
       vector<long> close_objects = ChM.close_objects(cat1->coordinates(i), (cross) ? -1 : (long)i);
       
       for (auto &&j : close_objects) // loop on the nearby objects
-	pp_thread->put(cat1->object(i), cat2->object(j)); // estimate the distance between the two objects and update the pair count
+	pp_thread->put(cat1->catalogue_object(i), cat2->catalogue_object(j)); // estimate the distance between the two objects and update the pair count
             
       // estimate the computational time and update the time count
       time_t end_temp; time (&end_temp); double diff_temp = difftime(end_temp, start);
@@ -224,7 +224,7 @@ void cosmobl::twopt::TwoPointCorrelation::count_pairs (const shared_ptr<Catalogu
 #pragma omp critical
     {
       // sum all the object pairs computed by each thread
-      pp->sum(pp_thread);
+      pp->Sum(pp_thread);
     }
     
   }
@@ -399,7 +399,7 @@ void cosmobl::twopt::TwoPointCorrelation::count_pairs_region (const shared_ptr<C
 
 	int index = reg1*nRegions+reg2-(reg1-1)*reg1/2-reg1; 
 
-	pp_thread[index]->put(cat1->object(i), cat2->object(j));
+	pp_thread[index]->put(cat1->catalogue_object(i), cat2->catalogue_object(j));
       }
       
       // estimate the computational time and update the time count
@@ -414,7 +414,7 @@ void cosmobl::twopt::TwoPointCorrelation::count_pairs_region (const shared_ptr<C
     {
       // sum all the object pairs computed by each thread
       for(size_t i =0;i<pp_regions.size();i++)
-	pp_regions[i]->sum(pp_thread[i]);
+	pp_regions[i]->Sum(pp_thread[i]);
     }
 
   }
@@ -491,7 +491,7 @@ void cosmobl::twopt::TwoPointCorrelation::count_allPairs_region (vector<shared_p
 
   vector<long> region_list = m_data->get_region_list();
   int nRegions = region_list.size();
-  int nP = nRegions*nRegions; //nRegions*(nRegions+1)/2;
+  int nP = nRegions*(nRegions+1)/2;
 
   dd_regions.erase(dd_regions.begin(), dd_regions.end());
   rr_regions.erase(rr_regions.begin(), rr_regions.end());

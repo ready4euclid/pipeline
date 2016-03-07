@@ -192,7 +192,7 @@ void cosmobl::twopt::TwoPointCorrelation2D_cartesian::measureJackknife (const st
   vector<shared_ptr<Pair> > dd_regions, rr_regions, dr_regions;
   count_allPairs_region(dd_regions, rr_regions, dr_regions, m_twoPType, dir_output_pairs, dir_input_pairs, count_dd, count_rr, count_dr, tcount);
 
-  vector<shared_ptr<Data> > data_SS = (count_dr) ? XiJackknife(dd_regions,rr_regions,dr_regions) : XiJackknife(dd_regions,rr_regions) ;
+  vector<shared_ptr<Data> > data_SS = (count_dr>-1) ? XiJackknife(dd_regions,rr_regions,dr_regions) : XiJackknife(dd_regions,rr_regions) ;
 
   for (int i=0; i<nRegions; i++) {
 
@@ -245,7 +245,7 @@ void cosmobl::twopt::TwoPointCorrelation2D_cartesian::measureBootstrap (const in
   vector<shared_ptr<Pair> > dd_regions, rr_regions, dr_regions;
   count_allPairs_region(dd_regions, rr_regions, dr_regions, m_twoPType, dir_output_pairs, dir_input_pairs, count_dd, count_rr, count_dr, tcount);
 
-  vector<shared_ptr<Data> > data_SS = (count_dr) ? XiBootstrap(nMocks, dd_regions,rr_regions,dr_regions) : XiBootstrap(nMocks, dd_regions,rr_regions);
+  vector<shared_ptr<Data> > data_SS = (count_dr>-1) ? XiBootstrap(nMocks, dd_regions,rr_regions,dr_regions) : XiBootstrap(nMocks, dd_regions,rr_regions);
 
   for (int i=0; i<nMocks; i++) {
     if (dir_output_BootstrapXi!=par::defaultString) {

@@ -93,6 +93,7 @@ the easiest way to use the CosmoBolognaLib in Python is with pip:
     - make purgepy       -> remove the Python wrappers
     - make allExamples   -> compile all the C++ example codes
     - make cleanExamples -> remove all the object files of the examples
+    - make doc           -> create the documentation (Doxygen is required)
     - make clean         -> cleanExamples + remove all the object files of the libraries
     - make purge         -> make clean + remove all the library files (i.e. *.so)
     - make purgeALL      -> make purge + make cleanpy + remove all the files stored for internal calculations  

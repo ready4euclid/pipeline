@@ -21,7 +21,7 @@ cosmology = cbl.Cosmology()
 ### Input/Output files and directories ###
 
 HOME = os.getenv("HOME")
-file_catalogue = HOME+"/CosmoBolognaLib/Examples/clustering/input/cat.dat"
+file_catalogue = (HOME+"/CosmoBolognaLib/Examples/clustering/input/cat.dat",)
 dir_output = HOME+"/CosmoBolognaLib/Examples/clustering/output/"
 dir_pairs = dir_output+"pairs/"
 dir_random_cat = dir_output
@@ -29,19 +29,19 @@ dir_random_cat = dir_output
 os.system("mkdir -p "+dir_output+" "+dir_pairs)
 
 
-### read the input galaxy catalogue ### 
+### read the input galaxy catalogue (with polar coordinates: RA, Dec, redshift) ### 
 
 print ("I'm reading the input catalogue...")
 
-catalogue = cbl.Catalogue(file_catalogue, cosmology, cbl.EnumTypes._Galaxy_)
+catalogue = cbl.Catalogue(cbl.EnumTypes._Galaxy_, file_catalogue, cosmology)
 
 
-### construct the random catalogue ###
+### construct the random catalogue (with cubic geometry) ###
 
 print ("I'm creating the catalogue...")
 
 N_R = 1 # random/object ratio
-random_catalogue = cbl.Catalogue(catalogue, N_R)
+random_catalogue = cbl.Catalogue(cbl.EnumTypes._Box_, catalogue, N_R)
 
 
 ### measure the monopole of the two-point correlation function ###

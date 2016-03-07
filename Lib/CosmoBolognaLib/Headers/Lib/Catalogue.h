@@ -116,7 +116,27 @@ namespace cosmobl {
       _RADIUS_
     };
 
+    
+    /**
+     * @enum RandomType
+     * @brief the type of random catalogue
+     */
+    enum RandomType {
 
+      /// cubic geometry (or parallelepiped)
+      _Box_,
+
+      /// conic geometry
+      _Cone_,
+
+      /// random catalogue for mocks
+      _RandomMock_,
+
+      /// random catalogue for VIPERS
+      _VIPERS_
+      
+    };
+    
     /**
      * @class Catalogue Catalogue.h "Headers/Lib/Catalogue.h"
      *
@@ -149,9 +169,9 @@ namespace cosmobl {
       Catalogue () = default;
 
       /**
-       * @brief constructor 
-       * @param type the object type; it can be: RandomObject, Mock,
-       * Halo, Galaxy, Cluster, Void
+       * @brief constructor, using vectors with Cartesian coordinates
+       * @param type the object type, specified in the
+       * cosmobl::catalogue::ObjType enumeration
        * @param xx vector containing the x coordinates
        * @param yy vector containing the y coordinates
        * @param zz vector containing the z coordinates
@@ -161,9 +181,9 @@ namespace cosmobl {
       Catalogue (const ObjType type, const vector<double> xx, const vector<double> yy, const vector<double> zz, vector<double> weight={});
 
       /**
-       * @brief constructor 
-       * @param type type the object type; it can be: RandomObject,
-       * Mock, Halo, Galaxy, Cluster, Void
+       * @brief constructor, using vectors with polar coordinates
+       * @param type the object type, specified in the
+       * cosmobl::catalogue::ObjType enumeration
        * @param ra vector containing the Right Ascensions
        * @param dec vector containing the Declinations
        * @param redshift vector containing the redshifts
@@ -174,8 +194,9 @@ namespace cosmobl {
       Catalogue (const ObjType type, const vector<double> ra, const vector<double> dec, const vector<double> redshift, const Cosmology &cosm, vector<double> weight={}); 
 
       /**
-       * @brief constructor 
-       * @param object of objects of class T
+       * @brief constructor, using vectors of generic objects
+       * @param object objects of class T, specified in the
+       * cosmobl::catalogue::ObjType enumeration
        * @return objects of type Catalogue
        */ 
       template<typename T> Catalogue (vector<T> object) {
@@ -184,8 +205,10 @@ namespace cosmobl {
       }
 
       /**
-       * @brief constructor 
-       * @param sample vector of objects of type \e Object
+       * @brief constructor, using vectors of pointers to generic
+       * objects
+       * @param sample vector of objects of type \e Object, specified
+       * in the cosmobl::catalogue::ObjType enumeration
        * @return object of class Catalogue
        */
       Catalogue (vector<shared_ptr<Object> > sample) {
@@ -194,42 +217,111 @@ namespace cosmobl {
       }
 
       /**
-       *  @brief read a random catalogue
-       *  @param file vector containing the files where the random
+       *  @brief constructor, reading a file with Cartesian coordinates
+       *  @param type the object type, specified in the
+       *  cosmobl::catalogue::ObjType enumeration
+       *  @param file vector containing the files where the input
        *  catalogues are stored
-       *  @param type the object type
-       *  @param nSub the fracton of objects randomly selected (nSub=1
-       *  &rArr; all objects are selected)
+       *  @param col_X column of the input file containing the X
+       *  coordinates
+       *  @param col_Y column of the input file containing the Y
+       *  coordinates
+       *  @param col_Z column of the input file containing the Z
+       *  coordinates
+       *  @param col_Weight column of the input file containing the
+       *  weights
+       *  @param nSub the fracton of objects that will be randomly
+       *  selected (nSub=1 &rArr; all objects are selected)
        *  @return an object of class Catalogue
        */
-      Catalogue (const vector<string> file, const ObjType type, const double nSub=1.1);
+      Catalogue (const ObjType type, const vector<string> file, const int col_X=0, const int col_Y=1, const int col_Z=2, const int col_Weight=-1, const double nSub=1.1);
 
       /**
-       *  @brief read a random catalogue with polar coordinates [ra, dec,
+       *  @brief constructor, reading a file with polar coordinates [R.A., Dec,
        *  redshift]
-       *  @param file_in the name of the input file 
-       *  @param cosm object of class Cosmology 
-       *  @param type the type of object
-       *  @param nSub the fracton of objects randomly selected (nSub=1
-       *  &rArr; all objects are selected) 
-       *  @param fact conversion factor
+       *  @param type the object type, specified in the
+       *  cosmobl::catalogue::ObjType enumeration
+       *  @param file vector containing the files where the input
+       *  catalogues are stored
+       *  @param cosm object of class Cosmology
+       *  @param col_RA column of the input file containing the R.A.
+       *  coordinates
+       *  @param col_Dec column of the input file containing the Dec
+       *  coordinates
+       *  @param col_redshift column of the input file containing the
+       *  redshift coordinates
+       *  @param col_Weight column of the input file containing the
+       *  weights
+       *  @param nSub the fracton of objects that will be randomly
+       *  selected (nSub=1 &rArr; all objects are selected)
+       *  @param fact the factor used to convert R.A. and Dec
+       *  coordinates, i.e. &rArr; R.A.=R.A.*fact, Dec=Dec*fact
        *  @return an object of class Catalogue
        */
-      Catalogue (const string file_in, const Cosmology &cosm, const ObjType type, const double nSub=1.1, const double fact=1.);
+      Catalogue (const ObjType type, const vector<string> file, const Cosmology &cosm, const int col_RA=0, const int col_Dec=1, const int col_redshift=2, const int col_Weight=-1, const double nSub=1.1, const double fact=1.);
 
       /**
-       *  @brief create a random catalogue in a box
+       * @brief default destructor
+       * @return none
+       */
+      ~Catalogue () = default;
+
+      ///@}
+
+      
+      /**
+       *  @name Constructors of random catalogues 
+       */
+      ///@{
+      
+      /**
+       *  @brief constructor that creates a random catalogue in a
+       *  cubic box
+       *  @param type the type of random catalogue, specified in the
+       *  cosmobl::catalogue::RandomType enumeration
        *  @param catalogue object of class Catalogue
-       *
        *  @param N_R fraction of random objects, i.e.
        *  N<SUB>R</SUB>=N<SUB>random</SUB>/N<SUB>objects</SUB>
+       *  @return an object of class Catalogue
+       */
+      Catalogue (const RandomType type, const Catalogue catalogue, const double N_R);
+
+      /**
+       *  @brief constructor that creates a random catalogue in a
+       *  cubic box, warped by geometric distortions
+       *
+       *  this function reads a cubic random catalogue from a file,
+       *  generated in a given cosmology, and trasforms it into a new
+       *  one in a different cosmology
+       *
+       *  @param type the type of random catalogue, specified in the
+       *  cosmobl::catalogue::RandomType enumeration
+       *
+       *  @param real_cosm object of class Cosmology representing the \e
+       *  real (or \e assumed) cosmology
+       *
+       *  @param test_cosm object of class Cosmology representing the \e
+       *  test cosmology
+       *
+       *  @param dir_in the input directory where the original random
+       *  catalogue is stored
+       *
+       *  @param dir_out the output directory where the new random
+       *  catalogue will be stored
+       *     
+       *  @param Zguess_min minimum redshift used to search the redshift
+       *
+       *  @param Zguess_max maximum redshift used to search the redshift
        *
        *  @return an object of class Catalogue
        */
-      Catalogue (const Catalogue catalogue, const double N_R);
-
-      /***
-       *  @brief create a random catalogue in a cone
+      Catalogue (const RandomType type, const Cosmology &real_cosm, const Cosmology &test_cosm, const string dir_in, const string dir_out, const double Zguess_min, const double Zguess_max);
+      
+      /**
+       *  @brief constructor that creates a random catalogue in a cone
+       *
+       *  @param [in] type the type of random catalogue, specified in
+       *  the cosmobl::catalogue::RandomType enumeration
        *
        *  @param [in] catalogue object of class Catalogue
        *
@@ -257,12 +349,15 @@ namespace cosmobl {
        *  @param [in] idum the random seed
        *  @return an object of class Catalogue
        */
-      //Catalogue (const Catalogue, const int, const Cosmology &, const double, const int, const vector<double>, vector<double> &, vector<double> &, const int idum=13);
+      Catalogue (const RandomType type, const Catalogue catalogue, const int nRandom, const Cosmology &cosm, const double Angle, const int step_redshift, const vector<double> redshift, vector<double> &dc, vector<double> &convol, const int idum=13);
 
-      /***
-       *  @brief create a random catalogue for a mock sample (with polar
-       * coordinates [ra, dec, redshift])
-       *  
+      /**
+       *  @brief constructor that creates a random catalogue for a
+       *  mock sample (with polar coordinates [R.A., Dec, redshift])
+       *
+       *  @param [in] type the type of random catalogue, specified in
+       *  the cosmobl::catalogue::RandomType enumeration
+       *
        *  @param [in] catalogue object of class Catalogue
        *
        *  @param [in] nRandom the number of random objects
@@ -289,15 +384,14 @@ namespace cosmobl {
        *  @param [in] idum the random seed
        *  @return an object of class Catalogue
        */
-      //Catalogue (Catalogue, int &, Cosmology &, string &, int &, vector<double>, vector<double> &, vector<double> &, int idum=13);
+      Catalogue (const RandomType type, const Catalogue catalogue, const int nRandom, const Cosmology &cosm, const string dir, const int step_redshift, const vector<double> redshift, vector<double> &dc, vector<double> &convol, const int idum=13);
+
+      /// @cond extrandom
+      
+      Catalogue (const RandomType type, const int nRandom, const Cosmology &cosm, const string dir_out, const int step_redshift, const vector<double> dc, const vector<double> convol, const vector<double> lim, const vector<double> redshift, const bool venice, string file_random, const string mask, const string dir_venice, const int idum=13); 
+      
+      /// @endcond
   
-
-      /**
-       * @brief default destructor
-       * @return none
-       */
-      ~Catalogue () = default;
-
       ///@}
 
     
@@ -450,8 +544,14 @@ namespace cosmobl {
        * @param i the object index
        * @return pointer to an object of the catalogue
        */
-      shared_ptr<Object> object (const int i) const { return m_sample[i]; }
-    
+      shared_ptr<Object> catalogue_object (const int i) const { return m_sample[i]; }
+
+      /**
+       * @brief get the object vector
+       * @return vector of pointers to objects of the catalogue
+       */
+      vector<shared_ptr<Object>> catalogue_objects () const { return m_sample; }   
+
       /**
        * @brief get the X, Y, Z coordinates of the i-th object of the
        * catalogue
@@ -528,16 +628,19 @@ namespace cosmobl {
        * @param [out] _var vector of variables
        * @param [out] dist vector of values of f(varibles)
        * @param [in] nbin number of bins
-       * @param [in] linear 1 &rarr; linear binning; 0 &rarr; logarithmic binning 
+       * @param [in] linear 1 &rarr; linear binning; 0 &rarr;
+       * logarithmic binning
        * @param [in] file_out the output file where the distribution is
        * stored
        * @param [in] Volume the volume of the catalogue
-       * @param [in] norm 1 &rarr; normalize to the number of objects; 0 &rarr; do not normalize 
+       * @param [in] norm 1 &rarr; normalize to the number of objects;
+       * 0 &rarr; do not normalize
        * @param [in] V1 the minimum limit of the distribution
        * @param [in] V2 the maximum limit of the distribution
        * @param [in] bin_type 1 &rarr; dn/dvar; 0 &rarr; dn/dlogvar; 
-       * @param [in] convolution 0 &rarr; don't convolve the distribution; 1
-       * &rarr; convolve the distribution with a gaussian function
+       * @param [in] convolution 0 &rarr; don't convolve the
+       * distribution; 1 &rarr; convolve the distribution with a
+       * gaussian function
        * @param [in] sigma &sigma;: the standard deviation of the
        * gaussian function used to convolve the distribution
        * @return none

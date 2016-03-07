@@ -119,7 +119,7 @@ double cosmobl::Cosmology::mrk (const double kk, const double mass, const string
   double redshift = 0.;
   double TT = sqrt(Pk(kk, method_Pk, NL, redshift, output_root, norm, k_min, k_max, GSL, prec, file_par) / AA / pow(kk,m_n_spec));
 
-  return 5.99170e6 * gsl_pow_2(kk) * WW(xx) * TT / m_Omega_matter;
+  return 5.99170e6 * gsl_pow_2(kk) * TopHat_WF(xx) * TT / m_Omega_matter;
 }
 
 

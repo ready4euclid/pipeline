@@ -6,11 +6,11 @@ dirLib = $(PWD)/../../../
 dirH = $(dirLib)Headers/Lib/
 dirHO = $(dirLib)Headers/Objects/
 dirNum = $(PWD)/../../../../Numerical/
-dirEH = $(dirLib)Cosmology/EH/
+dirEH = $(dirLib)External/EH/
 
 varDIR = -DDIRCOSMO=\"$(dirLib)\" -DDIRL=\"$(PWD)/\"
 
-FLAGS_LIB = -Wl,-rpath,$(dirLib) -L$(dirLib) -lFUNC -lSTAT -lCOSM -lCM -lCAT -lLN -lRANDOM -lTWOP -lTHREEP -lGLOB
+FLAGS_LIB = -Wl,-rpath,$(dirLib) -L$(dirLib) -lFUNC -lSTAT -lCOSM -lCM -lCAT -lLN -lTWOP -lTHREEP -lGLOB
 FLAGS_INC = -I$(dirH) -I$(dirHO) -I$(dirNum) -I$(dirEH) 
 
 OBJ1 = 2pt_monopole.o

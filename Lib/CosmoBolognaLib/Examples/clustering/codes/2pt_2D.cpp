@@ -59,11 +59,11 @@ int main () {
   Catalogue catalogue {_Galaxy_ , ra, dec, redshift, cosmology};
   
   
-  // ----------------------------------------------------------------
-  // ---------------- construct the random catalogue ----------------
-  // ----------------------------------------------------------------
+  // --------------------------------------------------------------------------------------
+  // ---------------- construct the random catalogue (with cubic geometry) ---------------- 
+  // -------------------------------------------------------------------------------------- 
 
-  Catalogue random_catalogue {catalogue, 1.};
+  Catalogue random_catalogue {_Box_, catalogue, 1.};
   
   
   // -----------------------------------------------------------------------------------------------
@@ -89,12 +89,13 @@ int main () {
 
   // (construct the object using a static factory)
   auto xi2DCart = TwoPointCorrelation::Create(_2D_Cartesian_, catalogue, random_catalogue, _linear_, rpMin, rpMax, nbins_D1, shift_D1, _linear_, piMin, piMax, nbins_D2, shift_D2);
-  
-  xi2DCart->measure(ErrorType::_Poisson_, dir_pairs);
+
+  // (compute Poisson errors)
+  xi2DCart->measure(_Poisson_, dir_pairs);
   
   xi2DCart->write(dir_output, "xi_rp_pi_linlin.dat");
-  
 
+  
   return 0;
 }
 

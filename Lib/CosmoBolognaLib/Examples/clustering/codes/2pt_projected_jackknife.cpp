@@ -34,21 +34,21 @@ int main () {
   string MK = "mkdir -p "+dir_output+" "+dir_pairs+" "+dir_covariance; if (system(MK.c_str())) {};
 
   
-  // -------------------------------------------------------------------------------------------
-  // ---------------- read the input catalogue and create the object 'catalogue'----------------
-  // -------------------------------------------------------------------------------------------
+  // ----------------------------------------------------------------------------------------------------------------------
+  // ---------------- read the input catalogue (with polar coordinates: RA, Dec, redshift) --------------------------------
+  // ----------------------------------------------------------------------------------------------------------------------
 
   cout << "I'm reading the input catalogue..." << endl;
 
-  Catalogue catalogue {file_catalogue, cosmology, _Galaxy_};
+  Catalogue catalogue {_Galaxy_, {file_catalogue}, cosmology};
 
   
-  // ----------------------------------------------------------------
-  // ---------------- construct the random catalogue ----------------
-  // ----------------------------------------------------------------
+  // --------------------------------------------------------------------------------------
+  // ---------------- construct the random catalogue (with cubic geometry) ----------------
+  // --------------------------------------------------------------------------------------
 
   double N_R = 1.; // random/object ratio
-  Catalogue random_catalogue {catalogue, N_R};
+  Catalogue random_catalogue {_Box_, catalogue, N_R};
 
 
   // --------------------------------------------------------------------------------------------
@@ -63,7 +63,7 @@ int main () {
   double shift = 0.5; // spatial shift used to set the bin centre 
       
 
-  // measure the projected two-point correlation function and estimate errors with jackknife
+  // measure the projected two-point correlation function and estimate errors with jackknife (with cubic geometry)
 
   int nx = 3, ny = 3, nz = 3;
   set_ObjectRegion_SubBoxes(catalogue, random_catalogue, nx, ny, nz);
@@ -71,7 +71,7 @@ int main () {
   auto TwoP = TwoPointCorrelation::Create(TwoPType::_1D_projected_, catalogue, random_catalogue, _logarithmic_, rMin, rMax, nbins, shift, rMin, rMax, nbins, shift);
 
   double piMax_integral = 30; // upper limit of the integral
-  TwoP->measure(piMax_integral, ErrorType::_Jackknife_, dir_output);
+  TwoP->measure(piMax_integral, _Jackknife_, dir_output);
 
   TwoP->write(dir_output, "xi_projected_jackknife.dat");
 

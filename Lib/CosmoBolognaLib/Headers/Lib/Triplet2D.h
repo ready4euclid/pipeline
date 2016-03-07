@@ -1,23 +1,23 @@
-/*******************************************************************
- *  Copyright (C) 2015 by Federico Marulli, Michele Moresco,       *
- *  and Alfonso Veropalumbo                                        *
- *                                                                 *
- *  federico.marulli3@unibo.it                                     *
- *                                                                 *
- *  This program is free software; you can redistribute it and/or  *
- *  modify it under the terms of the GNU General Public License as *
- *  published by the Free Software Foundation; either version 2 of *
- *  the License, or (at your option) any later version.            *
- *                                                                 *
- *  This program is distributed in the hope that it will be useful,*
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the  *
- *  GNU General Public License for more details.                   *
- *                                                                 *
- *  You should have received a copy of the GNU General Public      *
- *  License along with this program; if not, write to the Free     *
- *  Software Foundation, Inc.,                                     *
- *  59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.      *
+/********************************************************************
+ *  Copyright (C) 2015 by Federico Marulli, Michele Moresco,        *
+ *  and Alfonso Veropalumbo                                         *
+ *                                                                  *
+ *  federico.marulli3@unibo.it                                      *
+ *                                                                  *
+ *  This program is free software; you can redistribute it and/or   *
+ *  modify it under the terms of the GNU General Public License as  *
+ *  published by the Free Software Foundation; either version 2 of  *
+ *  the License, or (at your option) any later version.             *
+ *                                                                  *
+ *  This program is distributed in the hope that it will be useful, *
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of  *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the   *
+ *  GNU General Public License for more details.                    *
+ *                                                                  *
+ *  You should have received a copy of the GNU General Public       * 
+ *  License along with this program; if not, write to the Free      *
+ *  Software Foundation, Inc.,                                      *
+ *  59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.       *
  *******************************************************************/
 
 /**
@@ -64,22 +64,20 @@ namespace cosmobl {
     class Triplet2D : public Triplet {
 
     private:
-
+      
       /**
-       *  @name Member functions used to set the binning parameters
+       *  @name Member functions used to set the binning parameters (customized in all the derived classes) 
        */
       ///@{
   
       /**
        *  @brief set the binning parameters
        *  @return none
-       *
-       *  @warning This method has not been implemented yet
        */
-      void set_parameters () override { ErrorMsg("Work in progress..."); }
-
+      virtual void set_parameters () = 0;
+  
       ///@}
-
+      
       
     protected:
       
@@ -169,7 +167,7 @@ namespace cosmobl {
        */
       Triplet2D (const double side_s_D1, const double side_u_D1, const double perc_increase_D1, const int nbins_D1, const double side_s_D2, const double side_u_D2, const double perc_increase_D2, const int nbins_D2) 
 	: m_side_s_D1(side_s_D1), m_side_u_D1(side_u_D1), m_perc_increase_D1(perc_increase_D1), m_nbins_D1(nbins_D1), m_side_s_D2(side_s_D2), m_side_u_D2(side_u_D2), m_perc_increase_D2(perc_increase_D2), m_nbins_D2(nbins_D2)
-      { m_tripletDim = _2D_; set_parameters(); m_TT2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.)); }
+      { m_tripletDim = _2D_; m_TT2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.)); }
 
       /**
        *  @brief default destructor
@@ -295,7 +293,7 @@ namespace cosmobl {
        *
        *  @warning This method has not been implemented yet
        */
-      void sum (const shared_ptr<Triplet> tt, const double ww=1) override { ErrorMsg("Work in progress..."); }
+      void Sum (const shared_ptr<Triplet> tt, const double ww=1) override { ErrorMsg("Work in progress..."); }
 
       /**
        *  @brief estimate the distance between three objects and

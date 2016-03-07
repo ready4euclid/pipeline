@@ -111,7 +111,7 @@ vector<shared_ptr<Object> > cosmobl::catalogue::ChainMesh_Catalogue::object_list
     int j = m_Label[k];
 
     while (j>-1 && j>=ii) {
-      obj_list.push_back(m_catalogue->object(j));
+      obj_list.push_back(m_catalogue->catalogue_object(j));
       j = m_List[j];
     }
     

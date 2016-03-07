@@ -10,7 +10,6 @@
 %include Lib/ChainMesh.i
 %include Lib/Catalogue.i
 %include Lib/LogNormal.i
-%include Lib/RandomCatalogue.i
 %include Lib/TwoPointCorrelation.i
 %include Lib/ThreePointCorrelation.i
 %include Lib/Modelling.i

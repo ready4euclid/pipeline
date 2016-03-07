@@ -97,8 +97,8 @@ void cosmobl::twopt::TwoPointCorrelation1D_filtered::measure (const ErrorType er
 
   for(size_t i=0; i<rc.size();i++){
     for(size_t j=0;j<rad.size();j++){
-      wc[i] += rad[j]*rad[j]*binSize*xi[j]*filter(rad[j],rc[i]);
-      error_wc[i] += pow(rad[j]*rad[j]*binSize*error_xi[j]*filter(rad[j],rc[i]),2);
+      wc[i] += rad[j]*rad[j]*binSize*xi[j]*Filter(rad[j],rc[i]);
+      error_wc[i] += pow(rad[j]*rad[j]*binSize*error_xi[j]*Filter(rad[j],rc[i]),2);
     }
   }
 

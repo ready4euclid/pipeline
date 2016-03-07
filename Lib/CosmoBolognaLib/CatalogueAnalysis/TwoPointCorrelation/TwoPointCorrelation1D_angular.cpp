@@ -98,18 +98,18 @@ void cosmobl::twopt::TwoPointCorrelation1D_angular::write (const string dir, con
 
 void cosmobl::twopt::TwoPointCorrelation1D_angular::measure (const ErrorType errorType, const string dir_output_pairs, const vector<string> dir_input_pairs,  const string dir_output_ResampleXi, int nMocks, int count_dd, const int count_rr, const int count_dr, const bool tcount)
 {
-  switch (errorType) {
-  case (ErrorType::_Poisson_) :
-    measurePoisson(dir_output_pairs, dir_input_pairs, count_dd, count_rr, count_dr, tcount);
-    break;
-  case (ErrorType::_Jackknife_) :
-    measureJackknife(dir_output_pairs, dir_input_pairs, dir_output_ResampleXi, count_dd, count_rr, count_dr, tcount);
-    break;
-  case (ErrorType::_Bootstrap_) :
-    measureBootstrap(nMocks, dir_output_pairs, dir_input_pairs, dir_output_ResampleXi, count_dd, count_rr, count_dr, tcount);
-    break;
-  default:
-    ErrorMsg("Error in measure() of TwoPointCorrelation1D_angular.cpp, unknown type of error");
+  switch(errorType){
+    case(ErrorType::_Poisson_):
+      measurePoisson(dir_output_pairs,dir_input_pairs,count_dd,count_rr,count_dr,tcount);
+      break;
+    case(ErrorType::_Jackknife_):
+      measureJackknife(dir_output_pairs,dir_input_pairs,dir_output_ResampleXi,count_dd,count_rr,count_dr,tcount);
+      break;
+    case(ErrorType::_Bootstrap_):
+      measureBootstrap(nMocks,dir_output_pairs,dir_input_pairs,dir_output_ResampleXi,count_dd,count_rr,count_dr,tcount);
+      break;
+    default:
+      ErrorMsg("Error in measure() of TwoPointCorrelation1D_angular.cpp, unknown type of error");
   }
 }
 
@@ -161,7 +161,7 @@ void cosmobl::twopt::TwoPointCorrelation1D_angular::measureJackknife (const stri
   vector<shared_ptr<Pair> > dd_regions, rr_regions, dr_regions;
   count_allPairs_region(dd_regions, rr_regions, dr_regions, m_twoPType, dir_output_pairs, dir_input_pairs, count_dd, count_rr, count_dr, tcount);
 
-  vector<shared_ptr<Data> > data_SS = (count_dr) ? XiJackknife(dd_regions,rr_regions,dr_regions) : XiJackknife(dd_regions,rr_regions);
+  vector<shared_ptr<Data> > data_SS = (count_dr>-1) ? XiJackknife(dd_regions,rr_regions,dr_regions) : XiJackknife(dd_regions,rr_regions);
 
   for (int i=0; i<nRegions; i++) {
 
@@ -205,7 +205,7 @@ void cosmobl::twopt::TwoPointCorrelation1D_angular::measureBootstrap (const int 
 
   vector<shared_ptr<Pair> > dd_regions, rr_regions, dr_regions;
   count_allPairs_region(dd_regions, rr_regions, dr_regions, m_twoPType, dir_output_pairs, dir_input_pairs, count_dd, count_rr, count_dr, tcount);
-  vector<shared_ptr<Data> > data_SS = (count_dr) ? XiBootstrap(nMocks,dd_regions,rr_regions,dr_regions) : XiBootstrap(nMocks,dd_regions,rr_regions);
+  vector<shared_ptr<Data> > data_SS = (count_dr>-1) ? XiBootstrap(nMocks,dd_regions,rr_regions,dr_regions) : XiBootstrap(nMocks,dd_regions,rr_regions);
 
   for (int i=0; i<nMocks; i++) {
 

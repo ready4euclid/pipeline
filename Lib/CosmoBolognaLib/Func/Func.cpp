@@ -19,7 +19,7 @@
  *******************************************************************/
 
 /**
- *  @file /home/frea/CosmoBolognaLib/Func/Func.cpp
+ *  @file ../CosmoBolognaLib/Func/Func.cpp
  *
  *  @brief Useful generic functions
  *
@@ -57,7 +57,7 @@ string cosmobl::fullpath (string path, const bool isDir)
 // ============================================================================
 
 
-double cosmobl::filter(const double r, const double rc)
+double cosmobl::Filter(const double r, const double rc)
 {
   double x = pow(r/rc, 3);
   return 2*x*x*pow(1-x, 2)*(0.5-x)*pow(rc, -3);

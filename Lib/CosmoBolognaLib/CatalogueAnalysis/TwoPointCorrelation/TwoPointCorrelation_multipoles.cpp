@@ -47,6 +47,110 @@ using namespace twopt;
 // ============================================================================================
 
 
+vector<double> cosmobl::twopt::TwoPointCorrelation_multipoles::xx () const
+{
+  vector<double> rad;
+
+  for (size_t i=0; i<m_dataset->xx().size()/3; i++)
+    rad.push_back(m_dataset->xx()[i]);
+
+  return rad;
+}
+
+
+// ============================================================================================
+
+
+vector<double> cosmobl::twopt::TwoPointCorrelation_multipoles::xiMonopole () const
+{
+  size_t sz = m_dataset->fx().size();
+
+  vector<double> xi0;
+  for (size_t i=0; i<sz/3; i++)
+    xi0.push_back(m_dataset->fx()[i]);
+
+  return xi0;
+}
+
+
+// ============================================================================================
+
+
+vector<double> cosmobl::twopt::TwoPointCorrelation_multipoles::errorMonopole () const
+{
+  size_t sz = m_dataset->error_fx().size();
+  vector<double> error_xi0;
+
+  for (size_t i=0; i<sz/3; i++)
+    error_xi0.push_back(m_dataset->error_fx()[i]);
+
+  return error_xi0;
+}
+
+
+// ============================================================================================
+
+
+vector<double> cosmobl::twopt::TwoPointCorrelation_multipoles::xiQuadrupole () const 
+{
+  size_t sz = m_dataset->fx().size();
+  vector<double> xi2;
+
+  for (size_t i=sz/3; i<2*sz/3; i++)
+    xi2.push_back(m_dataset->fx()[i]);
+
+  return xi2;
+}
+
+
+// ============================================================================================
+
+
+vector<double> cosmobl::twopt::TwoPointCorrelation_multipoles::errorQuadrupole () const 
+{
+  size_t sz = m_dataset->error_fx().size();
+  vector<double> error_xi2;
+
+  for (size_t i=sz/3;i<2*sz/3;i++)
+    error_xi2.push_back(m_dataset->error_fx()[i]);
+
+  return error_xi2;
+}
+
+
+// ============================================================================================
+
+
+vector<double> cosmobl::twopt::TwoPointCorrelation_multipoles::xiOctupole () const
+{
+  size_t sz = m_dataset->fx().size();
+  vector<double> xi4;
+
+  for (size_t i=2*sz/3;i<sz;i++)
+    xi4.push_back(m_dataset->fx()[i]);
+
+  return xi4;
+}
+
+
+// ============================================================================================
+
+
+vector<double> cosmobl::twopt::TwoPointCorrelation_multipoles::errorOctupole () const 
+{
+  size_t sz = m_dataset->error_fx().size();
+  vector<double> error_xi4;
+  
+  for (size_t i=2*sz/3;i<sz;i++)
+    error_xi4.push_back(m_dataset->error_fx()[i]);
+
+  return error_xi4;
+}
+
+
+// ============================================================================================
+
+
 shared_ptr<Data> cosmobl::twopt::TwoPointCorrelation_multipoles::MultipolesTwoP(const vector<double> rr, const vector<double> mu, const vector<vector<double> > xi, const vector<vector<double> > error_xi)
 {
   vector<double> rad, xil, error;
@@ -55,7 +159,7 @@ shared_ptr<Data> cosmobl::twopt::TwoPointCorrelation_multipoles::MultipolesTwoP(
   xil.resize(0); xil.resize(rr.size()*3, 0.);
   error.resize(0); error.resize(rr.size()*3, 0.);
 
-  double binSize = rr[1]-rr[0];
+  double binSize = mu[1]-mu[0];
 
   for (size_t i=0; i<rr.size(); i++) {
 
@@ -88,16 +192,16 @@ shared_ptr<Data> cosmobl::twopt::TwoPointCorrelation_multipoles::MultipolesTwoP(
 
 void cosmobl::twopt::TwoPointCorrelation_multipoles::measure(const ErrorType errType, const string dir_output_pairs, const vector<string> dir_input_pairs, const string dir_output_ResampleXi, const int nMocks, const int count_dd, const int count_rr, const int count_dr, const bool tcount)
 {
-  switch(errType){
-    case(ErrorType::_Poisson_):
-      measurePoisson(dir_output_pairs,dir_input_pairs,count_dd,count_rr,count_dr,tcount);
-      break;
-    case(ErrorType::_Jackknife_):
-      measureJackknife(dir_output_pairs,dir_input_pairs,dir_output_ResampleXi,count_dd,count_rr,count_dr,tcount);
-      break;
-    case(ErrorType::_Bootstrap_):
-      measureBootstrap(nMocks, dir_output_pairs,dir_input_pairs,dir_output_ResampleXi,count_dd,count_rr,count_dr,tcount);
-      break;
+  switch (errType) {
+  case (ErrorType::_Poisson_) :
+    measurePoisson(dir_output_pairs, dir_input_pairs, count_dd, count_rr, count_dr, tcount);
+    break;
+  case (ErrorType::_Jackknife_) :
+    measureJackknife(dir_output_pairs, dir_input_pairs, dir_output_ResampleXi, count_dd, count_rr, count_dr, tcount);
+    break;
+  case (ErrorType::_Bootstrap_) :
+    measureBootstrap(nMocks,  dir_output_pairs, dir_input_pairs, dir_output_ResampleXi, count_dd, count_rr, count_dr, tcount);
+    break;
   }
 }
 
@@ -134,9 +238,9 @@ void cosmobl::twopt::TwoPointCorrelation_multipoles::measureJackknife (const str
   count_allPairs_region (dd_regions, rr_regions, dr_regions, TwoPType::_2D_polar_, dir_output_pairs,dir_input_pairs, count_dd, count_rr, count_dr,  tcount);
 
   
-  auto data_polar = (count_dr>=0) ? LandySzalayEstimatorTwoP(m_dd,m_rr,m_dr,m_data->weightedN(),m_random->weightedN()) : NaturalEstimatorTwoP(m_dd,m_rr,m_data->weightedN(),m_random->weightedN());
+  auto data_polar = (count_dr>-1) ? LandySzalayEstimatorTwoP(m_dd,m_rr,m_dr,m_data->weightedN(),m_random->weightedN()) : NaturalEstimatorTwoP(m_dd,m_rr,m_data->weightedN(),m_random->weightedN());
 
-  if (count_dr==1) 
+  if (count_dr>-1) 
     data = XiJackknife(dd_regions, rr_regions,dr_regions);
   else
     data = XiJackknife(dd_regions, rr_regions);
@@ -145,7 +249,7 @@ void cosmobl::twopt::TwoPointCorrelation_multipoles::measureJackknife (const str
   for(size_t i=0;i<data.size();i++){
     ww.push_back(data[i]->fx());
     if (dir_output_ResampleXi != par::defaultString){
-      string filename = dir_output_ResampleXi+"xi_multipoles_Bootstrap_"+conv(i,par::fINT);
+      string filename = dir_output_ResampleXi+"xi_multipoles_Jackknife_"+conv(i,par::fINT);
       ofstream fout(filename.c_str());
       fout.clear(); fout.close();
 
@@ -171,9 +275,9 @@ void cosmobl::twopt::TwoPointCorrelation_multipoles::measureBootstrap (const int
   vector<shared_ptr<pairs::Pair> > dd_regions, rr_regions, dr_regions;
   count_allPairs_region (dd_regions, rr_regions, dr_regions, TwoPType::_2D_polar_, dir_output_pairs,dir_input_pairs, count_dd, count_rr, count_dr,  tcount);
 
-  auto data_polar = (count_dr>=0) ? LandySzalayEstimatorTwoP(m_dd,m_rr,m_dr,m_data->weightedN(),m_random->weightedN()) : NaturalEstimatorTwoP(m_dd,m_rr,m_data->weightedN(),m_random->weightedN());
+  auto data_polar = (count_dr>-1) ? LandySzalayEstimatorTwoP(m_dd,m_rr,m_dr,m_data->weightedN(),m_random->weightedN()) : NaturalEstimatorTwoP(m_dd,m_rr,m_data->weightedN(),m_random->weightedN());
 
-  if (count_dr==1) 
+  if (count_dr>-1) 
     data = XiBootstrap(nMocks, dd_regions, rr_regions,dr_regions);
   else
     data = XiBootstrap(nMocks, dd_regions, rr_regions);
@@ -245,54 +349,8 @@ vector<shared_ptr<Data> > cosmobl::twopt::TwoPointCorrelation_multipoles::XiBoot
   }
   return data;
 }
-/*
-void cosmobl::twopt::TwoPointCorrelation_multipoles::measure (const string dir_output_pairs, const vector<string> dir_input_pairs, const int count_dd, const int count_rr, const int count_dr, const bool tcount)
-{ 
-  // ----------- measure the 2D two-point correlation function, xi(r,mu) ----------- 
-  
-  TwoPointCorrelation2D_polar::measurePoisson(dir_output_pairs, dir_input_pairs, count_dd, count_rr, count_dr, tcount);
 
-  
-  // ----------- measure the first three multipoles of the two-point correlation function ----------- 
 
-  vector<double> rad, xil, error;
-
-  rad.resize(m_dd->nbins_D1()*3);
-  xil.resize(0); xil.resize(m_dd->nbins_D1()*3, 0.);
-  error.resize(0); error.resize(m_dd->nbins_D1()*3, 0.);
-
-  double binSize = 1./m_dd->binSize_inv_D2();
-  vector<vector<double> > xi2d = TwoPointCorrelation2D_polar::m_dataset->fxy();
-  vector<vector<double> > error_xi2d = TwoPointCorrelation2D_polar::m_dataset->error_fxy();
-
-  for (int i=0; i<m_dd->nbins_D1(); i++) {
-
-    rad[i] = m_dd->scale_D1(i);
-    rad[i+m_dd->nbins_D1()] = m_dd->scale_D1(i);
-    rad[i+2*m_dd->nbins_D1()] = m_dd->scale_D1(i);
-    
-    for (int j=0; j<m_dd->nbins_D2(); j++) {
-      double mu = m_dd->scale_D2(j);
-      
-      xil[i]                    += xi2d[i][j]*binSize;            // xi_0
-      xil[i+m_dd->nbins_D1()]   += 5.*xi2d[i][j]*P_2(mu)*binSize; // xi_2
-      xil[i+2*m_dd->nbins_D1()] += 9.*xi2d[i][j]*P_4(mu)*binSize; // xi_4
-
-      error[i]                    += pow(error_xi2d[i][j]*binSize, 2);            // error[xi_0]
-      error[i+m_dd->nbins_D1()]   += pow(5.*error_xi2d[i][j]*P_2(mu)*binSize, 2); // error[xi_2]
-      error[i+2*m_dd->nbins_D1()] += pow(9.*error_xi2d[i][j]*P_4(mu)*binSize, 2); // error[xi_4]
-    }
-
-  }
-  
-  for_each( error.begin(), error.end(), [] (double &vv) { vv = sqrt(vv); } );
-
-  m_dataset->set_xx(rad);
-  m_dataset->set_fx(xil);
-  m_dataset->set_error_fx(error);
-}
-
-*/
 // ============================================================================================
 
 

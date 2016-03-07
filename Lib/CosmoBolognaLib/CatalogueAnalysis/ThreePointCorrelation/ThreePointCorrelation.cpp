@@ -100,7 +100,7 @@ void cosmobl::threept::ThreePointCorrelation::count_triplets (const shared_ptr<C
     
       for (auto &&j : close_objects12) { // loop on the objects at r12 
 
-	double r12 = cat1->distance(i, cat2->object(j));
+	double r12 = cat1->distance(i, cat2->catalogue_object(j));
       
 	if (tt_thread->side_s()*(1-tt_thread->perc_increase())<r12 && r12<tt_thread->side_s()*(1+tt_thread->perc_increase())) {
 
@@ -109,11 +109,11 @@ void cosmobl::threept::ThreePointCorrelation::count_triplets (const shared_ptr<C
 	
 	  for (auto &&k : close_objects13) { // loop on the objects at r13
 
-	    double r13 = cat1->distance(i, cat3->object(k));
+	    double r13 = cat1->distance(i, cat3->catalogue_object(k));
 	  
 	    if (tt_thread->side_u()*tt_thread->side_s()*(1-tt_thread->perc_increase())<r13 && r13<tt_thread->side_u()*tt_thread->side_s()*(1+tt_thread->perc_increase())) {
 
-	      double r23 = cat2->distance(j, cat3->object(k));
+	      double r23 = cat2->distance(j, cat3->catalogue_object(k));
 	    
 	      double ww = cat1->weight(i)*cat2->weight(j)*cat3->weight(k);
 	    
@@ -133,7 +133,7 @@ void cosmobl::threept::ThreePointCorrelation::count_triplets (const shared_ptr<C
 #pragma omp critical
     {
       // sum all the object triplets computed by each thread
-      tt->sum(tt_thread);
+      tt->Sum(tt_thread);
     }
     
   }
@@ -214,7 +214,7 @@ void cosmobl::threept::ThreePointCorrelation::count_allTriplets (const string di
     count_triplets(m_data, ChainMesh_random_rMAX1, ChainMesh_data_rMAX2, ddr2, tcount);
     count_triplets(m_random, ChainMesh_data_rMAX1, ChainMesh_data_rMAX2, ddr3, tcount);
 
-    m_ddr->sum(ddr1); m_ddr->sum(ddr2); m_ddr->sum(ddr3); 
+    m_ddr->Sum(ddr1); m_ddr->Sum(ddr2); m_ddr->Sum(ddr3); 
    
     if (dir_output_triplets!=par::defaultString) write_triplets (m_ddr, dir_output_triplets, file);
   } 
@@ -236,7 +236,7 @@ void cosmobl::threept::ThreePointCorrelation::count_allTriplets (const string di
     count_triplets(m_random, ChainMesh_data_rMAX1, ChainMesh_random_rMAX2, drr2, tcount);
     count_triplets(m_data, ChainMesh_random_rMAX1, ChainMesh_random_rMAX2, drr3, tcount);
 
-    m_drr->sum(drr1); m_drr->sum(drr2); m_drr->sum(drr3);
+    m_drr->Sum(drr1); m_drr->Sum(drr2); m_drr->Sum(drr3);
     
     if (dir_output_triplets!=par::defaultString) write_triplets (m_drr, dir_output_triplets, file);
   } 

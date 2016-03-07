@@ -334,6 +334,42 @@ namespace cosmobl {
 
       ///@}
 
+      /**
+       *  @brief get the y coordinates
+       *  @return the y coordinates
+       */
+      vector<double> yy () const 
+      { cosmobl::ErrorMsg("Error in yy() of TwoPointCorrelation_deprojected.h!"); vector<double> vv; return vv; }
+
+      /**
+       *  @brief get the the binned correlation function 
+       *  @return the binned correlation function 
+       */
+      vector<double> xi1D () const { return m_dataset->fx(); }
+
+      /**
+       *  @brief get the error on the binned correlation function
+       *  function
+       *  @return the error on the binned correlation function
+       *  function
+       */
+      virtual vector<double> error1D () const { return m_dataset->error_fx(); }
+
+      /**
+       *  @brief get the the binned correlation function 
+       *  @return the binned correlation function 
+       */
+      vector<vector<double> > xi2D () const 
+      { cosmobl::ErrorMsg("Error in xi2D() of TwoPointCorrelation_deprojected.h!"); vector<vector<double> > vv; return vv; }
+
+      /**
+       *  @brief get the error on the binned correlation function
+       *  function
+       *  @return the error on the binned correlation function
+       *  function
+       */
+      vector<vector<double> > error2D () const 
+      { cosmobl::ErrorMsg("Error in error2D() of TwoPointCorrelation_deprojected.h!"); vector<vector<double> > vv; return vv; }
       
       /**
        *  @name Member functions to count the number of pairs and measure the two-point correlation function

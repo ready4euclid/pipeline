@@ -70,7 +70,7 @@ double cosmobl::Cosmology::Pk_UnNorm (const double kk, const double redshift, co
 
 void cosmobl::Cosmology::run_CAMB (const bool NL, const double redshift, const string output_root, const double k_max, const string file_par) const 
 {
-  string dir = par::DirCosmo+"Cosmology/CAMB/";
+  string dir = par::DirCosmo+"External/CAMB/";
 
   string File_par = file_par;
 
@@ -142,8 +142,8 @@ void cosmobl::Cosmology::Table_PkCodes (const string code, const bool NL, vector
   else ErrorMsg("Error in cosmobl::Cosmology::Table_PkCodes of PkXi.cpp!");
   sdir += "h"+conv(m_hh,par::fDP3)+"_OmB"+conv(m_Omega_baryon,par::fDP3)+"_OmCDM"+conv(m_Omega_CDM,par::fDP3)+"_OmL"+conv(m_Omega_DE,par::fDP3)+"_OmN"+conv(m_Omega_neutrinos,par::fDP3)+"_Z"+conv(redshift,par::fDP3)+"_scalar_amp"+conv(m_scalar_amp,par::ee3)+"_n"+conv(m_n_spec,par::fDP3)+"/";
 
-  string dir = dir_cosmo+"Cosmology/"+code+"/";
-  string dirC = dir_cosmo+"Cosmology/CAMB/";
+  string dir = dir_cosmo+"External/"+code+"/";
+  string dirC = dir_cosmo+"External/CAMB/";
   if (chdir (dirC.c_str())) {};
 
   string dir_output = dir+sdir;
@@ -725,7 +725,7 @@ double cosmobl::glob::func_SSM_EH_GSL (double kk, void *params)
   if (pp->unit==0) {cosm.set_unit(1); RHO = cosm.Rho(pp->Omega_matter,pp->Omega_neutrinos); cosm.set_unit(0);}
   double rr = Radius(pp->mass,RHO);
 
-  return cosm.Pk_UnNorm(kk,pp->redshift,pp->method_Pk)*pow(WW(kk*rr)*kk,2);  
+  return cosm.Pk_UnNorm(kk,pp->redshift,pp->method_Pk)*pow(TopHat_WF(kk*rr)*kk,2);  
 }
 
 /// @endcond

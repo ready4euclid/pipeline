@@ -312,6 +312,74 @@ namespace cosmobl {
 
 	///@}
 
+        /**
+         *  @brief get the x coordinates
+         *  @return the x coordinates
+         */
+        vector<double> xx () const  override;
+
+	/**
+	 *  @brief get the perpendicular wedge of the polar xi
+	 *  @return the perpendicular wedge of the polar xi
+	 */
+	vector<double> xiPerpendicular () const override;
+
+	/**
+	 *  @brief get the perpendicular wedge of the polar xi
+	 *  @return the error on the perpendicular wedge of the polar xi
+	 */
+	vector<double> errorPerpendicular () const override;
+
+	/**
+	 *  @brief get the parallel wedge of the polar xi
+	 *  @return the xiPar coordinates
+	 */
+	vector<double> xiParallel () const override;
+
+	/*
+	 *  @brief get the error on the parallel wedge of the polar xi
+	 *  @return the error on the parallel wedge of the polar xi
+	 */
+	vector<double> errorParallel () const override;
+
+	/**
+	 *  @brief get the y coordinates
+	 *  @return the y coordinates
+	 */
+	vector<double> yy () const 
+	{ cosmobl::ErrorMsg("Error in yy() of TwoPointCorrelation_wedges.h!"); vector<double> vv; return vv; }
+
+	/**
+	 *  @brief get the the binned correlation function 
+	 *  @return the binned correlation function 
+	 */
+	vector<double> xi1D () const
+	{ cosmobl::ErrorMsg("Error in xi1D() of TwoPointCorrelation_wedges.h!"); vector<double> vv; return vv; }
+
+	/**
+	 *  @brief get the error on the binned correlation function
+	 *  function
+	 *  @return the error on the binned correlation function
+	 *  function
+	 */
+	vector<double> error1D () const
+	{ cosmobl::ErrorMsg("Error in error1D() of TwoPointCorrelation_wedges.h!"); vector<double> vv; return vv; }
+
+	/**
+	 *  @brief get the the binned correlation function 
+	 *  @return the binned correlation function 
+	 */
+	vector<vector<double> > xi2D () const 
+	{ cosmobl::ErrorMsg("Error in xi2D() of TwoPointCorrelation_wedges.h!"); vector<vector<double> > vv; return vv; }
+
+	/**
+	 *  @brief get the error on the binned correlation function
+	 *  function
+	 *  @return the error on the binned correlation function
+	 *  function
+	 */
+	vector<vector<double> > error2D () const 
+	{ cosmobl::ErrorMsg("Error in error2D() of TwoPointCorrelation_multipoles.h!"); vector<vector<double> > vv; return vv; }
 
 	/**
 	 *  @name Member functions to count the number of pairs and measure the two-point correlation function

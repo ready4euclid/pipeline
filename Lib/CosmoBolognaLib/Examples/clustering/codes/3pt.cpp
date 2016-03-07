@@ -34,20 +34,20 @@ int main () {
   Cosmology cosmology {OmegaM, Omega_b, Omega_nu, massless_neutrinos, massive_neutrinos, OmegaL, Omega_radiation, hh, scalar_amp, n_s, w0, wa};
 
   
-  // ----------------------------------------------------------
-  // ---------------- read the input catalogue ----------------
-  // ----------------------------------------------------------
+  // ------------------------------------------------------------------------------------------------------
+  // ---------------- read the input catalogue (with polar coordinates: RA, Dec, redshift) ----------------
+  // ------------------------------------------------------------------------------------------------------
   
   string file_catalogue = par::DirLoc+"../input/cat.dat";
 
-  Catalogue catalogue {file_catalogue, cosmology, _Galaxy_};
+  Catalogue catalogue {_Galaxy_, {file_catalogue}, cosmology};
 
   
-  // ----------------------------------------------------------------
-  // ---------------- construct the random catalogue ----------------
-  // ----------------------------------------------------------------
+  // --------------------------------------------------------------------------------------
+  // ---------------- construct the random catalogue (with cubic geometry) ----------------
+  // --------------------------------------------------------------------------------------
 
-  Catalogue random_catalogue {catalogue, 1.};
+  Catalogue random_catalogue {_Box_, catalogue, 1.};
 
   
   // -------------------------------------------------------------------------------

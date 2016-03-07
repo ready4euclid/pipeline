@@ -56,6 +56,166 @@ cosmobl::Cosmology::Cosmology (const double Omega_matter, const double Omega_bar
 // =====================================================================================
 
 
+double cosmobl::Cosmology::value (const CosmoPar parameter) const
+{
+  double param_value;
+  
+  switch (parameter) {
+
+  case (_Omega_matter_LCDM_):
+    param_value = m_Omega_matter;
+    break;
+
+  case (_Omega_matter_):
+    return m_Omega_matter;
+    break;
+
+  case (_Omega_baryon_):        
+    param_value = m_Omega_baryon;
+    break;
+
+  case (_Omega_neutrinos_):      
+    param_value = m_Omega_neutrinos;
+    break;
+
+  case (_massless_neutrinos_):   
+    param_value = m_massless_neutrinos;
+    break;
+
+  case (_massive_neutrinos_):    
+    param_value = m_massive_neutrinos;
+    break;
+
+  case (_Omega_DE_):            
+    param_value = m_Omega_DE;
+    break;
+
+  case (_Omega_radiation_):     
+    param_value = m_Omega_radiation;
+    break;
+
+  case (_H0_):
+    param_value = m_H0;
+    break;
+
+  case (_scalar_amp_):           
+    param_value = m_scalar_amp;
+    break;
+
+  case (_n_spec_):               
+    param_value = m_n_spec;
+    break;
+
+  case (_w0_):
+    param_value = m_w0;
+    break;
+
+  case (_wa_):             
+    param_value = m_wa;
+    break;
+
+  case (_fNL_):                  
+    param_value = m_fNL;
+    break;
+
+  case (_sigma8_):
+    param_value = m_sigma8;
+    break;
+
+  default:
+    ErrorMsg("Error in cosmobl::Cosmology::value_CosmoPar of Cosmology.cpp: no such a variable in the list!");
+  }
+  
+  return param_value;
+}
+
+
+// =====================================================================================
+
+
+void cosmobl::Cosmology::set_parameter (const CosmoPar parameter, const double value)
+{
+  switch (parameter) {
+    
+  case (_Omega_matter_LCDM_):
+    set_Omega(value);
+    break;
+
+  case (_Omega_matter_):
+    set_OmegaM(value);
+    break;
+  
+  case (_Omega_baryon_):        
+    set_OmegaB(value);
+    break;
+
+  case (_Omega_neutrinos_):      
+    set_OmegaNu (value, m_massless_neutrinos, m_massive_neutrinos);
+    break;
+
+  case (_massless_neutrinos_):   
+    set_OmegaNu (m_Omega_neutrinos, value, m_massive_neutrinos);
+    break;
+
+  case (_massive_neutrinos_):    
+    set_OmegaNu (m_Omega_neutrinos, m_massless_neutrinos, int(value));
+    break;
+
+  case (_Omega_DE_):            
+    set_OmegaDE(value); 
+    break;
+
+  case (_Omega_radiation_):     
+    set_Omega_radiation(value);
+    break;
+
+  case (_H0_):
+    set_H0(value); 
+    break;
+
+  case (_scalar_amp_):           
+    set_scalar_amp(value);
+    break;
+
+  case (_n_spec_):               
+    set_n_spec(value);
+    break;
+
+  case (_w0_):
+    set_w0(value);
+    break;
+
+  case (_wa_):             
+    set_wa(value);
+    break;
+
+  case (_fNL_):                  
+    set_fNL(value);
+    break;
+
+  case (_sigma8_):
+    set_sigma8(value); 
+    break;
+
+  default:
+    ErrorMsg("Error in cosmobl::Cosmology::set_CosmoPar of Cosmology.cpp: no such a variable in the list!");
+  }
+}
+
+
+// =====================================================================================
+
+
+void cosmobl::Cosmology::set_parameter (const vector<CosmoPar> parameter, const vector<double> value)
+{
+  for (size_t i=0; i<parameter.size(); i++)
+    set_parameter(parameter[i], value[i]);
+}
+
+
+// =====================================================================================
+
+
 double cosmobl::Cosmology::w_CPL (const double redshift) const 
 {
   return m_w0+m_wa*redshift/(1.+redshift);

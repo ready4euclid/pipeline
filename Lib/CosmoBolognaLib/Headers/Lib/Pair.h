@@ -531,7 +531,7 @@ namespace cosmobl {
        *  @param ww the weight
        *  @return none
        */
-      virtual void sum (const shared_ptr<Pair> pp, const double ww=1) = 0;
+      virtual void Sum (const shared_ptr<Pair> pp, const double ww=1) = 0;
 
       ///@}
 

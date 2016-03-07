@@ -315,7 +315,7 @@ namespace cosmobl {
       { 
 	Cosmology cosm (m_Omega_matter, m_Omega_baryon, m_Omega_neutrinos, m_massless_neutrinos, m_massive_neutrinos, m_Omega_DE, m_Omega_radiation, m_hh, m_scalar_amp, m_n_spec, m_w0, m_wa, m_fNL, m_type_NG, m_model, m_unit);
 
-	if (m_method_Pk=="EisensteinHu") return cosm.Pk_UnNorm(kk, m_redshift, m_method_Pk)*pow(cosmobl::WW(kk*m_rr)*kk,2);  
+	if (m_method_Pk=="EisensteinHu") return cosm.Pk_UnNorm(kk, m_redshift, m_method_Pk)*pow(cosmobl::TopHat_WF(kk*m_rr)*kk,2);  
 
 	else { cosmobl::ErrorMsg("Error in func_SSR of CosmClassFunc.h!"); return 0; }
       }
@@ -360,7 +360,7 @@ namespace cosmobl {
 	if (m_unit==0) { cosm.set_unit(1); RHO = cosm.Rho(m_Omega_matter, m_Omega_neutrinos); cosm.set_unit(0); }
 	double rr = cosmobl::Radius(m_mass, RHO);
 
-	if (m_method_Pk=="EisensteinHu") return cosm.Pk_UnNorm(kk, m_redshift, m_method_Pk)*pow(cosmobl::WW(kk*rr)*kk,2);  
+	if (m_method_Pk=="EisensteinHu") return cosm.Pk_UnNorm(kk, m_redshift, m_method_Pk)*pow(cosmobl::TopHat_WF(kk*rr)*kk,2);  
 
 	else { cosmobl::ErrorMsg("Error in func_SSM of CosmClassFunc.h!"); return 0; }
       }
@@ -391,7 +391,7 @@ namespace cosmobl {
 
 	double lgPkK = cosmobl::interpolated(lgk, m_lgkk, m_lgPk, "Linear",- 1);
 
-	return pow(10.,lgPkK)*pow(cosmobl::WW(kk*m_rr)*kk,2)/pow(fact,m_n_spec); 
+	return pow(10.,lgPkK)*pow(cosmobl::TopHat_WF(kk*m_rr)*kk,2)/pow(fact,m_n_spec); 
       }
     };
 
@@ -421,7 +421,7 @@ namespace cosmobl {
 	double lgPkK = cosmobl::interpolated(lgk, m_lgkk, m_lgPk, "Linear", -1);
 	double rr = cosmobl::Radius(m_mass, m_rho);
 
-	return pow(10.,lgPkK)*pow(cosmobl::WW(kk*rr)*kk,2)/pow(fact,m_n_spec); 
+	return pow(10.,lgPkK)*pow(cosmobl::TopHat_WF(kk*rr)*kk,2)/pow(fact,m_n_spec); 
       }
     };
 
@@ -636,7 +636,7 @@ namespace cosmobl {
 	Cosmology cosm (m_Omega_matter, m_Omega_baryon, m_Omega_neutrinos, m_massless_neutrinos, m_massive_neutrinos, m_Omega_DE, m_Omega_radiation, m_hh, m_scalar_amp, m_n_spec, m_w0, m_wa, m_fNL, m_type_NG, m_model, m_unit);
 	
 	if (m_method_Pk=="EisensteinHu") 
-	  return pow(cosm.linear_growth_rate(m_redshift, kk),2)*cosm.Pk_UnNorm(kk, m_redshift, m_method_Pk)*pow(cosmobl::WW(kk*m_rr),2);   
+	  return pow(cosm.linear_growth_rate(m_redshift, kk),2)*cosm.Pk_UnNorm(kk, m_redshift, m_method_Pk)*pow(cosmobl::TopHat_WF(kk*m_rr),2);   
 
 	else { cosmobl::ErrorMsg("Error in func_V2 of CosmClassFunc.h!"); return 0; }
       }
@@ -682,7 +682,7 @@ namespace cosmobl {
 
 	double lgPkK = cosmobl::interpolated(lgk, m_lgkk, m_lgPk, "Linear", -1);
 
-	return pow(cosm.linear_growth_rate(m_redshift, kk),2)*pow(10.,lgPkK)/pow(fact, m_n_spec)*pow(cosmobl::WW(kk*m_rr),2);  
+	return pow(cosm.linear_growth_rate(m_redshift, kk),2)*pow(10.,lgPkK)/pow(fact, m_n_spec)*pow(cosmobl::TopHat_WF(kk*m_rr),2);  
       }
     };
 
@@ -722,7 +722,7 @@ namespace cosmobl {
 	Cosmology cosm (m_Omega_matter, m_Omega_baryon, m_Omega_neutrinos, m_massless_neutrinos, m_massive_neutrinos, m_Omega_DE, m_Omega_radiation, m_hh, m_scalar_amp, m_n_spec, m_w0, m_wa, m_fNL, m_type_NG, m_model, m_unit);
     
 	if (m_method_Pk=="EisensteinHu") 
-	  return pow(cosm.linear_growth_rate(m_redshift, kk),2)*cosm.Pk_UnNorm(kk, m_redshift, m_method_Pk)*(1.-pow(cosmobl::WW(kk*m_rr),2));   
+	  return pow(cosm.linear_growth_rate(m_redshift, kk),2)*cosm.Pk_UnNorm(kk, m_redshift, m_method_Pk)*(1.-pow(cosmobl::TopHat_WF(kk*m_rr),2));   
 
 	else { cosmobl::ErrorMsg("Error in func_sigma2 of CosmClassFunc.h!"); return 0; }
       }
@@ -768,7 +768,7 @@ namespace cosmobl {
  
 	double lgPkK = cosmobl::interpolated(lgk, m_lgkk, m_lgPk, "Linear", -1);
 
-	return pow(cosm.linear_growth_rate(m_redshift, kk),2)*pow(10.,lgPkK)/pow(fact, m_n_spec)*(1.-pow(cosmobl::WW(kk*m_rr),2));  
+	return pow(cosm.linear_growth_rate(m_redshift, kk),2)*pow(10.,lgPkK)/pow(fact, m_n_spec)*(1.-pow(cosmobl::TopHat_WF(kk*m_rr),2));  
       }
     };
 

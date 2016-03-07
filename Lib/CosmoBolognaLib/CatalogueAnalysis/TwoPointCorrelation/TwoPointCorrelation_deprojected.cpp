@@ -126,25 +126,11 @@ void cosmobl::twopt::TwoPointCorrelation_deprojected::measureJackknife (const do
   vector<shared_ptr<pairs::Pair> > dd_regions, rr_regions, dr_regions;
   count_allPairs_region (dd_regions, rr_regions, dr_regions, TwoPType::_2D_Cartesian_, dir_output_pairs,dir_input_pairs, count_dd, count_rr, count_dr,  tcount);
 
-  shared_ptr<Pair> dd_cart = move(Pair::Create(m_dd->pairType(), m_dd->sMin_D1(), m_dd->sMax_D1(), m_dd->nbins_D1(), m_dd->shift_D1(), m_dd->sMin_D2(), m_dd->sMax_D2(), m_dd->nbins_D2(), m_dd->shift_D2()));
+  auto data_cart = (count_dr>-1) ? LandySzalayEstimatorTwoP(m_dd,m_rr,m_dr,m_data->weightedN(),m_random->weightedN()) : NaturalEstimatorTwoP(m_dd,m_rr,m_data->weightedN(),m_random->weightedN());
 
-  shared_ptr<Pair> rr_cart = move(Pair::Create(m_rr->pairType(), m_rr->sMin_D1(), m_rr->sMax_D1(), m_rr->nbins_D1(), m_rr->shift_D1(), m_rr->sMin_D2(), m_rr->sMax_D2(), m_rr->nbins_D2(), m_rr->shift_D2()));
+  auto data_proj = TwoPointCorrelation_projected::ProjectedTwoP(piMax_integral,data_cart->xx(),data_cart->yy(),data_cart->fxy(),data_cart->error_fxy());
 
-  shared_ptr<Pair> dr_cart = move(Pair::Create(m_dr->pairType(), m_dr->sMin_D1(), m_dr->sMax_D1(), m_dr->nbins_D1(), m_dr->shift_D1(), m_dr->sMin_D2(), m_dr->sMax_D2(), m_dr->nbins_D2(), m_dr->shift_D2()));
-
-  for (size_t k=0; k<dd_regions.size(); k++)
-    for (int i=0; i<dd_regions[k]->nbins_D1(); i++)
-      for (int j=0; j<dd_regions[k]->nbins_D2(); j++) {
-	dd_cart->add_PP2D(i, j, dd_regions[k]->PP2D(i, j));
-	rr_cart->add_PP2D(i, j, rr_regions[k]->PP2D(i, j));
-	dr_cart->add_PP2D(i, j, dr_regions[k]->PP2D(i, j));
-      }
-  
-  auto data_cart = (count_dr>=0) ? LandySzalayEstimatorTwoP(dd_cart, rr_cart, dr_cart, m_data->weightedN(), m_random->weightedN()) : NaturalEstimatorTwoP(dd_cart, rr_cart, m_data->weightedN(), m_random->weightedN());
-
-  auto data_proj = TwoPointCorrelation_projected::ProjectedTwoP(piMax_integral, data_cart->xx(), data_cart->yy(), data_cart->fxy(), data_cart->error_fxy());
-
-  if (count_dr==1) 
+  if (count_dr>-1) 
     data = XiJackknife(piMax_integral, dd_regions, rr_regions,dr_regions);
   else
     data = XiJackknife(piMax_integral, dd_regions, rr_regions);
@@ -153,9 +139,9 @@ void cosmobl::twopt::TwoPointCorrelation_deprojected::measureJackknife (const do
   for (size_t i=0; i<data.size(); i++) {
     ww.push_back(data[i]->fx());
 
-    if (dir_output_ResampleXi != par::defaultString) {
-      string filename = "xi_deprojected_Jackkknife_"+conv(i,par::fINT);
-      data[i]->write(dir_output_ResampleXi, filename, "rp", "xi_deprojected", 0);
+    if (dir_output_ResampleXi != par::defaultString){
+      string filename = "xi_deprojected_Jackknife_"+conv(i,par::fINT);
+      data[i]->write(dir_output_ResampleXi,filename,"rp","xi_deprojected",0);
     }
   }
 
@@ -183,33 +169,21 @@ void cosmobl::twopt::TwoPointCorrelation_deprojected::measureBootstrap (const do
 
   shared_ptr<Pair> dd_cart = move(Pair::Create(m_dd->pairType(), m_dd->sMin_D1(), m_dd->sMax_D1(), m_dd->nbins_D1(), m_dd->shift_D1(), m_dd->sMin_D2(), m_dd->sMax_D2(), m_dd->nbins_D2(), m_dd->shift_D2()));
 
-  shared_ptr<Pair> rr_cart = move(Pair::Create(m_rr->pairType(), m_rr->sMin_D1(), m_rr->sMax_D1(), m_rr->nbins_D1(), m_rr->shift_D1(), m_rr->sMin_D2(), m_rr->sMax_D2(), m_rr->nbins_D2(), m_rr->shift_D2()));
+  auto data_cart = (count_dr>-1) ? LandySzalayEstimatorTwoP(m_dd,m_rr,m_dr,m_data->weightedN(),m_random->weightedN()) : NaturalEstimatorTwoP(m_dd,m_rr,m_data->weightedN(),m_random->weightedN());
 
-  shared_ptr<Pair> dr_cart = move(Pair::Create(m_dr->pairType(), m_dr->sMin_D1(), m_dr->sMax_D1(), m_dr->nbins_D1(), m_dr->shift_D1(), m_dr->sMin_D2(), m_dr->sMax_D2(), m_dr->nbins_D2(), m_dr->shift_D2()));
-  
-  for (size_t k=0; k<dd_regions.size(); k++)
-    for (int i=0; i<dd_regions[k]->nbins_D1(); i++)
-      for (int j=0; j<dd_regions[k]->nbins_D2(); j++) {
-	dd_cart->add_PP2D(i, j, dd_regions[k]->PP2D(i, j));
-	rr_cart->add_PP2D(i, j, rr_regions[k]->PP2D(i, j));
-	dr_cart->add_PP2D(i, j, dr_regions[k]->PP2D(i, j));
-      }
+  auto data_proj = TwoPointCorrelation_projected::ProjectedTwoP(piMax_integral,data_cart->xx(),data_cart->yy(),data_cart->fxy(),data_cart->error_fxy());
 
-  auto data_cart = (count_dr>=0) ? LandySzalayEstimatorTwoP(dd_cart, rr_cart, dr_cart, m_data->weightedN(), m_random->weightedN()) : NaturalEstimatorTwoP(dd_cart, rr_cart, m_data->weightedN(), m_random->weightedN());
-
-  auto data_proj = TwoPointCorrelation_projected::ProjectedTwoP(piMax_integral, data_cart->xx(), data_cart->yy(), data_cart->fxy(), data_cart->error_fxy());
-
-  if (count_dr==1) 
-    data = XiBootstrap(piMax_integral, nMocks, dd_regions, rr_regions, dr_regions);
+  if (count_dr>-1) 
+    data = XiBootstrap(piMax_integral, nMocks, dd_regions, rr_regions,dr_regions);
   else
     data = XiBootstrap(piMax_integral, nMocks, dd_regions, rr_regions);
 
   vector<vector<double> > ww,covariance;
   for (size_t i=0; i<data.size(); i++) {
     ww.push_back(data[i]->fx());
-    if (dir_output_ResampleXi != par::defaultString) {
-      string filename = "xi_deprojected_Jackkknife_"+conv(i,par::fINT);
-      data[i]->write(dir_output_ResampleXi, filename, "rp", "xi_deprojected", 0);
+    if (dir_output_ResampleXi != par::defaultString){
+      string filename = "xi_deprojected_Bootstrap_"+conv(i,par::fINT);
+      data[i]->write(dir_output_ResampleXi,filename,"rp","xi_deprojected",0);
     }
   }
   covariance_matrix(ww, covariance, 0);

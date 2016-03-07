@@ -47,6 +47,80 @@ using namespace twopt;
 // ============================================================================================
 
 
+vector<double> cosmobl::twopt::TwoPointCorrelation_wedges::xx () const
+{
+  vector<double> rad;
+
+  for (size_t i=0; i<m_dataset->xx().size()/2; i++)
+    rad.push_back(m_dataset->xx()[i]);
+
+  return rad;
+}
+
+
+// ============================================================================================
+
+
+vector<double> cosmobl::twopt::TwoPointCorrelation_wedges::xiPerpendicular () const
+{
+  size_t sz = m_dataset->fx().size();
+  vector<double> xiPerp;
+  
+  for (size_t i=0; i<sz/2; i++)
+    xiPerp.push_back(m_dataset->fx()[i]);
+
+  return xiPerp;
+}
+
+
+// ============================================================================================
+
+
+vector<double> cosmobl::twopt::TwoPointCorrelation_wedges::errorPerpendicular () const
+{
+  size_t sz = m_dataset->error_fx().size();
+  vector<double> error_xiPerp;
+  
+  for (size_t i=0; i<sz/2; i++)
+    error_xiPerp.push_back(m_dataset->error_fx()[i]);
+
+  return error_xiPerp;
+}
+
+
+// ============================================================================================
+
+
+vector<double> cosmobl::twopt::TwoPointCorrelation_wedges::xiParallel () const 
+{
+  size_t sz = m_dataset->fx().size();
+  vector<double> xiParallel;
+
+  for (size_t i=sz/2; i<sz; i++)
+    xiParallel.push_back(m_dataset->fx()[i]);
+
+  return xiParallel;
+}
+
+
+// ============================================================================================
+
+
+vector<double> cosmobl::twopt::TwoPointCorrelation_wedges::errorParallel () const 
+{
+  size_t sz = m_dataset->error_fx().size();
+  vector<double> error_xiParallel;
+
+  for (size_t i=sz/2; i<sz; i++)
+    error_xiParallel.push_back(m_dataset->error_fx()[i]);
+
+  return error_xiParallel;
+}
+
+
+// ============================================================================================
+
+
 void cosmobl::twopt::TwoPointCorrelation_wedges::write (const string dir, const string file, const int rank) const 
 {
   vector<double> rad = m_dataset->xx();
@@ -150,19 +224,18 @@ void cosmobl::twopt::TwoPointCorrelation_wedges::measureJackknife (const string 
   vector<shared_ptr<pairs::Pair> > dd_regions, rr_regions, dr_regions;
   count_allPairs_region (dd_regions, rr_regions, dr_regions, TwoPType::_2D_polar_, dir_output_pairs,dir_input_pairs, count_dd, count_rr, count_dr,  tcount);
 
-  auto data_polar = (count_dr>=0) ? LandySzalayEstimatorTwoP(m_dd, m_rr, m_dr, m_data->weightedN(), m_random->weightedN()) : NaturalEstimatorTwoP(m_dd, m_rr, m_data->weightedN(), m_random->weightedN());
+  auto data_polar = (count_dr>-1) ? LandySzalayEstimatorTwoP(m_dd, m_rr, m_dr, m_data->weightedN(), m_random->weightedN()) : NaturalEstimatorTwoP(m_dd, m_rr, m_data->weightedN(), m_random->weightedN());
 
-  if (count_dr==1) 
-    data = XiJackknife(dd_regions, rr_regions, dr_regions);
+  if (count_dr>-1) 
+    data = XiJackknife(dd_regions, rr_regions,dr_regions);
   else
     data = XiJackknife(dd_regions, rr_regions);
 
-  vector<vector<double> > ww, covariance;
-  
-  for (size_t i=0; i<data.size(); i++) {
+  vector<vector<double> > ww,covariance;
+  for(size_t i=0;i<data.size();i++){
     ww.push_back(data[i]->fx());
-    if (dir_output_ResampleXi != par::defaultString) {
-      string filename = dir_output_ResampleXi+"xi_wedges_Bootstrap_"+conv(i, par::fINT);
+    if (dir_output_ResampleXi != par::defaultString){
+      string filename = dir_output_ResampleXi+"xi_wedges_Jackknife_"+conv(i,par::fINT);
       ofstream fout(filename.c_str());
       fout.clear(); fout.close();
     }
@@ -190,7 +263,7 @@ void cosmobl::twopt::TwoPointCorrelation_wedges::measureBootstrap (const int nMo
   vector<shared_ptr<pairs::Pair> > dd_regions, rr_regions, dr_regions;
   count_allPairs_region (dd_regions, rr_regions, dr_regions, TwoPType::_2D_polar_, dir_output_pairs,dir_input_pairs, count_dd, count_rr, count_dr,  tcount);
 
-  auto data_polar = (count_dr>=0) ? LandySzalayEstimatorTwoP(m_dd, m_rr, m_dr, m_data->weightedN(), m_random->weightedN()) : NaturalEstimatorTwoP(m_dd, m_rr, m_data->weightedN(), m_random->weightedN());
+  auto data_polar = (count_dr>-1) ? LandySzalayEstimatorTwoP(m_dd, m_rr, m_dr, m_data->weightedN(), m_random->weightedN()) : NaturalEstimatorTwoP(m_dd, m_rr, m_data->weightedN(), m_random->weightedN());
 
   if (count_dr==1) 
     data = XiBootstrap(nMocks, dd_regions, rr_regions,dr_regions);

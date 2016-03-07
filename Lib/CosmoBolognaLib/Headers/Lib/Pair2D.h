@@ -54,7 +54,29 @@ namespace cosmobl {
      *  </EM>.
      */
     class Pair2D : public Pair {
+
+    private:
+      
+      /**
+       *  @name Member functions used to set the binning parameters (customized in all the derived classes) 
+       */
+      ///@{
   
+      /**
+       *  @brief set the binning parameters given the number of bins
+       *  @return none
+       */
+      virtual void set_parameters_nbins () = 0;
+  
+      /**
+       *  @brief set the binning parameters given the bin size
+       *  @return none
+       */
+      virtual void set_parameters_binSize () = 0;
+  
+      ///@}
+
+      
     protected:
 
       /// the binned scales in the first dimension
@@ -263,7 +285,7 @@ namespace cosmobl {
        *  @param ww the weight
        *  @return none
        */
-      void sum (const shared_ptr<Pair> pp, const double ww=1) override;
+      void Sum (const shared_ptr<Pair> pp, const double ww=1) override;
 
       ///@}
     
@@ -284,7 +306,29 @@ namespace cosmobl {
      *  Pair2D_comovingCartesian </EM>.
      */
     class Pair2D_comovingCartesian : public Pair2D {
+      
+    private:
+      
+      /**
+       *  @name Member functions used to set the binning parameters (customized in all the derived classes) 
+       */
+      ///@{
   
+      /**
+       *  @brief set the binning parameters given the number of bins
+       *  @return none
+       */
+      virtual void set_parameters_nbins () = 0;
+  
+      /**
+       *  @brief set the binning parameters given the bin size
+       *  @return none
+       */
+      virtual void set_parameters_binSize () = 0;
+  
+      ///@}
+      
+      
     protected:
   
       /**
@@ -885,7 +929,29 @@ namespace cosmobl {
      *  Pair2D_comovingPolar </EM>.
      */
     class Pair2D_comovingPolar : public Pair2D {
+
+    private:
+      
+      /**
+       *  @name Member functions used to set the binning parameters (customized in all the derived classes) 
+       */
+      ///@{
   
+      /**
+       *  @brief set the binning parameters given the number of bins
+       *  @return none
+       */
+      virtual void set_parameters_nbins () = 0;
+  
+      /**
+       *  @brief set the binning parameters given the bin size
+       *  @return none
+       */
+      virtual void set_parameters_binSize () = 0;
+  
+      ///@}
+
+      
     protected:
   
       /**

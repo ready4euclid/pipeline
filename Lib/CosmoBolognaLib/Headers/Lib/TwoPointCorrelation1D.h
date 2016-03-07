@@ -129,7 +129,7 @@ namespace cosmobl {
        *
        *  @return pointer to an object of type Data
        */
-      shared_ptr<Data> NaturalEstimatorTwoP (shared_ptr<pairs::Pair> dd, shared_ptr<pairs::Pair> rr, int nData, int nRandom) override;
+      shared_ptr<Data> NaturalEstimatorTwoP (const shared_ptr<pairs::Pair> dd, const shared_ptr<pairs::Pair> rr, const int nData, const int nRandom) override;
 
       /**
        *  @brief measure the xi with Poisson error using measured pairs
@@ -150,7 +150,7 @@ namespace cosmobl {
        *
        *  @return pointer to an object of type Data
        */
-      shared_ptr<Data> LandySzalayEstimatorTwoP (shared_ptr<pairs::Pair> dd, shared_ptr<pairs::Pair> rr, shared_ptr<pairs::Pair> dr, int nData, int nRandom) override;
+      shared_ptr<Data> LandySzalayEstimatorTwoP (const shared_ptr<pairs::Pair> dd, const shared_ptr<pairs::Pair> rr, const shared_ptr<pairs::Pair> dr, const int nData, const int nRandom) override;
 
       /**
        *  @brief measure the jackknife resampling of the two-point correlation
@@ -270,7 +270,31 @@ namespace cosmobl {
       
       ///@}
 
-  
+      /**
+       *  @name Input/Output member functions (customized in all the derived classes)
+       */
+      ///@{
+
+      /**
+       *  @brief read the measured two-point correlation
+       *  @param dir input directory
+       *  @param file input file
+       *  @return none
+       */
+      virtual void read (const string dir, const string file)
+      {ErrorMsg("Error in write() of TwoPointCorrelation1D.h");}	
+
+      /**
+       *  @brief write the measured two-point correlation
+       *  @param dir output directory
+       *  @param file output file
+       *  @param rank cpu index (for MPI usage)
+       *  @return none
+       */
+      virtual void write (const string dir=par::defaultString, const string file=par::defaultString, const int rank=0) const
+      {ErrorMsg("Error in write() of TwoPointCorrelation.h");}	
+
+      ///@}
     };
   }
 }

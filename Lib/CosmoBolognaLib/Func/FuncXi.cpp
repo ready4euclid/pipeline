@@ -66,7 +66,7 @@ double cosmobl::glob::func_SSM_GSL (double kk, void *params)
   double lgPkK = interpolated(lgk, pp->lgkk, pp->lgPk, "Linear", -1);
   double rr = Radius(pp->mass, pp->rho);
 
-  return pow(10.,lgPkK)*pow(WW(kk*rr)*kk,2)/pow(fact,pp->n_spec); 
+  return pow(10.,lgPkK)*pow(TopHat_WF(kk*rr)*kk,2)/pow(fact,pp->n_spec); 
 }
 
 /// @endcond

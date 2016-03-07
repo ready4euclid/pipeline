@@ -6,7 +6,7 @@ dirLib = $(PWD)/../../
 dirH = $(dirLib)Headers/Lib/
 dirHO = $(dirLib)Headers/Objects/
 dirNum = $(PWD)/../../../Numerical/
-dirEH = $(dirLib)Cosmology/EH/
+dirEH = $(dirLib)External/EH/
 
 varDIR = -DDIRCOSMO=\"$(dirLib)\" -DDIRL=\"$(PWD)/\"
 

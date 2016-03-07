@@ -79,6 +79,9 @@ cosmobl::catalogue::Catalogue::Catalogue (const ObjType type, const vector<doubl
   if (weight.size() == 0)
     weight.resize(xx.size(), 1);
 
+  if (!(xx.size()==yy.size() && yy.size()==zz.size() && zz.size()==weight.size()))
+    ErrorMsg("Error in Catalogue::Catalogue() of Catalogue.cpp: coordinates with different dimension!"); 
+  
   for (size_t i=0; i<xx.size(); i++)
     m_sample.push_back(move(Object::Create(type, xx[i], yy[i], zz[i], weight[i])));
 }
@@ -92,6 +95,9 @@ cosmobl::catalogue::Catalogue::Catalogue (const ObjType type, const vector<doubl
   if (weight.size() == 0)
     weight.resize(ra.size(), 1);
 
+  if (!(ra.size()==dec.size() && dec.size()==redshift.size() && redshift.size()==weight.size()))
+    ErrorMsg("Error in Catalogue::Catalogue() of Catalogue.cpp: coordinates with different dimension!"); 
+  
   for (size_t i=0; i<ra.size(); i++)
     m_sample.push_back(move(Object::Create(type, ra[i], dec[i], redshift[i], cosm, weight[i])));
 }
@@ -100,24 +106,26 @@ cosmobl::catalogue::Catalogue::Catalogue (const ObjType type, const vector<doubl
 // ============================================================================
 
 
-cosmobl::catalogue::Catalogue::Catalogue (const vector<string> file, const ObjType type, const double nSub) 
+cosmobl::catalogue::Catalogue::Catalogue (const ObjType type, const vector<string> file, const int col_X, const int col_Y, const int col_Z, const int col_Weight, const double nSub) 
 {
-  cout << "I'm importing the catalogue..." << endl;
-
   default_random_engine gen;
   uniform_real_distribution<float> ran(0., 1.);
-
+    
+  string line; double XX, YY, ZZ, WW, VV;
+    
   for (size_t dd=0; dd<file.size(); dd++) {
+
     string file_in = file[dd];
-    cout <<"file_in = "<<file_in<<endl;
+    cout << "I'm reading the catalogue: " << file_in << endl;
     ifstream finr (file_in.c_str()); checkIO(file_in, 1);
     
-    string line; double XX, YY, ZZ;
     while (getline(finr, line)) {
       if (ran(gen)<nSub) {
 	stringstream ss(line);
-	ss>>XX; ss>>YY, ss>>ZZ;
-        m_sample.push_back(move(Object::Create(type, XX, YY, ZZ, 1.)));
+	vector<double> val; while (ss>>VV) val.push_back(VV);
+	XX = val[col_X]; YY = val[col_Y]; ZZ = val[col_Z];
+	WW = (col_Weight!=-1) ? val[col_Weight] : 1.;
+        m_sample.push_back(move(Object::Create(type, XX, YY, ZZ, WW)));
       }
     }
     
@@ -129,62 +137,30 @@ cosmobl::catalogue::Catalogue::Catalogue (const vector<string> file, const ObjTy
 // ============================================================================
 
 
-cosmobl::catalogue::Catalogue::Catalogue (const string file_in, const Cosmology &cosm, const ObjType type, const double nSub, const double fact) 
+cosmobl::catalogue::Catalogue::Catalogue (const ObjType type, const vector<string> file, const Cosmology &cosm, const int col_RA, const int col_Dec, const int col_redshift, const int col_Weight, const double nSub, const double fact) 
 {      
-  cout << "I'm importing the catalogue: " << file_in << "..." << endl;
-  
-  ifstream finr(file_in.c_str());  checkIO(file_in, 1);
+  default_random_engine gen;
+  uniform_real_distribution<float> ran(0., 1.);
  
-  string line;
-  double RA, DEC, ZZ;
-
-  default_random_engine gen;
-  uniform_real_distribution<float> ran(0., 1.);
-
-  while (getline(finr,line)) {
-    stringstream ss(line);
-    ss >> RA; ss >> DEC; ss >> ZZ;
-
-    if (ran(gen)<nSub) 
-      m_sample.push_back(move(Object::Create(type, RA, DEC, ZZ, cosm)));
-  }
+  string line; double RA, DEC, ZZ, WW, VV;
   
-  finr.clear(); finr.close(); 
-}
+  for (size_t dd=0; dd<file.size(); dd++) {
 
-
-// ============================================================================
-
-
-cosmobl::catalogue::Catalogue::Catalogue (const Catalogue catalogue, const double N_R)
-{
-  // ------ create the random catalogue ------ 
+    string file_in = file[dd];
+    cout << "I'm reading the catalogue: " << file_in << endl;
+    ifstream finr (file_in.c_str()); checkIO(file_in, 1);
   
-  cout << "I'm creating a random catalogue..." << endl;
-
-  int nRandom = (int)N_R*catalogue.nObjects();
-
-  vector<double> Lim; 
-  catalogue.MinMax_var(Var::_XX_, Lim, 0);
-  catalogue.MinMax_var(Var::_YY_, Lim, 0);
-  catalogue.MinMax_var(Var::_ZZ_, Lim, 0);
-  
-  double Xmin = Lim[0]; double Xmax = Lim[1];
-  double Ymin = Lim[2]; double Ymax = Lim[3];
-  double Zmin = Lim[4]; double Zmax = Lim[5];
-
-  if (Xmin>Xmax || Ymin>Ymax || Zmin>Zmax) ErrorMsg("Error in random_catalogue_box of RandomCatalogue.cpp!");
-
-  default_random_engine gen;
-  uniform_real_distribution<float> ran(0., 1.);
-
-  double XX, YY, ZZ;
-
-  for (int i=0; i<nRandom; i++) {
-    XX = ran(gen)*(Xmax-Xmin)+Xmin;
-    YY = ran(gen)*(Ymax-Ymin)+Ymin;
-    ZZ = ran(gen)*(Zmax-Zmin)+Zmin;
-    m_sample.push_back(move(Object::Create(_RandomObject_, XX, YY, ZZ, 1.)));
+    while (getline(finr, line)) {
+      if (ran(gen)<nSub) {
+	stringstream ss(line);
+	vector<double> val; while (ss>>VV) val.push_back(VV);
+	RA = val[col_RA]*fact; DEC = val[col_Dec]*fact; ZZ = val[col_redshift];
+	WW = (col_Weight!=-1) ? val[col_Weight] : 1.;
+	m_sample.push_back(move(Object::Create(type, RA, DEC, ZZ, cosm, WW)));
+      }
+    }
+    
+    finr.clear(); finr.close(); 
   }
 }
 
@@ -551,7 +527,7 @@ void cosmobl::catalogue::Catalogue::Order (const vector<int> vv)
 {
   int nObj = m_sample.size();
 
-  if (int(vv.size())!=nObj) ErrorMsg("Error in cosmobl::catalogue::Catalogue::Order!");
+  if (int(vv.size())!=nObj) ErrorMsg("Error in Catalogue::Order()!");
  
   vector<shared_ptr<Object>> obj(nObj);
   
@@ -571,7 +547,7 @@ void cosmobl::catalogue::Catalogue::Order (const vector<int> vv)
 
 void cosmobl::catalogue::Catalogue::Order () 
 { 
-  int nObj = m_sample.size();
+  size_t nObj = m_sample.size();
   
   vector<shared_ptr<Object>> obj(nObj);
   
@@ -580,7 +556,7 @@ void cosmobl::catalogue::Catalogue::Order ()
   
   obj = m_sample;
   
-  for (int i=0; i<nObj; i++) 
+  for (size_t i=0; i<nObj; i++) 
     m_sample[i] = obj[m_index[i]];
 }
 
@@ -731,7 +707,7 @@ shared_ptr<Catalogue> cosmobl::catalogue::Catalogue::smooth (const double gridsi
     int j1 = min(int((cat->yy(i)-Lim[2])/Cell_Y), ny-1);
     int z1 = min(int((cat->zz(i)-Lim[4])/Cell_Z), nz-1);
     int index = z1+nz*(j1+ny*i1);
-    cat->object(i)->set_region(index);
+    cat->catalogue_object(i)->set_region(index);
   }
   
   vector<long> region_list = cat->get_region_list();

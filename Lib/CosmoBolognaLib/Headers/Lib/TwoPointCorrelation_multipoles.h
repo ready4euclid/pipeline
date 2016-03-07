@@ -315,7 +315,88 @@ namespace cosmobl {
 	 */
 	///@{
 
-	/**
+        /**
+         *  @brief get the x coordinates
+         *  @return the x coordinates
+         */
+        vector<double> xx () const  override;
+
+        /**
+         *  @brief get the y coordinates
+         *  @return the y coordinates
+         */
+        vector<double> yy () const 
+        { cosmobl::ErrorMsg("Error in yy() of TwoPointCorrelation_multipoles.h!"); vector<double> vv; return vv; }
+
+        /**
+         *  @brief get the the binned correlation function 
+         *  @return the binned correlation function 
+         */
+        vector<double> xi1D () const
+        { cosmobl::ErrorMsg("Error in xi1D() of TwoPointCorrelation_multipoles.h!"); vector<double> vv; return vv; }
+
+        /**
+         *  @brief get the error on the binned correlation function
+         *  function
+         *  @return the error on the binned correlation function
+         *  function
+         */
+        vector<double> error1D () const
+        { cosmobl::ErrorMsg("Error in error1D() of TwoPointCorrelation_multipoles.h!"); vector<double> vv; return vv; }
+
+        /**
+         *  @brief get the the binned correlation function 
+         *  @return the binned correlation function 
+         */
+        vector<vector<double> > xi2D () const 
+        { cosmobl::ErrorMsg("Error in xi2D() of TwoPointCorrelation_multipoles.h!"); vector<vector<double> > vv; return vv; }
+
+        /**
+         *  @brief get the error on the binned correlation function
+         *  function
+         *  @return the error on the binned correlation function
+         *  function
+         */
+        vector<vector<double> > error2D () const 
+        { cosmobl::ErrorMsg("Error in error2D() of TwoPointCorrelation_multipoles.h!"); vector<vector<double> > vv; return vv; }
+
+        /**
+         *  @brief get the monopole of the polar xi
+         *  @return the xiMonopole
+         */
+        vector<double> xiMonopole () const override;
+
+        /**
+         *  @brief get the error on the monopole of the polar xi
+         *  @return the error on the Monopole
+         */
+        vector<double> errorMonopole () const override;
+
+        /**
+         *  @brief get the quadrupole of the polar xi
+         *  @return the Quadrupole
+         */
+        vector<double> xiQuadrupole () const override;
+
+        /**
+         *  @brief get the error on the quadrupole of the polar xi
+         *  @return the error on the Quadrupole
+         */
+        vector<double> errorQuadrupole () const override;
+
+        /**
+         *  @brief get the octupole of the polar xi
+         *  @return the Octupole
+         */
+        vector<double> xiOctupole () const override;
+
+        /**
+         *  @brief get the error on the octupole of the polar xi
+         *  @return the error on Octupole
+         */
+        vector<double> errorOctupole () const override;
+
+        /**
 	 *  @brief measure the multipoles of the two-point correlation
 	 *  function, &xi;(r)
 	 *  @param errorType the type of error to be computed

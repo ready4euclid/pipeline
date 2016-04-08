@@ -378,8 +378,6 @@ namespace cosmobl {
 
       /**
        *  @brief measure projected correlation function
-       *  
-       *  @param piMax_integral upper limits of the integral
        *
        *  @param rp projected separation
        *
@@ -391,8 +389,8 @@ namespace cosmobl {
        *
        *  @return pointer to an object of type Data
        */
-      virtual shared_ptr<Data> ProjectedTwoP(const double piMax_integral, const vector<double> rp, const vector<double> pi, const vector<vector<double> > xi, const vector<vector<double> > error_xi)
-      {ErrorMsg("Error in ProjectedTwoP() of TwoPointCorrelation"); shared_ptr<Data> data; return data;}
+      virtual shared_ptr<Data> ProjectedTwoP (const vector<double> rp, const vector<double> pi, const vector<vector<double> > xi, const vector<vector<double> > error_xi)
+      { ErrorMsg("Error in ProjectedTwoP() of TwoPointCorrelation"); shared_ptr<Data> data; return data; }
 
       /**
        *  @brief measure deprojected correlation function
@@ -628,197 +626,6 @@ namespace cosmobl {
       virtual vector<shared_ptr<Data> > XiBootstrap (const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr)
       { cosmobl::ErrorMsg("Error in vector<shared_ptr<Data> > XiBootstrap of TwoPointCorrelation.h!"); vector<shared_ptr<Data> > data; return data;}
 
-      /**
-       *  @brief measure the two-point correlation
-       *  function, &xi;(r) with Poisson error
-       *
-       *  @param piMax_integral upper limits of the integral
-       *
-       *  @param dir_output_pairs output directory used to store the
-       *  number of pairs
-       *
-       *  @param dir_input_pairs vector of input directories used to store the
-       *  number of pairs (if the pairs are read from files)
-       *
-       *  @param count_dd 1 &rarr; count the number of data-data
-       *  opairs; 0 &rarr; read the number of data-data pairs from
-       *  file
-       *
-       *  @param count_rr 1 &rarr; count the number of random-random
-       *  opairs; 0 &rarr; read the number of random-random pairs from
-       *  file
-       *
-       *  @param count_dd 1 &rarr; count the number of data-random
-       *  opairs; 0 &rarr; read the number of data-random pairs from
-       *  file
-       *
-       *  @param count_rr 1 &rarr; count the number of random-random
-       *  pairs; 0 &rarr; read the number of random-random pairs
-       *
-       *  @param count_dr 1 &rarr; count the number of data-random
-       *  pairs; 0 &rarr; read the number of data-random pairs
-       *
-       *  @param tcount 1 &rarr; activate the time counter; 0 &rarr;
-       *  don't activate the time counter; 
-       *
-       *  @return none
-       */
-      virtual void measurePoisson (const double piMax_integral, const string dir_output_pairs= par::defaultString, const vector<string> dir_input_pairs={}, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1)
-      { cosmobl::ErrorMsg("Error in void measurePoisson() of TwoPointCorrelation.h!"); }
-
-      /**
-       *  @brief measure the two-point correlation
-       *  function, &xi;(r), estimate the covariance with Jackknife resampling
-       *
-       *  @param piMax_integral upper limits of the integral
-       *
-       *  @param dir_output_pairs output directory used to store the
-       *  number of pairs
-       *
-       *  @param dir_input_pairs vector of input directories used to store the
-       *  number of pairs (if the pairs are read from files)
-       *
-       *  @param dir_output_ResampleXi output directory used to store the
-       *  Jackknife resampling Xi, with Poisson error
-       *
-       *  @param count_dd 1 &rarr; count the number of data-data
-       *  opairs; 0 &rarr; read the number of data-data pairs from
-       *  file
-       *
-       *  @param count_rr 1 &rarr; count the number of random-random
-       *  opairs; 0 &rarr; read the number of random-random pairs from
-       *  file
-       *
-       *  @param count_dd 1 &rarr; count the number of data-random
-       *  opairs; 0 &rarr; read the number of data-random pairs from
-       *  file
-       *
-       *  @param count_rr 1 &rarr; count the number of random-random
-       *  pairs; 0 &rarr; read the number of random-random pairs
-       *
-       *  @param count_dr 1 &rarr; count the number of data-random
-       *  pairs; 0 &rarr; read the number of data-random pairs
-       *
-       *  @param tcount 1 &rarr; activate the time counter; 0 &rarr;
-       *  don't activate the time counter; 
-       *
-       *  @return none
-       */
-      virtual void measureJackknife (const double piMax_integral, const string dir_output_pairs= par::defaultString, const vector<string> dir_input_pairs={}, const string dir_output_ResampleXi= par::defaultString, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1)
-      { cosmobl::ErrorMsg("Error in void measureJackknife() of TwoPointCorrelation.h!"); }
-
-
-      /**
-       *  @brief measure the two-point correlation
-       *  function, &xi;(r), estimate the covariance with Bootstrap resampling
-       *
-       *  @param piMax_integral upper limits of the integral
-       *
-       *  @param nMocks number of mocks to be generated with
-       *  bootstrap resampling
-       *
-       *  @param dir_output_pairs output directory used to store the
-       *  number of pairs
-       *
-       *  @param dir_input_pairs vector of input directories used to store the
-       *  number of pairs (if the pairs are read from files)
-       *
-       *  @param dir_output_ResampleXi output directory used to store the
-       *  Bootstrap resampling Xi, with Poisson error
-       *
-       *  @param count_dd 1 &rarr; count the number of data-data
-       *  opairs; 0 &rarr; read the number of data-data pairs from
-       *  file
-       *
-       *  @param count_rr 1 &rarr; count the number of random-random
-       *  opairs; 0 &rarr; read the number of random-random pairs from
-       *  file
-       *
-       *  @param count_dd 1 &rarr; count the number of data-random
-       *  opairs; 0 &rarr; read the number of data-random pairs from
-       *  file
-       *
-       *  @param count_rr 1 &rarr; count the number of random-random
-       *  pairs; 0 &rarr; read the number of random-random pairs
-       *
-       *  @param count_dr 1 &rarr; count the number of data-random
-       *  pairs; 0 &rarr; read the number of data-random pairs
-       *
-       *  @param tcount 1 &rarr; activate the time counter; 0 &rarr;
-       *  don't activate the time counter; 
-       *
-       *  @return none
-       */
-      virtual void measureBootstrap (const double piMax_integral, const int nMocks, const string dir_output_pairs, const vector<string> dir_input_pairs={}, const string dir_output_ResampleXi = par::defaultString, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1)
-      { cosmobl::ErrorMsg("Error in void measureBootstrap() of TwoPointCorrelation.h!"); }
-
-      /**
-       *  @brief measure the jackknife resampling of the two-point correlation
-       *  function, &xi;(r) 
-       *
-       *  @param piMax_integral upper limits of the integral
-       *
-       *  @param dd vector of data-data pairs, divider per regions
-       *
-       *  @param rr vector of random-random pairs, divider per regions
-       *
-       *  @return none
-       */
-      virtual vector<shared_ptr<Data> > XiJackknife(const double piMax_integral, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr)
-      { cosmobl::ErrorMsg("Error in vector<shared_ptr<Data> > XiJackknife of TwoPointCorrelation.h!"); vector<shared_ptr<Data> > data; return data; }
-
-      /**
-       *  @brief measure the jackknife resampling of the two-point correlation
-       *  function, &xi;(r)         
-       *
-       *  @param piMax_integral upper limits of the integral
-       *
-       *  @param dd vector of data-data pairs, divider per regions
-       *
-       *  @param rr vector of random-random pairs, divider per regions
-       *
-       *  @param dr vector of random-random pairs, divider per regions   *
-       *
-       *  @return none
-       */
-      virtual vector<shared_ptr<Data> > XiJackknife(const double piMax_integral, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr)
-      { cosmobl::ErrorMsg("Error in vector<shared_ptr<Data> > XiJackknife of TwoPointCorrelation.h!"); vector<shared_ptr<Data> > data; return data;}
-
-      /**
-       *  @brief measure the bootstrap resampling of the two-point correlation
-       *  function, &xi;(r)  
-       *
-       *  @param piMax_integral upper limits of the integral
-       *
-       *  @param nMocks number of bootstrap resampling
-       *
-       *  @param dd vector of data-data pairs, divider per regions
-       *
-       *  @param rr vector of random-random pairs, divider per regions      
-       *
-       *  @return none
-       */
-      virtual vector<shared_ptr<Data> > XiBootstrap(const double piMax_integral, const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr)
-      { cosmobl::ErrorMsg("Error in vector<shared_ptr<Data> > XiJackknife of TwoPointCorrelation.h!"); vector<shared_ptr<Data> > data; return data;}
-
-      /**
-       *  @brief measure the bootstrap resampling of the two-point correlation
-       *  function, &xi;(r)  
-       *
-       *  @param piMax_integral upper limits of the integral
-       *
-       *  @param nMocks number of bootstrap resampling
-       *
-       *  @param dd vector of data-data pairs, divider per regions
-       *
-       *  @param rr vector of random-random pairs, divider per regions 
-       *
-       *  @param dr vector of random-random pairs, divider per regions  
-       *
-       *  @return none
-       */
-      virtual vector<shared_ptr<Data> > XiBootstrap(const double piMax_integral, const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr)
-      { cosmobl::ErrorMsg("Error in vector<shared_ptr<Data> > XiBootstrap of TwoPointCorrelation.h!"); vector<shared_ptr<Data> > data; return data;}
       ///@}
 
     public:
@@ -1029,10 +836,12 @@ namespace cosmobl {
        *  @param shift_D2 shift parameter in the second dimension,
        *  i.e. the radial shift is binSize*shift
        *
+       *  @param piMax_integral upper limits of the integral
+       *
        *  @return a pointer to an object of class TwoPointCorrelation of
        *  a given type
        */
-      static shared_ptr<TwoPointCorrelation> Create (const TwoPType type, const catalogue::Catalogue data, const catalogue::Catalogue random, const binType binType_D1, const double Min_D1, const double Max_D1, const int nbins_D1, const double shift_D1, const double Min_D2, const double Max_D2, const int nbins_D2, const double shift_D2);
+      static shared_ptr<TwoPointCorrelation> Create (const TwoPType type, const catalogue::Catalogue data, const catalogue::Catalogue random, const binType binType_D1, const double Min_D1, const double Max_D1, const int nbins_D1, const double shift_D1, const double Min_D2, const double Max_D2, const int nbins_D2, const double shift_D2, const double piMax_integral=50.);
 
       /**
        *  @brief static factory used to construct two-point correlation
@@ -1072,90 +881,12 @@ namespace cosmobl {
        *  @param shift_D2 shift parameter in the second dimension,
        *  i.e. the radial shift is binSize*shift
        *
-       *  @return a pointer to an object of class TwoPointCorrelation of
-       *  a given type
-       */
-      static shared_ptr<TwoPointCorrelation> Create (const TwoPType type, const catalogue::Catalogue data, const catalogue::Catalogue random, const binType binType_D1, const double Min_D1, const double Max_D1, const double binSize_D1, const double shift_D1, const double Min_D2, const double Max_D2, const double binSize_D2, const double shift_D2);
-      
-       /**
-       *  @brief static factory used to construct two-point correlation
-       *  functions of any type
-       *
-       *  @param type the type of two-point correlation function; it
-       *  can be: _1D_projected_, _1D_deprojected_, _1D_multipoles_
-       *
-       *  @param data object of class Catalogue containing the input
-       *  catalogue
-       *
-       *  @param random of class Catalogue containing the random data
-       *  catalogue
-       *
-       *  @param Min_D1 minimum separation in the first dimensionused
-       *  to count the pairs
-       *
-       *  @param Max_D1 maximum separation in the first dimension used
-       *  to count the pairs
-       *
-       *  @param nbins_D1 number of bins in the first dimension
-       *
-       *  @param shift_D1 shift parameter in the first dimension,
-       *  i.e. the radial shift is binSize*shift
-       *
-       *  @param Min_D2 minimum separation in the second dimensionused
-       *  to count the pairs
-       *
-       *  @param Max_D2 maximum separation in the second dimension used
-       *  to count the pairs
-       *
-       *  @param nbins_D2 number of bins in the second dimension
-       *
-       *  @param shift_D2 shift parameter in the second dimension,
-       *  i.e. the radial shift is binSize*shift
+       *  @param piMax_integral upper limits of the integral
        *
        *  @return a pointer to an object of class TwoPointCorrelation of
        *  a given type
        */
-      static shared_ptr<TwoPointCorrelation> Create (const TwoPType type, const catalogue::Catalogue data, const catalogue::Catalogue random, const double Min_D1, const double Max_D1, const int nbins_D1, const double shift_D1, const double Min_D2, const double Max_D2, const int nbins_D2, const double shift_D2);
-
-      /**
-       *  @brief static factory used to construct two-point correlation
-       *  functions of any type
-       *
-       *  @param type the type of two-point correlation function; it
-       *  can be: _1D_projected_, _1D_deprojected_, _1D_multipoles_
-       *
-       *  @param data object of class Catalogue containing the input
-       *  catalogue
-       *
-       *  @param random of class Catalogue containing the random data
-       *  catalogue
-       *
-       *  @param Min_D1 minimum separation in the first dimension used
-       *  to count the pairs
-       *
-       *  @param Max_D1 maximum separation in the first dimension used
-       *  to count the pairs
-       *
-       *  @param binSize_D1 the bin size in the first dimension
-       *
-       *  @param shift_D1 shift parameter in the first dimension,
-       *  i.e. the radial shift is binSize*shift
-       *
-       *  @param Min_D2 minimum separation in the second dimension used
-       *  to count the pairs
-       *
-       *  @param Max_D2 maximum separation in the second dimension used
-       *  to count the pairs
-       *
-       *  @param binSize_D2 the bin size in the second dimension
-       *
-       *  @param shift_D2 shift parameter in the second dimension,
-       *  i.e. the radial shift is binSize*shift
-       *
-       *  @return a pointer to an object of class TwoPointCorrelation of
-       *  a given type
-       */
-      static shared_ptr<TwoPointCorrelation> Create (const TwoPType type, const catalogue::Catalogue data, const catalogue::Catalogue random, const double Min_D1, const double Max_D1, const double binSize_D1, const double shift_D1, const double Min_D2, const double Max_D2, const double binSize_D2, const double shift_D2);
+      static shared_ptr<TwoPointCorrelation> Create (const TwoPType type, const catalogue::Catalogue data, const catalogue::Catalogue random, const binType binType_D1, const double Min_D1, const double Max_D1, const double binSize_D1, const double shift_D1, const double Min_D2, const double Max_D2, const double binSize_D2, const double shift_D2, const double piMax_integral=50.);
 
       ///@}
 
@@ -1241,9 +972,7 @@ namespace cosmobl {
 
       /**
        *  @brief get the error on the binned correlation function
-       *  function
        *  @return the error on the binned correlation function
-       *  function
        */
       virtual vector<vector<double> > error2D () const { cosmobl::ErrorMsg("Error in error() of TwoPointCorrelation.h!"); vector<vector<double> > vv; return vv; }
 
@@ -1309,7 +1038,7 @@ namespace cosmobl {
       virtual vector<double> xiParallel () const 
       { cosmobl::ErrorMsg("Error in xiParallel() of TwoPointCorrelation.h!"); vector<double> vv; return vv; }
 
-      /*
+      /**
        *  @brief get the error on the parallel wedge of the polar xi
        *  @return the error on the parallel wedge of the polar xi
        */
@@ -1347,8 +1076,7 @@ namespace cosmobl {
       ///@{
 
       /**
-       *  @brief measure the monopole of the two-point correlation
-       *  function, &xi;(r)
+       *  @brief measure the two-point correlation function
        *
        *  @param errType type of &xi;(r) error
        *  
@@ -1385,52 +1113,7 @@ namespace cosmobl {
        *
        *  @return none
        */
-      virtual void measure (const ErrorType errType=ErrorType::_Poisson_, const string dir_output_pairs=par::defaultString, const vector<string> dir_input_pairs={}, const string dir_output_ResampleXi=par::defaultString, const int nMocks=0, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1)
-      { cosmobl::ErrorMsg("Error in void measure() of TwoPointCorrelation.h!"); }
-
-      /**
-       *  @brief measure the monopole of the two-point correlation
-       *  function, &xi;(r)
-       *
-       *  @param errType type of &xi;(r) error
-       *  
-       *  @param piMax_integral upper limit of the integral
-       *
-       *  @param dir_output_pairs output directory used to store the
-       *  number of pairs
-       *
-       *  @param dir_input_pairs vector of input directories used to store the
-       *  number of pairs (if the pairs are read from files)
-       *
-       *  @param dir_output_ResampleXi output directory of the resampled &xi;(r)
-       *
-       *  @param nMocks number of resampling for bootstrap
-       *
-       *  @param count_dd 1 &rarr; count the number of data-data
-       *  opairs; 0 &rarr; read the number of data-data pairs from
-       *  file
-       *
-       *  @param count_rr 1 &rarr; count the number of random-random
-       *  opairs; 0 &rarr; read the number of random-random pairs from
-       *  file
-       *
-       *  @param count_dd 1 &rarr; count the number of data-random
-       *  opairs; 0 &rarr; read the number of data-random pairs from
-       *  file
-       *
-       *  @param count_rr 1 &rarr; count the number of random-random
-       *  pairs; 0 &rarr; read the number of random-random pairs
-       *
-       *  @param count_dr 1 &rarr; count the number of data-random
-       *  pairs; 0 &rarr; read the number of data-random pairs
-       *
-       *  @param tcount 1 &rarr; activate the time counter; 0 &rarr;
-       *  don't activate the time counter; 
-       *
-       *  @return none
-       */
-      virtual void measure (const double piMax_integral, const ErrorType errType=ErrorType::_Poisson_, const string dir_output_pairs=par::defaultString, const vector<string> dir_input_pairs={}, const string dir_output_ResampleXi=par::defaultString, const int nMocks = 0, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1)
-      { cosmobl::ErrorMsg("Error in void measure() of TwoPointCorrelation.h!"); }
+      virtual void measure (const ErrorType errType=ErrorType::_Poisson_, const string dir_output_pairs=par::defaultString, const vector<string> dir_input_pairs={}, const string dir_output_ResampleXi=par::defaultString, const int nMocks=0, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) = 0;
 
       ///@}
 

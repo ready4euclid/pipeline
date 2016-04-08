@@ -34,6 +34,7 @@
 
 
 #include "Modelling.h"
+#include "ModelBias.h"
 
 using namespace cosmobl;
 

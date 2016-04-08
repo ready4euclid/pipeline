@@ -10,8 +10,8 @@ dirEH = $(dirLib)Cosmology/EH/
 
 varDIR = -DDIRCOSMO=\"$(dirLib)\" -DDIRL=\"$(PWD)/\"
 
-FLAGS_LIB = -Wl,-rpath,$(dirLib) -L$(dirLib) -lFUNC
-FLAGS_INC = -I$(dirH) -I$(dirHO) -I$(dirNum) -I$(dirEH) 
+FLAGS_LIB = -Wl,-rpath,$(HOME)/lib/ -Wl,-rpath,$(dirLib) -L$(dirLib) -lFUNC
+FLAGS_INC = -I$(HOME)/include/ -I$(dirH) -I$(dirHO) -I$(dirNum) -I$(dirEH) 
 
 OBJ = vectors.o
 

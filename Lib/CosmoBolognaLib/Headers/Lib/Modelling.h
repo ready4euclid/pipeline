@@ -68,6 +68,11 @@ namespace cosmobl {
       /// input data to be modelled
       shared_ptr<Data> m_data;
 
+      /// input model
+      shared_ptr<statistics::Model> m_model;
+
+      /// likelihood
+      statistics::Likelihood m_likelihood;
       
     public:
       
@@ -90,14 +95,7 @@ namespace cosmobl {
 
       ///@}
 
-      
-      /**
-       *  @brief get constraints on the model parameters
-       *  @param ...
-       *  @return ...
-       */
-      virtual void get_constraints () = 0;
-      
+
     };
   }
 }

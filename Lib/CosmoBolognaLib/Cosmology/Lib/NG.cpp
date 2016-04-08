@@ -266,7 +266,7 @@ double cosmobl::glob::bias_kernel2 (const double xx, void *params)
 
 double cosmobl::Cosmology::frk (const double kk, const double mass, const string method_Pk, const string output_root, const int norm, const double k_min, const double k_max, const bool GSL, const double prec, const string file_par)
 {
-  string dir_grid = par::DirCosmo+"Cosmology/grid_NG/bias_kernel/unit"+conv(m_unit,par::fINT)+"/";
+  string dir_grid = par::DirCosmo+"Cosmology/Tables/grid_NG/bias_kernel/unit"+conv(m_unit,par::fINT)+"/";
   string MK = "mkdir -p "+dir_grid; if (system (MK.c_str())) {};
 
   string Norm = (m_sigma8>0) ? "_sigma8"+conv(m_sigma8,par::fDP3) : "_scalar_amp"+conv(m_scalar_amp,par::ee3);
@@ -410,7 +410,7 @@ double cosmobl::glob::skewness_kernel (double *kk, size_t dim, void *params)
 
 double cosmobl::Cosmology::skewness (const double mass, const string method_Pk, const string output_root, const int norm, const double k_min, const double k_max, const bool GSL, const double prec, const string file_par) 
 {
-  string dir_grid = par::DirCosmo+"Cosmology/grid_NG/skewness_kernel/unit"+conv(m_unit,par::fINT)+"/";
+  string dir_grid = par::DirCosmo+"Cosmology/Tables/grid_NG/skewness_kernel/unit"+conv(m_unit,par::fINT)+"/";
   string MK = "mkdir -p "+dir_grid; if (system (MK.c_str())) {};
 
   string Norm = (m_sigma8>0) ? "_sigma8"+conv(m_sigma8,par::fDP3) : "_scalar_amp"+conv(m_scalar_amp,par::ee3);

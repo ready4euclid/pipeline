@@ -78,18 +78,18 @@ shared_ptr<Data> cosmobl::twopt::TwoPointCorrelation_deprojected::DeProjectedTwo
 // ============================================================================================
 
 
-void cosmobl::twopt::TwoPointCorrelation_deprojected::measure(const double piMax_integral, const ErrorType errType, const string dir_output_pairs, const vector<string> dir_input_pairs, const string dir_output_ResampleXi, const int nMocks, const int count_dd, const int count_rr, const int count_dr, const bool tcount)
+void cosmobl::twopt::TwoPointCorrelation_deprojected::measure (const ErrorType errType, const string dir_output_pairs, const vector<string> dir_input_pairs, const string dir_output_ResampleXi, const int nMocks, const int count_dd, const int count_rr, const int count_dr, const bool tcount)
 {
-  switch(errType){
-    case(ErrorType::_Poisson_):
-      measurePoisson(piMax_integral,dir_output_pairs,dir_input_pairs,count_dd,count_rr,count_dr,tcount);
-      break;
-    case(ErrorType::_Jackknife_):
-      measureJackknife(piMax_integral,dir_output_pairs,dir_input_pairs,dir_output_ResampleXi,count_dd,count_rr,count_dr,tcount);
-      break;
-    case(ErrorType::_Bootstrap_):
-      measureBootstrap(piMax_integral, nMocks, dir_output_pairs,dir_input_pairs,dir_output_ResampleXi,count_dd,count_rr,count_dr,tcount);
-      break;
+  switch (errType) {
+  case (ErrorType::_Poisson_) :
+    measurePoisson(dir_output_pairs, dir_input_pairs, count_dd, count_rr, count_dr, tcount);
+    break;
+  case (ErrorType::_Jackknife_) :
+    measureJackknife(dir_output_pairs, dir_input_pairs, dir_output_ResampleXi, count_dd, count_rr, count_dr, tcount);
+    break;
+  case (ErrorType::_Bootstrap_) :
+    measureBootstrap(nMocks, dir_output_pairs, dir_input_pairs, dir_output_ResampleXi, count_dd, count_rr, count_dr, tcount);
+    break;
   }
 }
 
@@ -97,27 +97,25 @@ void cosmobl::twopt::TwoPointCorrelation_deprojected::measure(const double piMax
 // ============================================================================================
 
 
-void cosmobl::twopt::TwoPointCorrelation_deprojected::measurePoisson (const double piMax_integral, const string dir_output_pairs, const vector<string> dir_input_pairs, const int count_dd, const int count_rr, const int count_dr, const bool tcount)
+void cosmobl::twopt::TwoPointCorrelation_deprojected::measurePoisson (const string dir_output_pairs, const vector<string> dir_input_pairs, const int count_dd, const int count_rr, const int count_dr, const bool tcount)
 {
-
   // ----------- measure the 2D two-point correlation function, xi(rp,pi) ----------- 
 
-  TwoPointCorrelation_projected::measurePoisson(piMax_integral,dir_output_pairs, dir_input_pairs, count_dd, count_rr, count_dr, tcount);
+  TwoPointCorrelation_projected::measurePoisson(dir_output_pairs, dir_input_pairs, count_dd, count_rr, count_dr, tcount);
 
+  
   // ----------- integrate the 2D two-point correlation function along the parallel direction ----------- 
   
-  m_dataset = DeProjectedTwoP(TwoPointCorrelation_projected::dataset()->xx(),TwoPointCorrelation_projected::dataset()->fx(),TwoPointCorrelation_projected::dataset()->error_fx());
-
+  m_dataset = DeProjectedTwoP(TwoPointCorrelation_projected::dataset()->xx(), TwoPointCorrelation_projected::dataset()->fx(), TwoPointCorrelation_projected::dataset()->error_fx());
 }
 
 
 // ============================================================================================
 
 
-void cosmobl::twopt::TwoPointCorrelation_deprojected::measureJackknife (const double piMax_integral, const string dir_output_pairs, const vector<string> dir_input_pairs, const string dir_output_ResampleXi, const int count_dd, const int count_rr, const int count_dr, const bool tcount)
+void cosmobl::twopt::TwoPointCorrelation_deprojected::measureJackknife (const string dir_output_pairs, const vector<string> dir_input_pairs, const string dir_output_ResampleXi, const int count_dd, const int count_rr, const int count_dr, const bool tcount)
 {
-
-  if (dir_output_ResampleXi != par::defaultString){
+  if (dir_output_ResampleXi != par::defaultString && dir_output_ResampleXi != "") {
     string mkdir = "mkdir -p "+dir_output_ResampleXi;
     if(system(mkdir.c_str())){}
   }
@@ -126,22 +124,22 @@ void cosmobl::twopt::TwoPointCorrelation_deprojected::measureJackknife (const do
   vector<shared_ptr<pairs::Pair> > dd_regions, rr_regions, dr_regions;
   count_allPairs_region (dd_regions, rr_regions, dr_regions, TwoPType::_2D_Cartesian_, dir_output_pairs,dir_input_pairs, count_dd, count_rr, count_dr,  tcount);
 
-  auto data_cart = (count_dr>-1) ? LandySzalayEstimatorTwoP(m_dd,m_rr,m_dr,m_data->weightedN(),m_random->weightedN()) : NaturalEstimatorTwoP(m_dd,m_rr,m_data->weightedN(),m_random->weightedN());
+  auto data_cart = (count_dr>-1) ? LandySzalayEstimatorTwoP(m_dd, m_rr, m_dr, m_data->weightedN(), m_random->weightedN()) : NaturalEstimatorTwoP(m_dd, m_rr, m_data->weightedN(), m_random->weightedN());
 
-  auto data_proj = TwoPointCorrelation_projected::ProjectedTwoP(piMax_integral,data_cart->xx(),data_cart->yy(),data_cart->fxy(),data_cart->error_fxy());
+  auto data_proj = TwoPointCorrelation_projected::ProjectedTwoP(data_cart->xx(), data_cart->yy(), data_cart->fxy(), data_cart->error_fxy());
 
   if (count_dr>-1) 
-    data = XiJackknife(piMax_integral, dd_regions, rr_regions,dr_regions);
+    data = XiJackknife(dd_regions, rr_regions,dr_regions);
   else
-    data = XiJackknife(piMax_integral, dd_regions, rr_regions);
+    data = XiJackknife(dd_regions, rr_regions);
 
-  vector<vector<double> > ww,covariance;
+  vector<vector<double> > ww, covariance;
   for (size_t i=0; i<data.size(); i++) {
     ww.push_back(data[i]->fx());
 
-    if (dir_output_ResampleXi != par::defaultString){
+    if (dir_output_ResampleXi != par::defaultString && dir_output_ResampleXi != "") {
       string filename = "xi_deprojected_Jackknife_"+conv(i,par::fINT);
-      data[i]->write(dir_output_ResampleXi,filename,"rp","xi_deprojected",0);
+      data[i]->write(dir_output_ResampleXi, filename, "rp", "xi_deprojected", 0);
     }
   }
 
@@ -156,9 +154,9 @@ void cosmobl::twopt::TwoPointCorrelation_deprojected::measureJackknife (const do
 // ============================================================================================
 
 
-void cosmobl::twopt::TwoPointCorrelation_deprojected::measureBootstrap (const double piMax_integral, const int nMocks, const string dir_output_pairs, const vector<string> dir_input_pairs, const string dir_output_ResampleXi, const int count_dd, const int count_rr, const int count_dr, const bool tcount)
+void cosmobl::twopt::TwoPointCorrelation_deprojected::measureBootstrap (const int nMocks, const string dir_output_pairs, const vector<string> dir_input_pairs, const string dir_output_ResampleXi, const int count_dd, const int count_rr, const int count_dr, const bool tcount)
 {
-  if (dir_output_ResampleXi != par::defaultString) {
+  if (dir_output_ResampleXi != par::defaultString && dir_output_ResampleXi != "") {
     string mkdir = "mkdir -p "+dir_output_ResampleXi;
     if (system(mkdir.c_str())) {}
   }
@@ -169,21 +167,21 @@ void cosmobl::twopt::TwoPointCorrelation_deprojected::measureBootstrap (const do
 
   shared_ptr<Pair> dd_cart = move(Pair::Create(m_dd->pairType(), m_dd->sMin_D1(), m_dd->sMax_D1(), m_dd->nbins_D1(), m_dd->shift_D1(), m_dd->sMin_D2(), m_dd->sMax_D2(), m_dd->nbins_D2(), m_dd->shift_D2()));
 
-  auto data_cart = (count_dr>-1) ? LandySzalayEstimatorTwoP(m_dd,m_rr,m_dr,m_data->weightedN(),m_random->weightedN()) : NaturalEstimatorTwoP(m_dd,m_rr,m_data->weightedN(),m_random->weightedN());
+  auto data_cart = (count_dr>-1) ? LandySzalayEstimatorTwoP(m_dd, m_rr, m_dr, m_data->weightedN(), m_random->weightedN()) : NaturalEstimatorTwoP(m_dd, m_rr, m_data->weightedN(), m_random->weightedN());
 
-  auto data_proj = TwoPointCorrelation_projected::ProjectedTwoP(piMax_integral,data_cart->xx(),data_cart->yy(),data_cart->fxy(),data_cart->error_fxy());
+  auto data_proj = TwoPointCorrelation_projected::ProjectedTwoP(data_cart->xx(), data_cart->yy(), data_cart->fxy(), data_cart->error_fxy());
 
   if (count_dr>-1) 
-    data = XiBootstrap(piMax_integral, nMocks, dd_regions, rr_regions,dr_regions);
+    data = XiBootstrap(nMocks, dd_regions, rr_regions,dr_regions);
   else
-    data = XiBootstrap(piMax_integral, nMocks, dd_regions, rr_regions);
+    data = XiBootstrap(nMocks, dd_regions, rr_regions);
 
-  vector<vector<double> > ww,covariance;
+  vector<vector<double> > ww, covariance;
   for (size_t i=0; i<data.size(); i++) {
     ww.push_back(data[i]->fx());
-    if (dir_output_ResampleXi != par::defaultString){
-      string filename = "xi_deprojected_Bootstrap_"+conv(i,par::fINT);
-      data[i]->write(dir_output_ResampleXi,filename,"rp","xi_deprojected",0);
+    if (dir_output_ResampleXi != par::defaultString && dir_output_ResampleXi !="") {
+      string filename = "xi_deprojected_Bootstrap_"+conv(i, par::fINT);
+      data[i]->write(dir_output_ResampleXi, filename, "rp", "xi_deprojected", 0);
     }
   }
   covariance_matrix(ww, covariance, 0);
@@ -196,11 +194,11 @@ void cosmobl::twopt::TwoPointCorrelation_deprojected::measureBootstrap (const do
 // ============================================================================================
 
 
-vector<shared_ptr<Data> > cosmobl::twopt::TwoPointCorrelation_deprojected::XiJackknife(const double piMax_integral, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr)
+vector<shared_ptr<Data> > cosmobl::twopt::TwoPointCorrelation_deprojected::XiJackknife (const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr)
 {
   vector<shared_ptr<Data> > data;
   
-  auto data_proj = TwoPointCorrelation_projected::XiJackknife(piMax_integral, dd, rr);
+  auto data_proj = TwoPointCorrelation_projected::XiJackknife(dd, rr);
 
   for (size_t i=0; i<data_proj.size(); i++)
     data.push_back(move(DeProjectedTwoP(data_proj[i]->xx(), data_proj[i]->fx(), data_proj[i]->error_fx())));
@@ -212,11 +210,11 @@ vector<shared_ptr<Data> > cosmobl::twopt::TwoPointCorrelation_deprojected::XiJac
 // ============================================================================================
 
 
-vector<shared_ptr<Data> > cosmobl::twopt::TwoPointCorrelation_deprojected::XiJackknife(const double piMax_integral, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr)
+vector<shared_ptr<Data> > cosmobl::twopt::TwoPointCorrelation_deprojected::XiJackknife (const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr)
 {
   vector<shared_ptr<Data> > data;
   
-  auto data_proj = TwoPointCorrelation_projected::XiJackknife(piMax_integral, dd, rr, dr);
+  auto data_proj = TwoPointCorrelation_projected::XiJackknife(dd, rr, dr);
   
   for (size_t i=0; i<data_proj.size(); i++)
     data.push_back(move(DeProjectedTwoP(data_proj[i]->xx(), data_proj[i]->fx(), data_proj[i]->error_fx())));
@@ -228,11 +226,11 @@ vector<shared_ptr<Data> > cosmobl::twopt::TwoPointCorrelation_deprojected::XiJac
 // ============================================================================================
 
 
-vector<shared_ptr<Data> > cosmobl::twopt::TwoPointCorrelation_deprojected::XiBootstrap(const double piMax_integral, const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr)
+vector<shared_ptr<Data> > cosmobl::twopt::TwoPointCorrelation_deprojected::XiBootstrap (const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr)
 {
   vector<shared_ptr<Data> > data;
 
-  auto data_proj = TwoPointCorrelation_projected::XiBootstrap(piMax_integral, nMocks, dd, rr);
+  auto data_proj = TwoPointCorrelation_projected::XiBootstrap(nMocks, dd, rr);
 
   for (size_t i=0; i<data_proj.size(); i++)
     data.push_back(move(DeProjectedTwoP(data_proj[i]->xx(), data_proj[i]->fx(), data_proj[i]->error_fx())));
@@ -244,11 +242,11 @@ vector<shared_ptr<Data> > cosmobl::twopt::TwoPointCorrelation_deprojected::XiBoo
 // ============================================================================================
 
 
-vector<shared_ptr<Data> > cosmobl::twopt::TwoPointCorrelation_deprojected::XiBootstrap(const double piMax_integral, const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr)
+vector<shared_ptr<Data> > cosmobl::twopt::TwoPointCorrelation_deprojected::XiBootstrap (const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr)
 {
   vector<shared_ptr<Data> > data;
   
-  auto data_proj = TwoPointCorrelation_projected::XiBootstrap(piMax_integral,nMocks,dd,rr,dr);
+  auto data_proj = TwoPointCorrelation_projected::XiBootstrap(nMocks, dd, rr, dr);
   
   for (size_t i=0; i<data_proj.size(); i++)
     data.push_back(move(DeProjectedTwoP(data_proj[i]->xx(), data_proj[i]->fx(), data_proj[i]->error_fx())));

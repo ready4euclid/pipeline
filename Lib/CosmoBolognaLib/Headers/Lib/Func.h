@@ -63,6 +63,8 @@
 #include <gsl/gsl_monte_vegas.h>
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_spline.h>
+#include <gsl/gsl_interp2d.h>
+#include <gsl/gsl_spline2d.h>
 #include <gsl/gsl_roots.h>
 #include <gsl/gsl_min.h>
 #include <gsl/gsl_histogram.h>
@@ -72,7 +74,11 @@
 #include <gsl/gsl_multimin.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_linalg.h>
+#include <gsl/gsl_eigen.h>
 #include <gsl/gsl_cblas.h>
+#include <gsl/gsl_sf_bessel.h>
+#include <gsl/gsl_sf_legendre.h>
+#include <gsl/gsl_sf_expint.h>
 /// @endcond
 
 /// @cond NRinc
@@ -97,6 +103,9 @@
 #include <fitlin.h>
 /// @endcond
 
+/// @cond FFTWinc
+#include <fftw3.h>
+/// @endcond
 
 #include "Constants.h"
 
@@ -119,22 +128,28 @@ using namespace std;
  *  distances using the class cosmobl::Cosmology
  */
 /**
+ *  @example covsample.cpp  
+ *
+ *  This example shows how to generate correlated samples using the
+ *  function cosmobl::generate_correlated_data
+ */
+/**
  *  @example fsigma8.cpp
  *
  *  This example shows how to estimate f*sigma8(z=1) using the class
  *  cosmobl::Cosmology
  */
 /**
- *  @example chi2.cpp
+ *  @example prior.cpp
  *
- *  This example shows how to compute the chi2 using the class
- *  cosmobl::Chi2
+ *  This example shows how to construct a prior using the class
+ *  cosmobl::Prior
  */
 /**
- *  @example likelihood.cpp
+ *  @example prior.py
  *
- *  This example shows how to compute the likelihood using the class
- *  cosmobl::Likelihood
+ *  This example shows how to construct a prior using the class
+ *  cosmobl::Prior. The CosmoBolognaLib are included as Python modules
  */
 /**
  * @example 2pt_monopole.cpp 
@@ -163,6 +178,13 @@ using namespace std;
  * This example shows how to measure the projected two-point
  * correlation function, estimating the errors with the jackknife
  * method, using the class cosmobl::TwoPointCorrelation
+ */
+/**
+ * @example modelBias_2pt_projected.cpp
+ *
+ * This example shows how to how to model the bias from the projected
+ * two-point correlation function, using the class
+ * cosmobl::Modelling
  */
 /**
  * @example 3pt.cpp 
@@ -203,8 +225,8 @@ using namespace std;
 namespace cosmobl {
 
   /**
-   * @enum Dim
-   * @brief the dimension, used e.g. for pair and triplet vectors
+   *  @enum Dim
+   *  @brief the dimension, used e.g. for pair and triplet vectors
    */
   enum Dim {
     
@@ -218,8 +240,8 @@ namespace cosmobl {
   
 
   /**
-   * @enum binType
-   * @brief the binning type
+   *  @enum binType
+   *  @brief the binning type
    */
   enum binType { 
 
@@ -231,6 +253,26 @@ namespace cosmobl {
       
   };
     
+  /**
+   *  @enum CoordUnit
+   *  @brief the coordinate units
+   */
+  enum CoordUnit {
+
+    /// angle in radians
+    _radians_,
+    
+    /// angle in degrees
+    _degrees_,
+
+    /// angle in arcseconds
+    _arcseconds_,
+
+    /// angle in arcminutes
+    _arcminutes_
+    
+  };
+
 
   /**
    *  @name Functions of generic use  
@@ -269,8 +311,7 @@ namespace cosmobl {
    */
   inline void Exit ()
   {
-    Beep();
-    exit(1);
+    Beep(); exit(1);
   }
 
   /**
@@ -278,11 +319,11 @@ namespace cosmobl {
    *  been set
    *
    *  @param var a double variable
-   *  @return if var<-9.e29 &rArr; 0; else &rArr; 1
+   *  @return if var<par::defaultDouble &rArr; 0; else &rArr; 1
    */
   inline bool isSet (const double var) 
   {
-    return (var>par::defaultDouble) ? 1 : 0;
+    return (var<par::defaultDouble*0.99999) ? 0 : 1;
   }
   
   /**
@@ -290,14 +331,14 @@ namespace cosmobl {
    *  been set
    *
    *  @param vect a vactor of double values
-   *  @return if vect[i]<-9.e29 &forall; i &rArr; 0; else &rArr; 1
+   *  @return if vect[i]<par::defaultDouble &forall; i &rArr; 0; else &rArr; 1
    */
   inline bool isSet (const vector<double> vect) 
   {
     bool is = 1;
     size_t ind = 0;
-    while (is && ind<vect.size())
-      if (vect[ind++]<-9.e29) is = 0;
+    while (is && ind<vect.size()) 
+      if (vect[ind++]<par::defaultDouble*0.99999) is = 0;
     return is;
   }
 
@@ -307,10 +348,11 @@ namespace cosmobl {
    *  @param fact output format 
    *  @return a string containing T
    */
-  template <typename T> string conv (const T val, const char *fact) {
-    char VAL[20]; sprintf (VAL, fact, val); 
-    return string(VAL);
-  }
+  template <typename T> string conv (const T val, const char *fact)
+    {
+      char VAL[20]; sprintf (VAL, fact, val); 
+      return string(VAL);
+    }
   
   /**
    *  @brief the nearest integer
@@ -548,7 +590,7 @@ namespace cosmobl {
    *  @param [in] n_max the maximum number of the output set
    *  @return none
    */
-  void random_numbers (const int, const int, const vector<double>, const vector<double>, vector<double> &, const double n_min=par::defaultDouble, const double n_max=1.e30);
+  void random_numbers (const int nRan, const int idum, const vector<double> xx, const vector<double> fx, vector<double> &nRandom, const double n_min=par::defaultDouble, const double n_max=-par::defaultDouble);
 
   
   /* ======== Alfonso Veropalumbo ======== */
@@ -587,6 +629,18 @@ namespace cosmobl {
     }
 
   /**
+   *  @brief given a number x, return the closest value in a vector
+   *  @param x the starting value
+   *  @param values vector of values
+   *  @return the closest value in the vector
+   */
+  template <typename T>
+    T closest(T x, vector<T> values)
+    { 
+      return values[index_closest(x,values)];
+    }
+
+  /**
    *  @brief substitute ~ with the full path
    *  @param path the relative path
    *  @param isDir 1--> directory path, 0->otherwise
@@ -602,6 +656,75 @@ namespace cosmobl {
    *  @return the filter
    */
   double Filter (const double r, const double rc);
+
+  /**
+   *  @brief the l=0 spherical Bessel function 
+   *  @param xx the variable x
+   *  @return the l=0 spherical Bessel function
+   */
+  double j0 (const double x);
+
+  /**
+   *  @brief the l=2 spherical Bessel function 
+   *  @param xx the variable x
+   *  @return the l=2 spherical Bessel function
+   */
+  double j2 (const double x);
+
+  /**
+   *  @brief the l=4 spherical Bessel function 
+   *  @param xx the variable x
+   *  @return the l=4 spherical Bessel function
+   */
+  double j4 (const double x);
+
+  /**
+   *  @brief the order l spherical Bessel function 
+   *  @param xx the variable x
+   *  @param order the order l of spherical Bessel function
+   *  @return the order l spherical Bessel function
+   */
+  double jl (const double x, const int order);
+
+  /**
+   *  @brief the distance average l=0 spherical Bessel function 
+   *  this function is used to obtain the analytic twop monopole covariance
+   *  @param k the variable k
+   *  @param r_down the lower limit of the twopcf bin
+   *  @param r_up the upper limit of the twopcf bin
+   *  @return the distance average l=0 spherical Bessel function
+   */
+  double j0_distance_average (const double k, const double r_down, const double r_up);
+
+  /**
+   *  @brief the distance average l=2 spherical Bessel function 
+   *  this function is used to obtain the analytic twop quadrupole covariance
+   *  @param k the variable k
+   *  @param r_down the lower limit of the twopcf bin
+   *  @param r_up the upper limit of the twopcf bin
+   *  @return the distance average l=2 spherical Bessel function
+   */
+  double j2_distance_average (const double k, const double r_down, const double r_up);
+     
+  /**
+   *  @brief the generic integrand to obtain the distance average 
+   *   spherical Bessel function of order l
+   *  @param r the variable r
+   *  @param params the parameters for the function
+   *  @return the distance average l=2 spherical Bessel function
+   */
+  double jl_spherical_integrand (double r, void *params);
+  
+ /**
+   *  @brief the distance average for the order l-th spherical Bessel function 
+   *  @param k the variable k
+   *  @param order the shperical Bessel function order
+   *  @param r_down the lower limit of the twopcf bin
+   *  @param r_up the upper limit of the twopcf bin
+   *  @return the distance average l spherical Bessel function
+   */
+   double jl_distance_average (const double k, const int order, const double r_down, const double r_up);
+   
 
   ///@}
 
@@ -884,13 +1007,13 @@ namespace cosmobl {
     {
       if (equal) { 
 	if ((int)vect.size()!=val) {
-	  string Err = "Error in checkDim of Func.h! The dimension of " + vector + " is:" + conv(vect.size(),par::fINT) + " ( != " + conv(val,par::fINT) + " )";
+	  string Err = "Error in checkDim of Func.h! The dimension of " + vector + " is: " + conv(vect.size(),par::fINT) + " ( != " + conv(val,par::fINT) + " )";
 	  ErrorMsg(Err);
 	}
       }
       else {
 	if ((int)vect.size()<val) {
-	  string Err = "Error in checkDim of Func.h! The dimension of " + vector + " is:" + conv(vect.size(),par::fINT) + " ( >= " + conv(val,par::fINT) + " )";
+	  string Err = "Error in checkDim of Func.h! The dimension of " + vector + " is: " + conv(vect.size(),par::fINT) + " ( < " + conv(val,par::fINT) + " )";
 	  ErrorMsg(Err);
 	}
       }
@@ -1146,6 +1269,27 @@ namespace cosmobl {
   // find the vector index
   void find_index (const vector<double>, const double, const double, int &, int &);
 
+  /**
+   *  @brief generate a covariant sample of n points using a 
+   *  covariance matrix
+   *  @param mean the mean values for the sample
+   *  @param covariance the covariance matrix of the sample
+   *  @param idum seed for random number generator
+   *  @return vector containing a correlated sample of given mean and covariance
+   */
+  vector<double> generate_correlated_data(const vector<double> mean, const vector<vector<double> > covariance, const int idum =213123);
+
+  /**
+   *  @brief generate a covariant sample of n points using a 
+   *  covariance matrix
+   *  @param nExtractions the number of correlated samples to extract
+   *  @param mean the mean values for the sample
+   *  @param covariance the covariance matrix of the sample
+   *  @param idum seed for random number generator
+   *  @return vector containing a correlated samples of given mean and covariance
+   */
+  vector<vector<double>> generate_correlated_data(const int nExtractions, const vector<double> mean, const vector<vector<double> > covariance, const int idum =12312);
+
   ///@}
 
 
@@ -1293,6 +1437,7 @@ namespace cosmobl {
    */
   ///@{
 
+ 
   /**
    *  @brief the quadratic function 
    *  @param xx the variable x
@@ -1394,6 +1539,21 @@ namespace cosmobl {
     {
       T gauss = 1./(par[1]*sqrt(2.*par::pi))*exp(-pow(xx-par[0],2)/(2.*par[1]*par[1]));
       return (par.size()==2) ? gauss : gauss*par[2];
+    }
+
+  /**
+   *  @brief the poisson distribution 
+   *  @param xx the variable x
+   *  @param pp a void pointer 
+   *  @param par a vector containing the coefficients: par[0]=mean,
+   *  @return the poisson distribution
+   *  @warning pp is not used, it is necessary only for GSL operations
+   */
+  template <typename T>
+    T poisson (T xx, shared_ptr<void> pp, vector<double> par)
+    {
+      T pois = exp(int(xx) * log(par[0]) - lgamma(int(xx) + 1.0) - par[0]);
+      return pois;
     }
 
   /**
@@ -1555,7 +1715,7 @@ namespace cosmobl {
    *  @param [out] CC the best-fit parameter C
    *  @return none
    */ 
-  void quad_fit (const vector<double>, const vector<double>, const vector<double>, double &, double &, double &);
+  void quad_fit (const vector<double> xx, const vector<double> fx, const vector<double> err, double &AA, double &BB, double &CC);
 
   /**
    *  @brief fit a given set of data with a Gaussian function 
@@ -1565,17 +1725,7 @@ namespace cosmobl {
    *  @param [out] sigma the best-fit value of &sigma;
    *  @return none
    */
-  void gaussian_fit (const vector<double>, const vector<double>, double &, double &);
-
-  /**
-   *  @brief convolve a given set of data with a Gaussian function
-   *  @param xx vector containing the set of data, x
-   *  @param fx vector containing the set of data, f(x)
-   *  @param mean the mean 
-   *  @param sigma &sigma;
-   *  @return the Gaussian convolution
-   */
-  double gaussian_convolution (const vector<double>, const vector<double>, const double, const double);
+  void gaussian_fit (const vector<double> xx, const vector<double> fx, double &mean, double &sigma);
 
   /**
    *  @brief derive and store the number distribution of a given
@@ -1598,7 +1748,7 @@ namespace cosmobl {
    *  @param [in] sigma &sigma; of the Gaussian kernel
    *  @return none
    */
-  void distribution (vector<double> &, vector<double> &, const vector<double>, const vector<double>, const int, const bool linear=1, const string file_out=par::defaultString, const double fact=1., const double V1=par::defaultDouble, const double V2=par::defaultDouble, const bool bin_type=1, const bool conv=0, const double sigma=0);
+  void distribution (vector<double> &xx, vector<double> &fx, const vector<double> FF, const vector<double> WW, const int nbin, const bool linear=1, const string file_out=par::defaultString, const double fact=1., const double V1=par::defaultDouble, const double V2=par::defaultDouble, const bool bin_type=1, const bool conv=0, const double sigma=0);
 
   /**
    *  @brief simple Monte Carlo integration of f(x)
@@ -1797,10 +1947,27 @@ namespace cosmobl {
   /// @endcond
 
   
-  /* ======== Alfonso Veropalumbo ======== */
-
-  // convolution of two function
-  void convolution (vector<double>, vector<double>, vector<double> &, double);
+  /**
+   *  @brief convolution of two functions
+   *
+   *  Get the convolution of the two functions f<SUB>1</SUB>(x) and
+   *  f<SUB>2</SUB>(x), and store it in the output vector res. The two
+   *  functions have to be defined on the same x-axis range, with
+   *  equal number of points, &Delta;x =
+   *  (x<SUB>max</SUB>-x<SUB>min</SUB>)/n<SUB>x</SUB>.
+   *
+   *  @param [in] f1 first function, f<SUB>1</SUB>(x)
+   *  @param [in] f2 second function, f<SUB>2</SUB>(x)
+   *  @param [out] res convolution function
+   *  @param [in] deltaX &Delta;x =
+   *  (x<SUB>max</SUB>-x<SUB>min</SUB>)/n<SUB>x</SUB>
+   *  @return none
+   *  
+   *  @author Alfonso Veropalumbo
+   *  @author alfonso.veropalumbo@unibo.it
+   */
+  // 
+  void convolution (const vector<double> f1, const vector<double> f2, vector<double> &res, const double deltaX);
 
   ///@}
   
@@ -1809,9 +1976,41 @@ namespace cosmobl {
 
 
   /**
-   *  @name Functions to calculate distances (angles must be in radians) 
+   *  @name Functions to calculate distances 
    */
   ///@{
+
+  /**
+   *  @brief conversion to degrees
+   *  @param angle the input angle 
+   *  @param inputUnits the units of the input angle
+   *  @return the angle in degrees 
+   */
+  double degrees (const double angle, const CoordUnit inputUnits=_radians_);
+  
+  /**
+   *  @brief conversion to radians
+   *  @param angle the input angle
+   *  @param inputUnits the units of the input angle
+   *  @return the angle in radians
+   */
+  double radians (const double angle, const CoordUnit inputUnits=_degrees_);
+  
+  /**
+   *  @brief conversion to arcseconds
+   *  @param angle the input angle 
+   *  @param inputUnits the units of the input angle
+   *  @return the angle in arcseconds
+   */
+  double arcseconds (const double angle, const CoordUnit inputUnits=_radians_);
+  
+  /**
+   *  @brief conversion to arcminutes
+   *  @param angle the input angle
+   *  @param inputUnits the units of the input angle
+   *  @return the angle in arcminutes
+   */
+  double arcminutes (const double angle, const CoordUnit inputUnits=_radians_);
 
   /**
    *  @brief conversion from Cartesian coordinates to polar
@@ -1820,26 +2019,26 @@ namespace cosmobl {
    *  @param [in] XX the Cartesian coordinate x
    *  @param [in] YY the Cartesian coordinate y
    *  @param [in] ZZ the Cartesian coordinate z
-   *  @param [out] ra the Right Ascension
-   *  @param [out] dec the Declination
+   *  @param [out] ra the Right Ascension [in radians]
+   *  @param [out] dec the Declination [in radians]
    *  @param [out] dd the comoving distance
    *  @return none
    */
-  void polar_coord (const double, const double, const double, double &, double &, double &); 
+  void polar_coord (const double XX, const double YY, const double ZZ, double &ra, double &dec, double &dd); 
 
   /**
    *  @brief conversion from polar coordinates to Cartesian
    *  coordinates
    *
-   *  @param [in] ra the Right Ascension
-   *  @param [in] dec the Declination
-   *  @param [in] dd the comoving distance
+   *  @param [in] ra the Right Ascension [in radians]
+   *  @param [in] dec the Declination [in radians]
+   *  @param [in] dd the comoving distance 
    *  @param [out] XX the Cartesian coordinate x
    *  @param [out] YY the Cartesian coordinate y
    *  @param [out] ZZ the Cartesian coordinate z
    *  @return none
    */
-  void cartesian_coord (const double, const double, const double, double &, double &, double &);
+  void cartesian_coord (const double ra, const double dec, const double dd, double &XX, double &YY, double &ZZ);
 
   /**
    *  @brief conversion from Cartesian coordinates to polar
@@ -1848,30 +2047,31 @@ namespace cosmobl {
    *  @param [in] XX vector containing the Cartesian coordinates x
    *  @param [in] YY vector containing the Cartesian coordinates y
    *  @param [in] ZZ vector containing the Cartesian coordinates z
-   *  @param [out] ra vector containing the Right Ascension values
-   *  @param [out] dec vector containing the Declination values
+   *  @param [out] ra vector containing the Right Ascension values [in radians]
+   *  @param [out] dec vector containing the Declination values [in radians]
    *  @param [out] dd vector containing the comoving distances
    *  @return none
    */
-  void polar_coord (const vector<double>, const vector<double>, const vector<double>, vector<double> &, vector<double> &, vector<double> &); 
+  void polar_coord (const vector<double> XX, const vector<double> YY, const vector<double> ZZ, vector<double> &ra, vector<double> &dec, vector<double> &dd); 
 
   /**
    *  @brief conversion from polar coordinates to Cartesian
    *  coordinates used for a set of objects
    *
-   *  @param [in] ra vector containing the Right Ascension values
-   *  @param [in] dec vector containing the Declination values
+   *  @param [in] ra vector containing the Right Ascension values [in radians]
+   *  @param [in] dec vector containing the Declination values [in radians]
    *  @param [in] dd vector containing the comoving distances
    *  @param [out] XX vector containing the Cartesian coordinates x
    *  @param [out] YY vector containing the Cartesian coordinates y
    *  @param [out] ZZ vector containing the Cartesian coordinates z
    *  @return none
    */
-  void cartesian_coord (const vector<double>, const vector<double>, const vector<double>, vector<double> &, vector<double> &, vector<double> &);
+  void cartesian_coord (const vector<double> ra, const vector<double> dec, const vector<double> dd, vector<double> &XX, vector<double> &YY, vector<double> &ZZ);
 
   /**
    *  @brief the Euclidean distance in 3D relative to the origin
    *  (0,0,0), i.e. the Euclidean norm
+   *
    *  @param x1 x coordinate of the first object
    *  @param x2 x coordinate of the second object
    *  @param y1 y coordinate of the first object
@@ -1884,10 +2084,11 @@ namespace cosmobl {
 
   /**
    *  @brief the perpendicular separation, r<SUB>p</SUB>
-   *  @param ra1 the Right Ascension of the first object
-   *  @param ra2 the Right Ascension of the second object
-   *  @param dec1 the Declination of the first object
-   *  @param dec2 the Declination of the second object
+   *
+   *  @param ra1 the Right Ascension of the first object [in radians]
+   *  @param ra2 the Right Ascension of the second object [in radians]
+   *  @param dec1 the Declination of the first object [in radians]
+   *  @param dec2 the Declination of the second object [in radians]
    *  @param d1 the comoving distance of the first object
    *  @param d2 the comoving distance of the second object
    *  @return the perpendicular separation, r<SUB>p</SUB>
@@ -1898,6 +2099,7 @@ namespace cosmobl {
    *  @brief the angular separation in 3D 
    *  @author Alfonso Veropalumbo
    *  @author alfonso.veropalumbo@unibo.it
+   *
    *  @param x1 x coordinate of the first object
    *  @param x2 x coordinate of the second object
    *  @param y1 y coordinate of the first object
@@ -1912,10 +2114,11 @@ namespace cosmobl {
    *  @brief the haversine angular separation in 3D
    *  @author Alfonso Veropalumbo
    *  @author alfonso.veropalumbo@unibo.it
-   *  @param ra1 the Right Ascension of the first object
-   *  @param ra2 the Right Ascension of the second object
-   *  @param dec1 the Declination of the first object
-   *  @param dec2 the Declination of the second object
+   *
+   *  @param ra1 the Right Ascension of the first object [in radians]
+   *  @param ra2 the Right Ascension of the second object [in radians]
+   *  @param dec1 the Declination of the first object [in radians]
+   *  @param dec2 the Declination of the second object [in radians]
    *  @return the haversine angular separation
    */
   double haversine_distance (const double ra1, const double ra2, const double dec1, const double dec2);
@@ -2818,6 +3021,16 @@ namespace cosmobl {
    */
   double relative_error_beta (const double, const double, const double); 
 
+  /**
+   * @brief integrand of the 2d power spectrum to obtain power
+   * spectrum multipole
+   *
+   * @param mu the value mu
+   * @param parameters the parameters for the integration
+   * @return the power spectrum multipoles integrand
+   */
+  double Pl_integrand(const double mu, void *parameters);
+
   ///@}
 
 
@@ -2872,6 +3085,18 @@ namespace cosmobl {
       int unit;
       double hh, mass, rho, n_spec;
       vector<double> lgkk, lgPk;
+    };
+  
+    struct STR_jl_distance_average
+    {
+      int order;
+      double k;
+    };
+
+    struct STR_Pl_integrand
+    {
+      int l;
+      vector<double> mu, Pmu;
     };
   }
 

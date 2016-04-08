@@ -46,7 +46,7 @@ void cosmobl::catalogue::ChainMesh_Catalogue::set_par (const double cell_size, s
   
   m_catalogue = cat;
 
-  vector<vector<double>> data = {m_catalogue->var(Var::_XX_), m_catalogue->var(Var::_YY_), m_catalogue->var(Var::_ZZ_)}; 
+  vector<vector<double>> data = {m_catalogue->var(Var::_X_), m_catalogue->var(Var::_Y_), m_catalogue->var(Var::_Z_)}; 
 
   create_chain_mesh(data, rmax);
 
@@ -55,7 +55,7 @@ void cosmobl::catalogue::ChainMesh_Catalogue::set_par (const double cell_size, s
   m_catalogue->Order(order);
 
   data.erase(data.begin(), data.end());
-  data = {m_catalogue->var(Var::_XX_), m_catalogue->var(Var::_YY_), m_catalogue->var(Var::_ZZ_)}; 
+  data = {m_catalogue->var(Var::_X_), m_catalogue->var(Var::_Y_), m_catalogue->var(Var::_Z_)}; 
 
   create_chain_mesh(data, rmax);
 }

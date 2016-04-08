@@ -42,9 +42,9 @@ using namespace cosmobl;
 void cosmobl::set_ObjectRegion_SubBoxes (catalogue::Catalogue &data, catalogue::Catalogue &random, const int nx, const int ny, const int nz)
 {
   vector<double> Lim;
-  data.MinMax_var(catalogue::Var::_XX_, Lim, 0);
-  data.MinMax_var(catalogue::Var::_YY_, Lim, 0);
-  data.MinMax_var(catalogue::Var::_ZZ_, Lim, 0);
+  data.MinMax_var(catalogue::Var::_X_, Lim, 0);
+  data.MinMax_var(catalogue::Var::_Y_, Lim, 0);
+  data.MinMax_var(catalogue::Var::_Z_, Lim, 0);
 
   double Cell_X = (Lim[1]-Lim[0])/nx;
   double Cell_Y = (Lim[3]-Lim[2])/ny;
@@ -161,3 +161,38 @@ void cosmobl::set_ObjectRegion_mangle (catalogue::Catalogue &data, catalogue::Ca
   string RM = "rm -rf "+dir+"temp/";
   if (system(RM.c_str())) {}
 }
+
+
+// ============================================================================
+
+
+void cosmobl::set_ObjectRegion_RaDec (catalogue::Catalogue &data, catalogue::Catalogue &random, const int nRa, const int nDec)
+{
+  vector<double> Lim;
+  data.MinMax_var(catalogue::Var::_RA_, Lim, 0);
+  data.MinMax_var(catalogue::Var::_Dec_, Lim, 0);
+
+  double Cell_Ra = (Lim[1]-Lim[0])/nRa;
+  double Cell_Dec = (Lim[3]-Lim[2])/nDec;
+
+#pragma omp parallel num_threads(omp_get_max_threads())
+  {
+    
+#pragma omp for schedule(static, 2) 
+    for (int i=0; i<data.nObjects(); i++) {
+      int i1 = min(int((data.ra(i)-Lim[0])/Cell_Ra), nRa-1);
+      int j1 = min(int((data.dec(i)-Lim[2])/Cell_Dec), nDec-1);
+      int index = j1+nDec*i1;
+      data.catalogue_object(i)->set_region(index);
+    }
+
+#pragma omp for schedule(static, 2) 
+    for (int i=0; i<random.nObjects(); i++) {
+      int i1 = min(int((random.ra(i)-Lim[0])/Cell_Ra), nRa-1);
+      int j1 = min(int((random.dec(i)-Lim[2])/Cell_Dec), nDec-1);
+      int index =j1+nDec*i1;;
+      random.catalogue_object(i)->set_region(index);
+    }
+  }
+}
+

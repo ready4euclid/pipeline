@@ -41,7 +41,7 @@ catalogue = cbl.Catalogue(cbl.EnumTypes._Galaxy_, file_catalogue, cosmology)
 print ("I'm creating the catalogue...")
 
 N_R = 1 # random/object ratio
-random_catalogue = cbl.Catalogue(cbl.EnumTypes._Box_, catalogue, N_R)
+random_catalogue = cbl.Catalogue(cbl.EnumTypes._createRandom_box_, catalogue, N_R)
 
 
 ### measure the monopole of the two-point correlation function ###

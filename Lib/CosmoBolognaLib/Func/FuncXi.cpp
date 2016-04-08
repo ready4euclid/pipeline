@@ -645,3 +645,15 @@ double cosmobl::b_nl (const double rr, const double bA, const double bB, const d
   return pow(rr,bA*FF);
 }
 
+
+// ============================================================================
+
+
+double cosmobl::Pl_integrand(const double mu, void *parameters)
+{
+  struct cosmobl::glob::STR_Pl_integrand *pp = (struct cosmobl::glob::STR_Pl_integrand *) parameters;
+  int l = pp->l;
+  vector<double> mmu = pp->mu;
+  vector<double> Pmu = pp->Pmu;
+  return interpolated(mu,mmu,Pmu,"Spline",3)*gsl_sf_legendre_Pl(l,mu);
+} 

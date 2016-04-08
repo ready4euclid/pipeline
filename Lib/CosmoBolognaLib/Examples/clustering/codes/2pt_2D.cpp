@@ -2,7 +2,6 @@
 // Example code: how to measure 2D two-point correlation function
 // ==============================================================
 
-#include "RandomCatalogue.h"
 #include "TwoPointCorrelation2D_cartesian.h"
 
 using namespace cosmobl;
@@ -63,7 +62,7 @@ int main () {
   // ---------------- construct the random catalogue (with cubic geometry) ---------------- 
   // -------------------------------------------------------------------------------------- 
 
-  Catalogue random_catalogue {_Box_, catalogue, 1.};
+  Catalogue random_catalogue {_createRandom_box_, catalogue, 1.};
   
   
   // -----------------------------------------------------------------------------------------------
@@ -94,7 +93,6 @@ int main () {
   xi2DCart->measure(_Poisson_, dir_pairs);
   
   xi2DCart->write(dir_output, "xi_rp_pi_linlin.dat");
-
   
   return 0;
 }

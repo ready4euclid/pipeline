@@ -2,7 +2,6 @@
 // Example code: how to measure the connected and reduced three-point correlation functions
 // ========================================================================================
 
-#include "RandomCatalogue.h"
 #include "ThreePointCorrelation_comoving_reduced.h"
 
 using namespace cosmobl;
@@ -47,7 +46,7 @@ int main () {
   // ---------------- construct the random catalogue (with cubic geometry) ----------------
   // --------------------------------------------------------------------------------------
 
-  Catalogue random_catalogue {_Box_, catalogue, 1.};
+  Catalogue random_catalogue {_createRandom_box_, catalogue, 1.};
 
   
   // -------------------------------------------------------------------------------

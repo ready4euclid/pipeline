@@ -2,7 +2,6 @@
 // How to measure the two-point correlation function and estimate errors with jackknife 
 // ====================================================================================
 
-#include "RandomCatalogue.h"
 #include "TwoPointCorrelation1D_monopole.h"
 #include "GlobalFunc.h"
 
@@ -49,7 +48,7 @@ int main () {
   // --------------------------------------------------------------------------------------
   
   double N_R = 1.; // random/object ratio
-  Catalogue random_catalogue {_Box_, catalogue, N_R};
+  Catalogue random_catalogue {_createRandom_box_, catalogue, N_R};
 
   
   // --------------------------------------------------------------------------------------------

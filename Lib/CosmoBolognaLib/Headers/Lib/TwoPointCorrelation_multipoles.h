@@ -74,7 +74,7 @@ namespace cosmobl {
 	 *
 	 *  @return pointer to an object of type Data
 	 */
-	shared_ptr<Data> MultipolesTwoP(const vector<double> rr, const vector<double> mu, const vector<vector<double> > xi, const vector<vector<double> > error_xi) override;
+	shared_ptr<Data> MultipolesTwoP (const vector<double> rr, const vector<double> mu, const vector<vector<double> > xi, const vector<vector<double> > error_xi) override;
 
 	/**
        *  @brief measure the multipoles of the two-point correlation
@@ -186,7 +186,7 @@ namespace cosmobl {
        *
        *  @return none
        */
-      vector<shared_ptr<Data> > XiJackknife(const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr) override;
+      vector<shared_ptr<Data> > XiJackknife (const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr) override;
 
       /**
        *  @brief measure the jackknife resampling of the two-point correlation
@@ -200,7 +200,7 @@ namespace cosmobl {
        *
        *  @return none
        */
-      vector<shared_ptr<Data> > XiJackknife(const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr) override;
+      vector<shared_ptr<Data> > XiJackknife (const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr) override;
 
       /**
        *  @brief measure the bootstrap resampling of the two-point correlation
@@ -214,7 +214,7 @@ namespace cosmobl {
        *
        *  @return none
        */
-      vector<shared_ptr<Data> > XiBootstrap(const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr) override;
+      vector<shared_ptr<Data> > XiBootstrap (const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr) override;
 
       /** 
        *  @brief measure the bootstrap resampling of the two-point correlation
@@ -230,7 +230,7 @@ namespace cosmobl {
        *
        *  @return none
        */
-      vector<shared_ptr<Data> > XiBootstrap(const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr) override;
+      vector<shared_ptr<Data> > XiBootstrap (const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr) override;
 
       public:
 

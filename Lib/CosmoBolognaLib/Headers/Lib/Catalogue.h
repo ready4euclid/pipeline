@@ -35,6 +35,7 @@
 #ifndef __CATALOGUE__
 #define __CATALOGUE__ 
 
+#include "Field3D.h"
 #include "ChainMesh.h"
 #include "Object.h"
 #include "RandomObject.h"
@@ -57,7 +58,7 @@ namespace cosmobl {
    * used to handle catalogues of astronomical sources
    */
   namespace catalogue {
-  
+
     /**
      * @enum Var
      * @brief the catalogue variables
@@ -65,55 +66,55 @@ namespace cosmobl {
     enum Var {
     
       /// coordinate x
-      _XX_,
+      _X_,
     
       /// coordinate y
-      _YY_, 
+      _Y_, 
 
       /// coordinate z
-      _ZZ_,
+      _Z_,
 
       /// Right Ascension
       _RA_, 
 
       /// Declination
-      _DEC_, 
+      _Dec_, 
 
       /// redshift
-      _REDSHIFT_, 
+      _Redshift_, 
 
       /// comoving distance
-      _DC_, 
+      _Dc_, 
 
       /// weight
-      _WEIGHT_, 
+      _Weight_, 
 
       /// mass
-      _MASS_, 
+      _Mass_, 
 
       /// richness
-      _RICHNESS_, 
+      _Richness_, 
 
       /// magnitude
-      _MAGNITUDE_, 
+      _Magnitude_, 
 
       /// velocity along the x direction
-      _VX_, 
+      _Vx_, 
 
       /// velocity along the y direction
-      _VY_, 
+      _Vy_, 
 
       /// velocity along the z direction
-      _VZ_, 
+      _Vz_, 
 
       /// region
-      _REGION_,
+      _Region_,
 
+      /// radius properties
+      _Radius_,
+      
       /// generic properties
-      _GENERIC_,
-
-      /// generic properties
-      _RADIUS_
+      _Generic_,
     };
 
     
@@ -123,17 +124,20 @@ namespace cosmobl {
      */
     enum RandomType {
 
-      /// cubic geometry (or parallelepiped)
-      _Box_,
-
-      /// conic geometry
-      _Cone_,
+      /// random catalogue with cubic geometry (or parallelepiped)
+      _createRandom_box_,
+      
+      /// random catalogue obtained with shuffling
+      _createRandom_shuffle_,
+      
+      /// random catalogue with conic geometry
+      _createRandom_cone_,
 
       /// random catalogue for mocks
-      _RandomMock_,
+      _createRandom_mock_,
 
       /// random catalogue for VIPERS
-      _VIPERS_
+      _createRandom_VIPERS_
       
     };
     
@@ -168,6 +172,14 @@ namespace cosmobl {
        */
       Catalogue () = default;
 
+
+      /**
+       * @brief default copy constructor
+       * @param cat object of class Catalogue
+       * @return object of class Catalogue
+       */
+      Catalogue (const Catalogue& cat);
+      
       /**
        * @brief constructor, using vectors with Cartesian coordinates
        * @param type the object type, specified in the
@@ -181,17 +193,18 @@ namespace cosmobl {
       Catalogue (const ObjType type, const vector<double> xx, const vector<double> yy, const vector<double> zz, vector<double> weight={});
 
       /**
-       * @brief constructor, using vectors with polar coordinates
-       * @param type the object type, specified in the
-       * cosmobl::catalogue::ObjType enumeration
-       * @param ra vector containing the Right Ascensions
-       * @param dec vector containing the Declinations
-       * @param redshift vector containing the redshifts
-       * @param cosm object of class Cosmology, used to estimate comoving distances 
-       * @param weight vector containing the weights
-       * @return object of type catalogue
+       *  @brief constructor, using vectors with polar coordinates
+       *  @param type the object type, specified in the
+       *  cosmobl::catalogue::ObjType enumeration
+       *  @param ra vector containing the Right Ascensions
+       *  @param dec vector containing the Declinations
+       *  @param redshift vector containing the redshifts
+       *  @param cosm object of class Cosmology, used to estimate comoving distances 
+       *  @param inputUnits the units of the input coordinates
+       *  @param weight vector containing the weights
+       *  @return object of type catalogue
        */ 
-      Catalogue (const ObjType type, const vector<double> ra, const vector<double> dec, const vector<double> redshift, const Cosmology &cosm, vector<double> weight={}); 
+      Catalogue (const ObjType type, const vector<double> ra, const vector<double> dec, const vector<double> redshift, const Cosmology &cosm, const CoordUnit inputUnits=_radians_, vector<double> weight={}); 
 
       /**
        * @brief constructor, using vectors of generic objects
@@ -252,13 +265,14 @@ namespace cosmobl {
        *  redshift coordinates
        *  @param col_Weight column of the input file containing the
        *  weights
+       *  @param inputUnits the units of the input coordinates
        *  @param nSub the fracton of objects that will be randomly
        *  selected (nSub=1 &rArr; all objects are selected)
        *  @param fact the factor used to convert R.A. and Dec
        *  coordinates, i.e. &rArr; R.A.=R.A.*fact, Dec=Dec*fact
        *  @return an object of class Catalogue
        */
-      Catalogue (const ObjType type, const vector<string> file, const Cosmology &cosm, const int col_RA=0, const int col_Dec=1, const int col_redshift=2, const int col_Weight=-1, const double nSub=1.1, const double fact=1.);
+      Catalogue (const ObjType type, const vector<string> file, const Cosmology &cosm, const int col_RA=0, const int col_Dec=1, const int col_redshift=2, const int col_Weight=-1, const CoordUnit inputUnits=_radians_, const double nSub=1.1, const double fact=1.);
 
       /**
        * @brief default destructor
@@ -316,6 +330,24 @@ namespace cosmobl {
        *  @return an object of class Catalogue
        */
       Catalogue (const RandomType type, const Cosmology &real_cosm, const Cosmology &test_cosm, const string dir_in, const string dir_out, const double Zguess_min, const double Zguess_max);
+
+      /**
+       *  @brief constructor that creates a random catalogue with the
+       *  'shuffle' method
+       *  @param type the type of random catalogue, specified in the
+       *  cosmobl::catalogue::RandomType enumeration
+       *  @param catalogue object of class Catalogue
+       *  @param cosm object of class Cosmology
+       *  @param N_R fraction of random objects, i.e.
+       *  N<SUB>R</SUB>=N<SUB>random</SUB>/N<SUB>objects</SUB>
+       *  @param nbin numbers of bin to obtain the redshift distribution
+       *  @param conv 1 &rarr; compute the Gaussian convolvolution of
+       *  the distribution; 0 &rarr; do not convolve
+       *  @param sigma the standard deviation, &sigma;, of the
+       *  Gaussian kernel
+       *  @return an object of class Catalogue
+       */
+      Catalogue (const RandomType type, const Catalogue catalogue, const Cosmology &cosm, const int N_R, const int nbin, const bool conv=0, const double sigma=0.);
       
       /**
        *  @brief constructor that creates a random catalogue in a cone
@@ -760,29 +792,36 @@ namespace cosmobl {
       ///@{
     
       /**
-       * @brief compute the comoving coordinates (x, y, z) using (ra,
-       * dec, redshift)
-       * @param cosm object of class Cosmology
-       * @return none
+       *  @brief compute the comoving coordinates (x, y, z) from the
+       *  observed coordinates (R.A., Dec, redshift)
+       *
+       *  @param cosm object of class Cosmology
+       *  @param inputUnits the units of the input coordinates
+       *  @return none
        */
-      void computeComovingCoordinates (const Cosmology &); 
+      void computeComovingCoordinates (const Cosmology &cosm, const CoordUnit inputUnits=_radians_); 
 
       /**
-       * @brief compute the polar coordinates (ra, dec, dc) using
-       * (x, y, z)
-       * @return none
+       *  @brief compute the polar coordinates (R.A., Dec,
+       *  d<SUB>c</SUB>) from the comoving coordinates (x, y, z)
+       *
+       *  @param outputUnits the units of the output coordinates
+       *  @return none
        */
-      void computePolarCoordinates (); 
+      void computePolarCoordinates (const CoordUnit outputUnits=_radians_); 
 
       /**
-       * @brief compute the polar coordinates (ra, dec, dc, redshift)
-       * using (x, y, z) and a cosmology
-       * @param cosm object of class Cosmology
-       * @param z1 the minimum redshift used in the computation
-       * @param z2 the maximum redshift used in the computation
-       * @return none
+       *  @brief compute the polar coordinates (R.A., Dec,
+       *  d<SUB>c</SUB>, redshift) from the comoving (x, y, z), and
+       *  assuming a cosmological model
+       *
+       *  @param cosm object of class Cosmology
+       *  @param z1 the minimum redshift used in the computation
+       *  @param z2 the maximum redshift used in the computation
+       *  @param outputUnits the units of the output coordinates
+       *  @return none
        */
-      void computePolarCoordinates (const Cosmology &, const double z1=0., const double z2=10.); 
+      void computePolarCoordinates (const Cosmology &, const double z1=0., const double z2=10., const CoordUnit outputUnits=_radians_); 
 
       /**
        * @brief normalize (x, y, z) (i.e. &rarr; (x/dc, y/dc, z/dc))
@@ -868,6 +907,19 @@ namespace cosmobl {
       }
 
       /**
+       * @brief overloading of the += operator, to sum two catalogues
+       * @param cc object of class Catalogue 
+       * @return object of class catalogue
+       */
+      Catalogue operator += (const Catalogue cc)
+      {    
+	for (auto &&i : cc.m_sample)
+	  m_sample.push_back(move(i));
+
+	return *this;
+      }
+
+      /**
        * @brief create a sub-catalogue
        * @param var_name the variable name
        * @param down minimum variable used to cut the catalogue
@@ -917,9 +969,33 @@ namespace cosmobl {
        */
       double weightedN_condition (const Var, const double, const double, const bool excl=0);
 
+      /**
+       * @brief return the density field from object position
+       * @param cell_size the minimum size of the density field
+       * @param interpolation_type the type of interpolation 0 &rarr; nearest-grid-point;
+       * 1 &rarr; cloud-in-cell
+       * @param kernel_radius size of the kernel for the gaussian smoothing
+       * @param useMass generate the density field using the mass information
+       * @return the density field
+       */
+      ScalarField3D density_field (const double cell_size, const int interpolation_type=0, const double kernel_radius=0., const bool useMass=0) const;
+
+      /**
+       * @brief return the density field from object position
+       * @param cell_size the minimum size of the density field
+       * @param mask_catalogue catalogue containing points sampling the selecion function
+       * of the catalogue
+       * @param interpolation_type the type of interpolation 0 &rarr; nearest-grid-point;
+       * 1 &rarr; cloud-in-cell
+       * @param kernel_radius size of the kernel for the gaussian smoothing
+       * @param useMass generate the density field using the mass information
+       * @return the density field
+       */
+      ScalarField3D density_field (const double cell_size, const Catalogue mask_catalogue, const int interpolation_type = 0, const double kernel_radius=0., const bool useMass = 0) const;
       ///@}
     
     };
+    
   }
 }
 

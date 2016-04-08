@@ -8,12 +8,17 @@
 
 %{
 #include "Func.h"
+#include "Data.h"
+#include "Data1D.h"
+#include "Data2D.h"
+#include "Field3D.h"
 
   class EnumTypes {
   public:
     enum {_Omega_matter_LCDM_, _Omega_matter_, _Omega_baryon_, _Omega_neutrinos_, _massless_neutrinos_, _massive_neutrinos_, _Omega_DE_, _Omega_radiation_, _H0_, _scalar_amp_, _n_spec_, _w0_, _wa_, _fNL_, _sigma8_};
     enum {_1D_, _2D_}; 
     enum {_linear_, _logarithmic_};
+    enum {_IdentityPrior_, _GaussianPrior_, _PoissonPrior_, _FunctionPrior_};
     enum {_1D_data_, _2D_data_, _1D_collection_data}; 
     enum {_angular_lin_, _angular_log_, _comoving_lin_, _comoving_log_, _comovingCartesian_linlin_, _comovingCartesian_linlog_, _comovingCartesian_loglin_, _comovingCartesian_loglog_, _comovingPolar_linlin_, _comovingPolar_linlog_, _comovingPolar_loglin_, _comovingPolar_loglog_};
     enum {_1D_monopole_, _1D_projected_, _1D_deprojected_, _1D_multipoles_, _1D_wedges_, _1D_filtered_, _1D_angular_, _2D_Cartesian_, _2D_polar_};
@@ -21,8 +26,8 @@
     enum {_comoving_theta_, _comoving_side_};
     enum {_angular_connected_, _angular_reduced_, _comoving_connected_, _comoving_reduced_};
     enum {_GenericObject_, _RandomObject_, _Mock_, _Halo_, _Galaxy_, _Cluster_, _Void_}; 
-    enum {_XX_, _YY_, _ZZ_, _RA_, _DEC_, _REDSHIFT_, _DC_, _WEIGHT_, _MASS_};
-    enum {_Box_, _Cone_};
+    enum {_X_, _Y_, _Z_, _RA_, _Dec_, _Redshift_, _Dc_, _Weight_, _Mass_, _Richness_, _Magnitude_, _Vx_, Vy, Vz, _Region_, _Radius_, _Generic_};
+    enum {_createRandom_box_, _createRandom_shuffle_, _createRandom_cone_, _createRandom_mock_, _createRandom_VIPERS_};
   };
   
   string cosmobl::par::DirCosmo = "~/CosmoBolognaLib/";
@@ -89,6 +94,10 @@
   %}
 
 %include "Func.h"
+%include "Data.h"
+%include "Data1D.h"
+%include "Data2D.h"
+%include "Field3D.h"
 
 static const double yotta = 1.e24;
 static const double zetta = 1.e21;
@@ -159,13 +168,14 @@ class EnumTypes {
   enum {_1D_, _2D_}; 
   enum {_linear_, _logarithmic_};
   enum {_1D_data_, _2D_data_, _1D_collection_data}; 
+  enum {_IdentityPrior_, _GaussianPrior_, _PoissonPrior_, _FunctionPrior_};
   enum {_angular_lin_, _angular_log_, _comoving_lin_, _comoving_log_, _comovingCartesian_linlin_, _comovingCartesian_linlog_, _comovingCartesian_loglin_, _comovingCartesian_loglog_, _comovingPolar_linlin_, _comovingPolar_linlog_, _comovingPolar_loglin_, _comovingPolar_loglog_};
   enum {_1D_monopole_, _1D_projected_, _1D_deprojected_, _1D_multipoles_, _1D_wedges_, _1D_filtered_, _1D_angular_, _2D_Cartesian_, _2D_polar_};
   enum {_Poisson_, _Jackknife_, _Bootstrap_};
   enum {_comoving_theta_, _comoving_side_};
   enum {_angular_connected_, _angular_reduced_, _comoving_connected_, _comoving_reduced_};
   enum {_GenericObject_, _RandomObject_, _Mock_, _Halo_, _Galaxy_, _Cluster_, _Void_}; 
-  enum {_XX_, _YY_, _ZZ_, _RA_, _DEC_, _REDSHIFT_, _DC_, _WEIGHT_, _MASS_};
-  enum {_Box_, _Cone_};
+  enum {_X_, _Y_, _Z_, _RA_, _Dec_, _Redshift_, _Dc_, _Weight_, _Mass_, _Richness_, _Magnitude_, _Vx_, Vy, Vz, _Region_, _Radius_, _Generic_};
+  enum {_createRandom_box_, _createRandom_shuffle_, _createRandom_cone_, _createRandom_mock_, _createRandom_VIPERS_};
 };
   

@@ -283,11 +283,14 @@ namespace cosmobl {
        *  @param file output file
        *  @param xname name for the x variable
        *  @param yname name for the y variable
-       *  @param fxyname name for the f(x,y)  
+       *  @param fxyname name for the f(x,y)
+       *  @param full 0 &rarr; simply store the data; 1 &rarr; duplicate
+       *  the data in the other three quadrands (usefull when storing
+       *  the 2D clustering)
        *  @param rank cpu index (for MPI usage)
        *  @return none
        */
-      virtual void write (const string dir=par::defaultString, const string file=par::defaultString, const string xname="x", const string yname="y",const string fxyname="f(x,y)", const int rank=0) const override;
+      virtual void write (const string dir=par::defaultString, const string file=par::defaultString, const string xname="x", const string yname="y",const string fxyname="f(x,y)", const bool full=0, const int rank=0) const override;
       
   };
 

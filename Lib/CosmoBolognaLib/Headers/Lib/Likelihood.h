@@ -35,116 +35,144 @@
 #define __LIKEL__
 
 #include "Chi2.h"
- 
+
 
 // ============================================================================================
 
 
 namespace cosmobl {
 
-  typedef function<double(double , shared_ptr<void>)> likelihood_1par;
-  typedef function<double(vector<double> , shared_ptr<void> )> likelihood_npar;
+  /**
+   *  @brief The namespace of functions and classes used for statistical
+   *  analysis
+   *  
+   * The \e statistic namespace contains all the functions and classes
+   * used for statistical analyis
+   */
 
-  class Likelihood
-  {
-    protected:
-      shared_ptr<Data> m_data;
-      shared_ptr<Model> m_model; 
+  namespace statistics {
 
-      likelihood_1par m_likelihood_1par;
-      likelihood_npar m_likelihood_npar;
-      int m_nchains;
-      int m_chain_size;
-      bool m_npar;
+    typedef function<double(double , shared_ptr<void>)> likelihood_1par;
+    typedef function<double(vector<double> , shared_ptr<void> )> likelihood_npar;
 
-    public:
-      /**
-       *  @name Constructors/destructors
-       */
-      ///@{
+    double likelihood_gaussian_1D_model_1par (double model_parameters, const shared_ptr<void> fixed_parameters);
+    double likelihood_gaussian_1D_error_1par (double model_parameters, const shared_ptr<void> fixed_parameters);
+    double likelihood_gaussian_1D_covariance_1par (double model_parameters, const shared_ptr<void> fixed_parameters);
+    double likelihood_gaussian_2D_error_1par (double model_parameters, const shared_ptr<void> fixed_parameters);
 
-      /**
-       *  @brief default constructor
-       *  @return object of class Likelihood
-       */
-      Likelihood() {}
+    double likelihood_gaussian_1D_model_npar (vector<double> model_parameters, const shared_ptr<void> fixed_parameters);
+    double likelihood_gaussian_1D_error_npar (vector<double> model_parameters, const shared_ptr<void> fixed_parameters);
+    double likelihood_gaussian_1D_covariance_npar (vector<double> model_parameters, const shared_ptr<void> fixed_parameters);
+    double likelihood_gaussian_2D_error_npar (vector<double> model_parameters, const shared_ptr<void> fixed_parameters);
 
-      /**
-       *  @brief constructor
-       *  @param data pointers to the data container
-       *  @param model pointers to the model 
-       *  @param lik_1par function of type likelihood_1par
-       *  @return object of class Likelihood
-       */
-      Likelihood (shared_ptr<Data> data, shared_ptr<Model> model, likelihood_1par lik_1par) :
-	m_data(data), m_model(model), m_likelihood_1par(lik_1par), m_npar(0) {}
+    class Likelihood
+    {
+      protected:
+	shared_ptr<Data> m_data;
+	shared_ptr<Model> m_model; 
 
-      /**
-       *  @brief constructor
-       *  @param data pointers to the data container
-       *  @param model pointers to the model 
-       *  @param lik_npar function of type likelihood_npar
-       *  @return object of class Likelihood
-       */
-      Likelihood (shared_ptr<Data> data, shared_ptr<Model> model, likelihood_npar lik_npar) :
-	m_data(data), m_model(model), m_likelihood_npar(lik_npar), m_npar(1) {}
+	likelihood_1par m_likelihood_1par;
+	likelihood_npar m_likelihood_npar;
+	int m_nchains;
+	int m_chain_size;
+	bool m_npar;
 
-      /**
-       *  @brief default destructor
-       *  @return none
-       */
-      ~Likelihood() {}
-      ///@}
+      public:
 
-      /**
-       *@brief function that maximize Likelihood, find best fit parameters and store them in model
-       *@param parameter starting value of the parameter 
-       *@param max_iter maximum number of iteration 
-       *@param min minumum value for minima finding
-       *@param max maximum value for minima finding
-       *@return none
-       */
-      void minimize(double ,unsigned int max_iter=100, double min=-1.e30, double max=1.e30);
+	/**
+	 *  @name Constructors/destructors
+	 */
+	///@{
 
-      /**
-       *@brief function that maximize Likelihood, find best fit parameters and store them in model
-       *@param parameters vector containing parameters starting values
-       *@param max_iter maximum number of iteration 
-       *@param tol the tolerance for minima finding convergence 
-       *@return none
-       */
-      void minimize(vector<double> parameters,unsigned int max_iter=100, double tol=1.e-6); 
+	/**
+	 *  @brief default constructor
+	 *  @return object of class Likelihood
+	 */
+	Likelihood () {}
 
-      /**
-       * @brief function that samples likelihood, using Metropolis-Hastings algorithm
-       * on uni-dimensional parameter space, and stores chain parameters.
-       *@param nchains number of chains to sample the parameter space 
-       *@param chain_size number of step in each chain 
-       *@return averace acceptance ratio
-       */
-      double sample(int nchains, int chain_size);
+	/**
+	 *  @brief constructor
+	 *  @param data pointers to the data container
+	 *  @param model pointers to the model 
+	 *  @param lik_1par function of type likelihood_1par
+	 *  @return object of class Likelihood
+	 */
+	Likelihood (const shared_ptr<Data> data, const shared_ptr<Model> model, const likelihood_1par lik_1par) :
+	  m_data(data), m_model(model), m_likelihood_1par(lik_1par), m_npar(0) {}
 
-      /**
-       *@brief function that samples likelihood, using stretch-move algorithm 
-       * on n-dimensional parameter space, and stores chain parameters.
-       *@param nchains number of chains to sample the parameter space 
-       *@param chain_size number of step in each chain 
-       *@param shift  percentage shift for proposed parameter 
-       *@param nsubstep number of substeps in each iteration 
-       *@return averace acceptance ratio
-       */
-      double sample(int nchains, int chain_size, double shift, int nsubstep = 100); 
+	/**
+	 *  @brief constructor
+	 *  @param data pointers to the data container
+	 *  @param model pointers to the model 
+	 *  @param lik_npar function of type likelihood_npar
+	 *  @return object of class Likelihood
+	 */
+	Likelihood (const shared_ptr<Data> data, const shared_ptr<Model> model, const likelihood_npar lik_npar) :
+	  m_data(data), m_model(model), m_likelihood_npar(lik_npar), m_npar(1) {}
 
-      /**
-       *@brief function that write sampled parameters 
-       *@param output_file file of output for parameters 
-       *@param start starting position in the chains
-       *@param stop final position in the chains
-       *@param thin interval of parameter in output
-       *@return none
-       */
-      void write_chain(string output_file, double start=0.5, double stop=1, int thin=0.1);
-  };
+	/**
+	 *  @brief default destructor
+	 *  @return none
+	 */
+	~Likelihood () {}
+
+	///@}
+
+
+	/**
+	 *  @brief function that maximize Likelihood, find best fit parameters and store them in model
+	 *  @param parameter starting value of the parameter 
+	 *  @param max_iter maximum number of iteration 
+	 *  @param min minumum value for minima finding
+	 *  @param max maximum value for minima finding
+	 *  @return none
+	 */
+	void minimize (const double parameter, const unsigned int max_iter=100, const double min=-1.e30, const double max=1.e30);
+
+	/**
+	 *  @brief function that maximize Likelihood, find best fit
+	 *  parameters and store them in model       
+	 *  @param parameters vector containing parameters starting
+	 *  values
+	 *  @param max_iter maximum number of iteration 
+	 *  @param tol the tolerance for minima finding convergence 
+	 *  @return none
+	 */
+	void minimize (const vector<double> parameters, const unsigned int max_iter=100, const double tol=1.e-6); 
+
+	/**
+	 *  @brief function that samples likelihood, using
+	 *  Metropolis-Hastings algorithm on uni-dimensional parameter
+	 *  space, and stores chain parameters.       
+	 *  @param nchains number of chains to sample the parameter space 
+	 *  @param chain_size number of step in each chain 
+	 *  @return averace acceptance ratio
+	 */
+	double sample (const int nchains, const int chain_size);
+
+	/**
+	 *  @brief function that samples likelihood, using stretch-move
+	 *  algorithm on n-dimensional parameter space, and stores chain
+	 *  parameters.
+	 *  @param nchains number of chains to sample the parameter space 
+	 *  @param chain_size number of step in each chain 
+	 *  @param shift  percentage shift for proposed parameter 
+	 *  @param nsubstep number of substeps in each iteration 
+	 *  @return averace acceptance ratio
+	 */
+	double sample (const int nchains, const int chain_size, const double shift, const int nsubstep = 100); 
+
+	/**
+	 *  @brief function that write sampled parameters 
+	 *  @param output_file file of output for parameters 
+	 *  @param start starting position in the chains
+	 *  @param stop final position in the chains
+	 *  @param thin interval of parameter in output
+	 *  @return none
+	 */
+	void write_chain (const string output_file, const double start=0.5, const double stop=1, const int thin=1);
+    };
+  }
 }
 
 #endif

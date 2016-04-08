@@ -31,6 +31,7 @@
  *  @author federico.marulli3@unbo.it
  */
 
+#include "Field3D.h"
 #include "Catalogue.h"
 
 using namespace cosmobl;
@@ -90,17 +91,39 @@ cosmobl::catalogue::Catalogue::Catalogue (const ObjType type, const vector<doubl
 // ============================================================================
 
 
-cosmobl::catalogue::Catalogue::Catalogue (const ObjType type, const vector<double> ra, const vector<double> dec, const vector<double> redshift, const Cosmology &cosm, vector<double> weight)
+cosmobl::catalogue::Catalogue::Catalogue (const Catalogue& cat)
 {
-  if (weight.size() == 0)
-    weight.resize(ra.size(), 1);
-
-  if (!(ra.size()==dec.size() && dec.size()==redshift.size() && redshift.size()==weight.size()))
-    ErrorMsg("Error in Catalogue::Catalogue() of Catalogue.cpp: coordinates with different dimension!"); 
-  
-  for (size_t i=0; i<ra.size(); i++)
-    m_sample.push_back(move(Object::Create(type, ra[i], dec[i], redshift[i], cosm, weight[i])));
+  m_sample = cat.m_sample;
+  m_index = cat.m_index;
 }
+
+
+// ============================================================================
+
+
+cosmobl::catalogue::Catalogue::Catalogue (const ObjType type, const vector<double> ra, const vector<double> dec, const vector<double> redshift, const Cosmology &cosm, const CoordUnit inputUnits, vector<double> weight)
+{
+  // conversion of coordinate units into radiants
+  vector<double> RA(ra.size()), DEC(dec.size());
+  for (size_t i=0; i<ra.size(); i++) 
+    RA[i] = (inputUnits==_radians_) ? ra[i] : radians(ra[i], inputUnits);
+  for (size_t i=0; i<dec.size(); i++) 
+    DEC[i] = (inputUnits==_radians_) ? dec[i] : radians(dec[i], inputUnits);
+ 
+  // (weight=1 if weights are not used)
+  if (weight.size()==0)
+    weight.resize(RA.size(), 1);
+
+  // check the vector dimensions
+  if (!(RA.size()==DEC.size() && DEC.size()==redshift.size() && redshift.size()==weight.size()))
+    ErrorMsg("Error in Catalogue::Catalogue() of Catalogue.cpp: coordinates with different dimension!"); 
+
+  // include the objects in the catalogue
+  for (size_t i=0; i<RA.size(); i++)
+    m_sample.push_back(move(Object::Create(type, RA[i], DEC[i], redshift[i], cosm, weight[i])));
+
+}
+  
 
 
 // ============================================================================
@@ -123,6 +146,7 @@ cosmobl::catalogue::Catalogue::Catalogue (const ObjType type, const vector<strin
       if (ran(gen)<nSub) {
 	stringstream ss(line);
 	vector<double> val; while (ss>>VV) val.push_back(VV);
+	checkDim(val, col_X, "val", 0); checkDim(val, col_Y, "val", 0); checkDim(val, col_Z, "val", 0);
 	XX = val[col_X]; YY = val[col_Y]; ZZ = val[col_Z];
 	WW = (col_Weight!=-1) ? val[col_Weight] : 1.;
         m_sample.push_back(move(Object::Create(type, XX, YY, ZZ, WW)));
@@ -137,8 +161,8 @@ cosmobl::catalogue::Catalogue::Catalogue (const ObjType type, const vector<strin
 // ============================================================================
 
 
-cosmobl::catalogue::Catalogue::Catalogue (const ObjType type, const vector<string> file, const Cosmology &cosm, const int col_RA, const int col_Dec, const int col_redshift, const int col_Weight, const double nSub, const double fact) 
-{      
+cosmobl::catalogue::Catalogue::Catalogue (const ObjType type, const vector<string> file, const Cosmology &cosm, const int col_RA, const int col_Dec, const int col_redshift, const int col_Weight, const CoordUnit inputUnits, const double nSub, const double fact) 
+{ 
   default_random_engine gen;
   uniform_real_distribution<float> ran(0., 1.);
  
@@ -154,7 +178,10 @@ cosmobl::catalogue::Catalogue::Catalogue (const ObjType type, const vector<strin
       if (ran(gen)<nSub) {
 	stringstream ss(line);
 	vector<double> val; while (ss>>VV) val.push_back(VV);
-	RA = val[col_RA]*fact; DEC = val[col_Dec]*fact; ZZ = val[col_redshift];
+	checkDim(val, col_RA, "val", 0); checkDim(val, col_Dec, "val", 0); checkDim(val, col_redshift, "val", 0);
+	RA = (inputUnits==_radians_) ? val[col_RA]*fact : radians(val[col_RA], inputUnits)*fact;
+	DEC = (inputUnits==_radians_) ? val[col_Dec]*fact : radians(val[col_Dec], inputUnits)*fact;
+	ZZ = val[col_redshift];
 	WW = (col_Weight!=-1) ? val[col_Weight] : 1.;
 	m_sample.push_back(move(Object::Create(type, RA, DEC, ZZ, cosm, WW)));
       }
@@ -202,15 +229,15 @@ vector<double> cosmobl::catalogue::Catalogue::var (Var var_name) const
   
   switch (var_name) {
 
-  case Var::_XX_:
+  case Var::_X_:
     for (int i=0; i<nObjects(); i++) vv[i] = m_sample[i]->xx();
     break;
 
-  case Var::_YY_:
+  case Var::_Y_:
     for (int i=0; i<nObjects(); i++) vv[i] = m_sample[i]->yy();
     break;
 
-  case Var::_ZZ_:
+  case Var::_Z_:
     for (int i=0; i<nObjects(); i++) vv[i] = m_sample[i]->zz();
     break;
 
@@ -218,55 +245,55 @@ vector<double> cosmobl::catalogue::Catalogue::var (Var var_name) const
     for (int i=0; i<nObjects(); i++) vv[i] = m_sample[i]->ra();
     break;
 
-  case Var::_DEC_:
+  case Var::_Dec_:
     for (int i=0; i<nObjects(); i++) vv[i] = m_sample[i]->dec();
     break;
 
-  case Var::_REDSHIFT_:
+  case Var::_Redshift_:
     for (int i=0; i<nObjects(); i++) vv[i] = m_sample[i]->redshift();
     break;
 
-  case Var::_DC_:
+  case Var::_Dc_:
     for (int i=0; i<nObjects(); i++) vv[i] = m_sample[i]->dc();
     break;
 
-  case Var::_WEIGHT_:
+  case Var::_Weight_:
     for (int i=0; i<nObjects(); i++) vv[i] = m_sample[i]->weight();
     break;
 
-  case Var::_MASS_:
+  case Var::_Mass_:
     for (int i=0; i<nObjects(); i++) vv[i] = m_sample[i]->mass();
     break;
 
-  case Var::_MAGNITUDE_:
+  case Var::_Magnitude_:
     for (int i=0; i<nObjects(); i++) vv[i] = m_sample[i]->magnitude();
     break;
 
-  case Var::_RICHNESS_:
+  case Var::_Richness_:
     for (int i=0; i<nObjects(); i++) vv[i] = m_sample[i]->richness();
     break;
 
-  case Var::_VX_:
+  case Var::_Vx_:
     for (int i=0; i<nObjects(); i++) vv[i] = m_sample[i]->vx();
     break;
   
-  case Var::_VY_:
+  case Var::_Vy_:
     for (int i=0; i<nObjects(); i++) vv[i] = m_sample[i]->vy();
     break;
   
-  case Var::_VZ_:
+  case Var::_Vz_:
     for (int i=0; i<nObjects(); i++) vv[i] = m_sample[i]->vz();
     break;
 
-  case Var::_REGION_:
+  case Var::_Region_:
     for (int i=0; i<nObjects(); i++) vv[i] = m_sample[i]->region();
     break; 
   
-  case Var::_GENERIC_:
+  case Var::_Generic_:
     for (int i=0; i<nObjects(); i++) vv[i] = m_sample[i]->generic();
     break;
 
-  case Var::_RADIUS_:
+  case Var::_Radius_:
     for (int i=0; i<nObjects(); i++) vv[i] = m_sample[i]->radius();
     break;
 
@@ -287,15 +314,15 @@ void cosmobl::catalogue::Catalogue::set_var (const Var var_name, const vector<do
   
   switch (var_name) {
 
-  case Var::_XX_:
+  case Var::_X_:
     for (int i=0; i<nObjects(); i++) m_sample[i]->set_xx(_var[i]);
     break;
 
-  case Var::_YY_:
+  case Var::_Y_:
     for (int i=0; i<nObjects(); i++) m_sample[i]->set_yy(_var[i]);
     break;
 
-  case Var::_ZZ_:
+  case Var::_Z_:
     for (int i=0; i<nObjects(); i++) m_sample[i]->set_zz(_var[i]);
     break;
 
@@ -303,55 +330,55 @@ void cosmobl::catalogue::Catalogue::set_var (const Var var_name, const vector<do
     for (int i=0; i<nObjects(); i++) m_sample[i]->set_ra(_var[i]);
     break;
 
-  case Var::_DEC_:
+  case Var::_Dec_:
     for (int i=0; i<nObjects(); i++) m_sample[i]->set_dec(_var[i]);
     break;
 
-  case Var::_REDSHIFT_:
+  case Var::_Redshift_:
     for (int i=0; i<nObjects(); i++) m_sample[i]->set_redshift(_var[i]);
     break;
 
-  case Var::_DC_:
+  case Var::_Dc_:
     for (int i=0; i<nObjects(); i++) m_sample[i]->set_dc(_var[i]);
     break;
 
-  case Var::_WEIGHT_:
+  case Var::_Weight_:
     for (int i=0; i<nObjects(); i++) m_sample[i]->set_weight(_var[i]);
     break;
 
-  case Var::_MASS_:
+  case Var::_Mass_:
     for (int i=0; i<nObjects(); i++) m_sample[i]->set_mass(_var[i]);
     break;
 
-  case Var::_MAGNITUDE_:
+  case Var::_Magnitude_:
     for (int i=0; i<nObjects(); i++) m_sample[i]->set_magnitude(_var[i]);
     break;
 
-  case Var::_RICHNESS_:
+  case Var::_Richness_:
     for (int i=0; i<nObjects(); i++) m_sample[i]->set_richness(_var[i]);
     break;
 
-  case Var::_VX_:
+  case Var::_Vx_:
     for (int i=0; i<nObjects(); i++) m_sample[i]->set_vx(_var[i]);
     break;
   
-  case Var::_VY_:
+  case Var::_Vy_:
     for (int i=0; i<nObjects(); i++) m_sample[i]->set_vy(_var[i]);
     break;
   
-  case Var::_VZ_:
+  case Var::_Vz_:
     for (int i=0; i<nObjects(); i++) m_sample[i]->set_vz(_var[i]);
     break;
 
-  case Var::_REGION_:
+  case Var::_Region_:
     for (int i=0; i<nObjects(); i++) m_sample[i]->set_region(_var[i]);
     break;
 
-  case Var::_GENERIC_:
+  case Var::_Generic_:
     for (int i=0; i<nObjects(); i++) m_sample[i]->set_generic(_var[i]);
     break;
 
-  case Var::_RADIUS_:
+  case Var::_Radius_:
     for (int i=0; i<nObjects(); i++) m_sample[i]->set_radius(_var[i]);
     break;
 
@@ -438,23 +465,36 @@ void cosmobl::catalogue::Catalogue::stats_var (const vector<Var> var_name, vecto
 
 void cosmobl::catalogue::Catalogue::var_distr (const Var var_name, vector<double> &_var, vector<double> &dist, const int nbin, const bool linear, const string file_out, const double Volume, const bool norm, const double V1, const double V2, const bool bin_type, const bool convolution, const double sigma) const
 { 
-  distribution(_var, dist, var(var_name), var(Var::_WEIGHT_), nbin, linear, file_out, (norm) ? Volume*weightedN() : Volume, V1, V2, bin_type, convolution, sigma);
+  distribution(_var, dist, var(var_name), var(Var::_Weight_), nbin, linear, file_out, (norm) ? Volume*weightedN() : Volume, V1, V2, bin_type, convolution, sigma);
 }
 
 
 // ============================================================================
 
 
-void cosmobl::catalogue::Catalogue::computeComovingCoordinates (const Cosmology &cosm)
+void cosmobl::catalogue::Catalogue::computeComovingCoordinates (const Cosmology &cosm, const CoordUnit inputUnits)
 {
   double red, xx, yy, zz;
 
+  
+  // ----- unit conversion -----
+  
+  vector<double> RA(nObjects()), DEC(nObjects());
+
+  for (int i=0; i<nObjects(); i++) {
+    RA[i] = (inputUnits==_radians_) ? ra(i) : radians(ra(i), inputUnits);
+    DEC[i] = (inputUnits==_radians_) ? dec(i) : radians(dec(i), inputUnits);
+  }
+
+  
+  // ----- compute comoving coordinates -----
+  
   for (int i=0; i<nObjects(); i++) {
 
     red = redshift(i);
     m_sample[i]->set_dc(cosm.D_C(red));
     
-    cartesian_coord(ra(i), dec(i), dc(i), xx, yy, zz);
+    cartesian_coord(RA[i], DEC[i], dc(i), xx, yy, zz);
     
     m_sample[i]->set_xx(xx); 
     m_sample[i]->set_yy(yy); 
@@ -466,24 +506,57 @@ void cosmobl::catalogue::Catalogue::computeComovingCoordinates (const Cosmology 
 // ============================================================================
 
 
-void cosmobl::catalogue::Catalogue::computePolarCoordinates ()
+void cosmobl::catalogue::Catalogue::computePolarCoordinates (const CoordUnit outputUnits)
 {
   double ra, dec, dc;
 
+  
+  // ----- compute polar coordinates in radians -----
+  
   for (int i=0; i<nObjects(); i++) {
     polar_coord(xx(i), yy(i), zz(i), ra, dec, dc);
     m_sample[i]->set_ra(ra); 
     m_sample[i]->set_dec(dec); 
     m_sample[i]->set_dc(dc);
   }
+
+  
+  // ----- unit conversion -----
+  
+  if (outputUnits!=_radians_) {
+
+    if (outputUnits==_degrees_)
+      for (int i=0; i<nObjects(); i++) {
+	m_sample[i]->set_ra(degrees(ra));
+	m_sample[i]->set_dec(degrees(dec)); 		    
+      }
+
+    else if (outputUnits==_arcseconds_)
+      for (int i=0; i<nObjects(); i++) {
+	m_sample[i]->set_ra(arcseconds(ra));
+	m_sample[i]->set_dec(arcseconds(dec)); 		    
+      }
+
+    else if (outputUnits==_arcminutes_)
+      for (int i=0; i<nObjects(); i++) {
+	m_sample[i]->set_ra(arcminutes(ra));
+	m_sample[i]->set_dec(arcminutes(dec)); 		    
+      }
+
+    else ErrorMsg("Error in cosmobl::catalogue::Catalogue::computePolarCoordinates: outputUnits type not allowed!");
+  }
+  
 }
 
 // ============================================================================
 
 
-void cosmobl::catalogue::Catalogue::computePolarCoordinates (const Cosmology &cosm, const double z1, const double z2)
+void cosmobl::catalogue::Catalogue::computePolarCoordinates (const Cosmology &cosm, const double z1, const double z2, const CoordUnit outputUnits)
 {
   double ra, dec, dc;
+
+  
+  // ----- compute polar coordinates in radians -----
 
   for (int i=0; i<nObjects(); i++) {
     polar_coord(xx(i), yy(i), zz(i), ra, dec, dc);
@@ -492,6 +565,33 @@ void cosmobl::catalogue::Catalogue::computePolarCoordinates (const Cosmology &co
     m_sample[i]->set_dc(dc);
     m_sample[i]->set_redshift(cosm.Redshift(dc, z1, z2));
   }
+
+  
+  // ----- unit conversion -----
+
+  if (outputUnits!=_radians_) {
+
+    if (outputUnits==_degrees_)
+      for (int i=0; i<nObjects(); i++) {
+	m_sample[i]->set_ra(degrees(ra));
+	m_sample[i]->set_dec(degrees(dec)); 		    
+      }
+
+    else if (outputUnits==_arcseconds_)
+      for (int i=0; i<nObjects(); i++) {
+	m_sample[i]->set_ra(arcseconds(ra));
+	m_sample[i]->set_dec(arcseconds(dec)); 		    
+      }
+
+    else if (outputUnits==_arcminutes_)
+      for (int i=0; i<nObjects(); i++) {
+	m_sample[i]->set_ra(arcminutes(ra));
+	m_sample[i]->set_dec(arcminutes(dec)); 		    
+      }
+
+    else ErrorMsg("Error in cosmobl::catalogue::Catalogue::computePolarCoordinates: outputUnits type not allowed!");
+  }
+  
 }
 
 // ============================================================================
@@ -578,8 +678,10 @@ double cosmobl::catalogue::Catalogue::weightedN () const
 
 void cosmobl::catalogue::Catalogue::write_comoving_coordinates (const string file_output) const
 {
+  if (m_sample.size()==0) ErrorMsg("Error in cosmobl::catalogue::Catalogue::write_comoving_coordinates: m_sample.size()=0!");
+
   ofstream fout(file_output.c_str()); checkIO(file_output, 0);
- 
+  
   for (int i=0; i<nObjects(); i++) 
     fout << xx(i) << "   " << yy(i) << "   " << zz(i) << endl;
 
@@ -593,13 +695,15 @@ void cosmobl::catalogue::Catalogue::write_comoving_coordinates (const string fil
 
 void cosmobl::catalogue::Catalogue::write_obs_coordinates (const string file_output) const 
 {
-  ofstream fout(file_output.c_str()); checkIO(file_output, 0);
-
-  if (!isSet(ra(0)) || !isSet(dec(0)) || !isSet(redshift(0)) || !isSet(dc(0)))
-    ErrorMsg("Error in cosmobl::catalogue::Catalogue::write_obs_coords of Catalogue.cpp! Polar coordinates are not set!");
+  if (m_sample.size()==0) ErrorMsg("Error in cosmobl::catalogue::Catalogue::write_obs_coordinates: m_sample.size()=0!");
   
+  ofstream fout(file_output.c_str()); checkIO(file_output, 0);
+  
+  if (!isSet(ra(0)) || !isSet(dec(0)) || !isSet(redshift(0)))
+    ErrorMsg("Error in cosmobl::catalogue::Catalogue::write_obs_coords of Catalogue.cpp! Polar coordinates are not set!");
+
   for (int i=0; i<nObjects(); i++) 
-    fout << ra(i) << "   " << dec(i) << "   " << redshift(i) << "   " << dc(i) << endl;
+    fout << ra(i) << "   " << dec(i) << "   " << redshift(i) << endl;
   
   cout << "I wrote the file: " << file_output << endl;
   fout.clear(); fout.close();
@@ -692,9 +796,9 @@ shared_ptr<Catalogue> cosmobl::catalogue::Catalogue::smooth (const double gridsi
   cout <<"Please wait, I'm subdividing the catalogue in "<<pow(SUB, 3)<<" sub-catalogues..."<<endl;
   
   vector<double> Lim;
-  cat->MinMax_var(Var::_XX_, Lim, 0);
-  cat->MinMax_var(Var::_YY_, Lim, 0);
-  cat->MinMax_var(Var::_ZZ_, Lim, 0);
+  cat->MinMax_var(Var::_X_, Lim, 0);
+  cat->MinMax_var(Var::_Y_, Lim, 0);
+  cat->MinMax_var(Var::_Z_, Lim, 0);
 
   int nx = SUB, ny = SUB, nz = SUB;
   
@@ -718,7 +822,7 @@ shared_ptr<Catalogue> cosmobl::catalogue::Catalogue::smooth (const double gridsi
   for (int i=0; i<nRegions; i++) {
     double start = region_list[i];
     double stop = start+1;
-    subSamples[i] = cut(Var::_REGION_, start, stop);
+    subSamples[i] = cut(Var::_Region_, start, stop);
   }
 
   
@@ -728,7 +832,7 @@ shared_ptr<Catalogue> cosmobl::catalogue::Catalogue::smooth (const double gridsi
 
   for (int rr=0; rr<nRegions; rr++) {
     
-    vector<double> _xx = subSamples[rr]->var(Var::_XX_), _yy = subSamples[rr]->var(Var::_YY_), _zz = subSamples[rr]->var(Var::_ZZ_);
+    vector<double> _xx = subSamples[rr]->var(Var::_X_), _yy = subSamples[rr]->var(Var::_Y_), _zz = subSamples[rr]->var(Var::_Z_);
     
     ChainMesh3D ll(gridsize, _xx, _yy, _zz, rMAX, (long)-1.e5, (long)1.e5);
    
@@ -805,4 +909,137 @@ double cosmobl::catalogue::Catalogue::weightedN_condition (const Var var_name, c
   nObjw = (excl) ? weightedN()-nObjw : nObjw;
 
   return nObjw;
+}
+
+
+// ============================================================================
+
+
+ScalarField3D cosmobl::catalogue::Catalogue::density_field (const double cell_size, const int interpolation_type, const double kernel_radius, const bool useMass) const
+{
+  vector<double> Lim;
+  MinMax_var(Var::_X_, Lim, 0);
+  MinMax_var(Var::_Y_, Lim, 0);
+  MinMax_var(Var::_Z_, Lim, 0);
+
+  ScalarField3D density(cell_size, Lim[0], Lim[1], Lim[2],  Lim[3], Lim[4], Lim[5]);
+
+  double deltaX = density.deltaX();
+  double deltaY = density.deltaY();
+  double deltaZ = density.deltaZ();
+  int nx = density.nx();
+  int ny = density.ny();
+  int nz = density.nz();
+
+  long int nCells = density.nCells();
+  double VolumeCell_inv = pow(deltaX*deltaY*deltaZ,-1);
+
+  for(int i=0;i<nObjects();i++){
+    int i1 = min(int((xx(i)-Lim[0])/deltaX),nx-1);
+    int j1 = min(int((yy(i)-Lim[2])/deltaY),ny-1);
+    int k1 = min(int((zz(i)-Lim[4])/deltaZ),nz-1);
+
+    double w = (useMass) ? mass(i)*VolumeCell_inv : VolumeCell_inv;
+
+    if (interpolation_type==0){
+      density.set_ScalarField(w, i1, j1, k1,1);
+    }
+    else if(interpolation_type==1){
+      double dx_samecell, dy_samecell, dz_samecell;
+      int dx_index, dy_index, dz_index;
+
+      dx_samecell = (xx(i)-(i1*deltaX+Lim[0]))/deltaX;
+      dy_samecell = (yy(i)-(j1*deltaY+Lim[2]))/deltaY;
+      dz_samecell = (zz(i)-(k1*deltaZ+Lim[4]))/deltaZ;
+
+      dx_index = (dx_samecell <0.5) ? -1 : 1 ;
+      dy_index = (dy_samecell <0.5) ? -1 : 1 ;
+      dz_index = (dz_samecell <0.5) ? -1 : 1 ;
+      
+      dx_samecell = (dx_samecell <0.5) ? (xx(i)+0.5*deltaX-(i1*deltaX+Lim[0]))/deltaX: 1-(xx(i)-0.5*deltaX-(i1*deltaX+Lim[0]))/deltaX;
+      dy_samecell = (dy_samecell <0.5) ? (yy(i)+0.5*deltaY-(j1*deltaY+Lim[2]))/deltaY: 1-(yy(i)-0.5*deltaY-(j1*deltaY+Lim[2]))/deltaY;
+      dz_samecell = (dz_samecell <0.5) ? (zz(i)+0.5*deltaZ-(k1*deltaZ+Lim[4]))/deltaZ: 1-(zz(i)-0.5*deltaZ-(k1*deltaZ+Lim[4]))/deltaZ;
+      
+      if(dx_samecell<0 || dy_samecell<0 || dz_samecell<0){
+	cout << dx_index << " " <<  dx_samecell << " " <<dy_index << " " << dy_samecell << " " <<dz_index << " " << dz_samecell << endl;
+      }
+
+      double ww = 0.;
+      int i2 = ((i1+dx_index>-1) & (i1+dx_index<nx)) ? i1+dx_index : i1;
+      int j2 = ((j1+dy_index>-1) & (j1+dy_index<ny)) ? j1+dy_index : j1;
+      int k2 = ((k1+dz_index>-1) & (k1+dz_index<nz)) ? k1+dz_index : k1;
+      
+      ww += w*(dx_samecell*dy_samecell*dz_samecell);
+      density.set_ScalarField(w*(dx_samecell*dy_samecell*dz_samecell), i1, j1, k1, 1);
+      
+      ww += w*(dx_samecell*dy_samecell*(1.-dz_samecell));
+      density.set_ScalarField(w*(dx_samecell*dy_samecell*(1.-dz_samecell)), i1, j1, k2, 1);
+      
+      ww += w*(dx_samecell*(1.-dy_samecell)*dz_samecell);
+      density.set_ScalarField(w*(dx_samecell*(1.-dy_samecell)*dz_samecell), i1, j2, k1, 1);
+      
+      ww += w*(dx_samecell*(1.-dy_samecell)*(1.-dz_samecell));
+      density.set_ScalarField(w*(dx_samecell*(1.-dy_samecell)*(1.-dz_samecell)), i1, j2, k2, 1);
+      
+      ww += w*((1.-dx_samecell)*dy_samecell*dz_samecell);
+      density.set_ScalarField(w*((1.-dx_samecell)*dy_samecell*dz_samecell), i2, j1, k1, 1);
+      
+      ww += w*((1.-dx_samecell)*dy_samecell*(1.-dz_samecell));
+      density.set_ScalarField(w*((1.-dx_samecell)*dy_samecell*(1.-dz_samecell)), i2, j1, k2, 1);
+      
+      ww += w*((1.-dx_samecell)*(1.-dy_samecell)*dz_samecell);
+      density.set_ScalarField(w*((1.-dx_samecell)*(1.-dy_samecell)*dz_samecell), i2, j2, k1, 1);
+
+      ww += w*((1.-dx_samecell)*(1.-dy_samecell)*(1.-dz_samecell));
+      density.set_ScalarField(w*((1.-dx_samecell)*(1.-dy_samecell)*(1.-dz_samecell)), i2, j2, k2, 1);
+
+    }
+  }
+
+  if (kernel_radius>0)
+    density.GaussianConvolutionField(kernel_radius);
+  
+  double norm = 0;
+  for (int i=0; i<nx; i++) 
+    for (int j=0; j<ny; j++) 
+      for (int k=0; k<nz; k++) 
+	norm += density.ScalarField(i, j, k);
+
+  norm = norm/nCells;
+
+  for (int i=0; i<nx; i++) {
+    for (int j=0; j<ny; j++) {
+      for (int k=0; k<nz; k++) {
+	double val = density.ScalarField(i, j, k)/norm-1;
+	density.set_ScalarField(val, i, j, k);
+      }
+    }
+  }
+
+  return density;
+}
+
+
+// ============================================================================
+
+
+ScalarField3D cosmobl::catalogue::Catalogue::density_field (const double cell_size, const Catalogue mask_catalogue, const int interpolation_type, const double kernel_radius, const bool useMass) const
+{
+  ScalarField3D mask_density = mask_catalogue.density_field(cell_size, interpolation_type, 0, 0);
+
+  ScalarField3D density = density_field(cell_size, interpolation_type, 10, useMass);
+
+  if (density.nx() != mask_density.nx() || density.ny() != mask_density.ny() || density.nz() != mask_density.nz())
+  { ErrorMsg("Error in density_field, mask_catalogue is not correct"); } 
+  
+  for (int i=0; i<density.nx(); i++) 
+    for (int j=0; j<density.ny(); j++) 
+      for (int k=0; k<density.nz(); k++) {
+	double val = density.ScalarField(i, j, k)+1;
+	double mask_val = mask_density.ScalarField(i, j, k)+1;
+	val = val*mask_val-1;
+	density.set_ScalarField(val, i, j, k);
+      }
+    
+  return density;
 }

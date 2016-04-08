@@ -33,7 +33,7 @@
 #ifndef __DATA__
 #define __DATA__
 
-#include "Model.h"
+#include "GSLfunction.h"
 
 
 namespace cosmobl {
@@ -620,10 +620,13 @@ namespace cosmobl {
      *  @param xname name for the x variable
      *  @param yname name for the y variable
      *  @param fxyname name for the f(x,y)  
+     *  @param full 0 &rarr; simply store the data; 1 &rarr; duplicate
+     *  the data in the other three quadrands (usefull when storing
+     *  the 2D clustering)
      *  @param rank cpu index (for MPI usage)
      *  @return none
      */
-    virtual void write (const string dir, const string file, const string xname, const string yname, const string fxyname, const int rank=0) const
+    virtual void write (const string dir, const string file, const string xname, const string yname, const string fxyname, const bool full=0, const int rank=0) const
     { cosmobl::ErrorMsg("Error in write of Data.h!"); }
 
     ///@}

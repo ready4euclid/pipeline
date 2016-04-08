@@ -42,7 +42,7 @@ Other contributors:
 To @b install the CosmoBolognaLib, please follow the instructions below:
 
 first, make sure that the following external libraries are present in your system:
-- GSL (GNU Scientific Library)
+- GSL (GNU Scientific Library) (v2.1 is required)
 - FFTW (Fastest Fourier Transform in the West)
 - OpenMP (Open Multiprocessing) 
 - Numerical Recipes Third Edition
@@ -53,19 +53,6 @@ first, make sure that the following external libraries are present in your syste
   ask me )
 
 then:
-
---- @b in @b Python ---
-
-the easiest way to use the CosmoBolognaLib in Python is with pip:
-
-   - sudo pip install CosmoBolognaLib
-
-   or without sudo privileges:
-   
-   - pip install CosmoBolognaLib --user
-
-
---- @b in @b C++ ---
 
 - download the CosmobolognaLib:
 
@@ -96,5 +83,15 @@ the easiest way to use the CosmoBolognaLib in Python is with pip:
     - make doc           -> create the documentation (Doxygen is required)
     - make clean         -> cleanExamples + remove all the object files of the libraries
     - make purge         -> make clean + remove all the library files (i.e. *.so)
-    - make purgeALL      -> make purge + make cleanpy + remove all the files stored for internal calculations  
+    - make purgeALL      -> make purge + make cleanpy + remove all the files stored for internal calculations
+    
+
+Alternatively, the Python version of the CosmoBolognaLib can be installed with @e pip:
+
+   - sudo pip install CosmoBolognaLib
+
+   or without sudo privileges:
+   
+   - pip install CosmoBolognaLib --user
+   
 */

@@ -69,7 +69,7 @@ double cosmobl::Cosmology::mass_function_fast (const double Mass, const double r
   // ---------- read the grid file ---------- 
   
   double zero = 0.;
-  string file_grid = create_grid_sigmaM (method_SS, zero, output_root, interpType, Num, stepsize, k_max);
+  string file_grid = create_grid_sigmaM(method_SS, zero, output_root, interpType, Num, stepsize, k_max);
   ifstream fin (file_grid.c_str()); checkIO (file_grid,1); 
 
   double MMass, Sigma, Dln_Sigma;

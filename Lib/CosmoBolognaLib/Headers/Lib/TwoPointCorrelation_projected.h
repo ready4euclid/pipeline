@@ -62,10 +62,11 @@ namespace cosmobl {
 
     protected:
 
+      /// the upper limit of the integral
+      double m_piMax_integral;
+      
       /**
        *  @brief measure projected correlation function
-       *  
-       *  @param piMax_integral upper limits of the integral
        *
        *  @param rp projected separation
        *
@@ -77,13 +78,11 @@ namespace cosmobl {
        *
        *  @return pointer to an object of type Data
        */
-      shared_ptr<Data> ProjectedTwoP(const double piMax_integral, const vector<double> rp, const vector<double> pi, const vector<vector<double> > xi, const vector<vector<double> > error_xi) override;
+      shared_ptr<Data> ProjectedTwoP (const vector<double> rp, const vector<double> pi, const vector<vector<double> > xi, const vector<vector<double> > error_xi) override;
 
       /**
        *  @brief measure the projected two-point correlation
        *  function, &xi;(r) with Poisson error
-       *
-       *  @param piMax_integral upper limits of the integral
        *
        *  @param dir_output_pairs output directory used to store the
        *  number of pairs
@@ -114,13 +113,11 @@ namespace cosmobl {
        *
        *  @return none
        */
-      void measurePoisson (const double piMax_integral, const string dir_output_pairs= par::defaultString, const vector<string> dir_input_pairs={}, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
+      void measurePoisson (const string dir_output_pairs= par::defaultString, const vector<string> dir_input_pairs={}, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
 
       /**
        *  @brief measure the monopole of the two-point correlation
        *  function, &xi;(r), estimate the covariance with Jackknife resampling
-       *
-       *  @param piMax_integral upper limits of the integral
        *
        *  @param dir_output_pairs output directory used to store the
        *  number of pairs
@@ -154,14 +151,12 @@ namespace cosmobl {
        *
        *  @return none
        */
-      void measureJackknife (const double piMax_integral, const string dir_output_pairs= par::defaultString, const vector<string> dir_input_pairs={}, const string dir_output_ResampleXi= par::defaultString, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
+      void measureJackknife (const string dir_output_pairs= par::defaultString, const vector<string> dir_input_pairs={}, const string dir_output_ResampleXi= par::defaultString, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
 
 
       /**
        *  @brief measure the monopole of the two-point correlation
        *  function, &xi;(r), estimate the covariance with Bootstrap resampling
-       *
-       *  @param piMax_integral upper limits of the integral
        *
        *  @param nMocks number of mocks to be generated with
        *  bootstrap resampling
@@ -198,43 +193,37 @@ namespace cosmobl {
        *
        *  @return none
        */
-      void measureBootstrap (const double piMax_integral, const int nMocks, const string dir_output_pairs, const vector<string> dir_input_pairs={}, const string dir_output_ResampleXi = par::defaultString, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
+      void measureBootstrap (const int nMocks, const string dir_output_pairs, const vector<string> dir_input_pairs={}, const string dir_output_ResampleXi = par::defaultString, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
 
       /**
        *  @brief measure the jackknife resampling of the two-point correlation
        *  function, &xi;(r) 
        *
-       *  @param piMax_integral upper limits of the integral
-       *
        *  @param dd vector of data-data pairs, divider per regions
        *
        *  @param rr vector of random-random pairs, divider per regions
        *
        *  @return none
        */
-      vector<shared_ptr<Data> > XiJackknife(const double piMax_integral, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr) override;
+      vector<shared_ptr<Data> > XiJackknife (const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr) override;
 
       /**
        *  @brief measure the jackknife resampling of the two-point correlation
        *  function, &xi;(r)         
        *
-       *  @param piMax_integral upper limits of the integral
-       *
        *  @param dd vector of data-data pairs, divider per regions
        *
        *  @param rr vector of random-random pairs, divider per regions
        *
-       *  @param dr vector of random-random pairs, divider per regions   *
+       *  @param dr vector of random-random pairs, divider per regions
        *
        *  @return none
        */
-      vector<shared_ptr<Data> > XiJackknife(const double piMax_integral, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr) override;
+      vector<shared_ptr<Data> > XiJackknife (const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr) override;
 
       /**
        *  @brief measure the bootstrap resampling of the two-point correlation
        *  function, &xi;(r)  
-       *
-       *  @param piMax_integral upper limits of the integral
        *
        *  @param nMocks number of bootstrap resampling
        *
@@ -244,13 +233,11 @@ namespace cosmobl {
        *
        *  @return none
        */
-       vector<shared_ptr<Data> > XiBootstrap(const double piMax_integral, const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr) override;
+       vector<shared_ptr<Data> > XiBootstrap (const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr) override;
 
       /**
        *  @brief measure the bootstrap resampling of the two-point correlation
        *  function, &xi;(r)  
-       *
-       *  @param piMax_integral upper limits of the integral
        *
        *  @param nMocks number of bootstrap resampling
        *
@@ -262,8 +249,9 @@ namespace cosmobl {
        *
        *  @return none
        */
-      vector<shared_ptr<Data> > XiBootstrap(const double piMax_integral, const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr) override;
+      vector<shared_ptr<Data> > XiBootstrap (const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr) override;
 
+      
     public:
     
       /**
@@ -275,7 +263,7 @@ namespace cosmobl {
        *  @brief default constructor
        *  @return object of class TwoPointCorrelation_projected
        */
-      TwoPointCorrelation_projected () { m_twoPType = _1D_projected_; }
+      TwoPointCorrelation_projected () { m_twoPType = _1D_projected_; m_piMax_integral=50.; }
 
       /**
        *  @brief constructor
@@ -301,11 +289,12 @@ namespace cosmobl {
        *  separation
        *  @param shift_pi shift parameter in the parallel
        *  separation, i.e. the radial shift is binSize*shift
+       *  @param piMax_integral upper limits of the integral
        *  @return object of class TwoPointCorrelation_projected
        */
-      TwoPointCorrelation_projected (catalogue::Catalogue data, catalogue::Catalogue random, const binType binType_rp, const double rpMin, const double rpMax, const int nbins_rp, const double shift_rp, const double piMin, const double piMax, const int nbins_pi, const double shift_pi)
+      TwoPointCorrelation_projected (catalogue::Catalogue data, catalogue::Catalogue random, const binType binType_rp, const double rpMin, const double rpMax, const int nbins_rp, const double shift_rp, const double piMin, const double piMax, const int nbins_pi, const double shift_pi, const double piMax_integral)
 	: TwoPointCorrelation2D_cartesian(data, random, binType_rp, rpMin, rpMax, nbins_rp, shift_rp, _linear_, piMin, piMax, nbins_pi, shift_pi)
-	{ m_twoPType = _1D_projected_; }
+	{ m_twoPType = _1D_projected_; m_piMax_integral = piMax_integral; }
       
       /**
        *  @brief constructor
@@ -331,9 +320,9 @@ namespace cosmobl {
        *  separation, i.e. the radial shift is binSize*shift
        *  @return object of class TwoPointCorrelation2D_projected
        */
-      TwoPointCorrelation_projected (catalogue::Catalogue data, catalogue::Catalogue random, const binType binType_rp, const double rpMin, const double rpMax, const double binSize_rp, const double shift_rp, const double piMin, const double piMax, const double binSize_pi, const double shift_pi)
+      TwoPointCorrelation_projected (catalogue::Catalogue data, catalogue::Catalogue random, const binType binType_rp, const double rpMin, const double rpMax, const double binSize_rp, const double shift_rp, const double piMin, const double piMax, const double binSize_pi, const double shift_pi, const double piMax_integral)
 	: TwoPointCorrelation2D_cartesian(data, random, binType_rp, rpMin, rpMax, binSize_rp, shift_rp, _linear_, piMin, piMax, binSize_pi, shift_pi)
-	{ m_twoPType = _1D_projected_; }
+	{ m_twoPType = _1D_projected_; m_piMax_integral = piMax_integral; }
       
       /**
        *  @brief default destructor
@@ -392,8 +381,6 @@ namespace cosmobl {
        *
        *  @param errType type of &xi;(r) error
        *  
-       *  @param piMax_integral upper limit of the integral
-       *
        *  @param dir_output_pairs output directory used to store the
        *  number of pairs
        *
@@ -427,7 +414,7 @@ namespace cosmobl {
        *
        *  @return none
        */
-      void measure (const double piMax_integral=50, const ErrorType errType=ErrorType::_Poisson_, const string dir_output_pairs=par::defaultString, const vector<string> dir_input_pairs={}, const string dir_output_ResampleXi=par::defaultString, const int nMocks = 0., const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
+      void measure (const ErrorType errType=ErrorType::_Poisson_, const string dir_output_pairs=par::defaultString, const vector<string> dir_input_pairs={}, const string dir_output_ResampleXi=par::defaultString, const int nMocks = 0., const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
 
       ///@}
 

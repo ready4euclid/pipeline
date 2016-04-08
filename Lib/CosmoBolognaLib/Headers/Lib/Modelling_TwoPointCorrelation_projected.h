@@ -24,8 +24,7 @@
  *  @brief The class Modelling_TwoPointCorrelation_projected
  *
  *  This file defines the interface of the class
- *  Modelling_TwoPointCorrelation_projected, used to model the projected
- *  of the two-point correlation function
+ *  Modelling_TwoPointCorrelation_projected, used for modelling projected 2pcf
  *
  *  @author Federico Marulli
  *
@@ -44,6 +43,12 @@
 
 namespace cosmobl {
   
+  /**
+   *  @brief The namespace of functions and classes used for modelling
+   *  
+   * The \e modelling namespace contains all the functions and classes
+   * used to model any kind of measurements
+   */
   namespace modelling {
     
     /**
@@ -59,29 +64,46 @@ namespace cosmobl {
      *
      */
     class Modelling_TwoPointCorrelation_projected : public Modelling_TwoPointCorrelation {
-      
-    public:
-      
-      /**
-       *  @name Constructors/destructors
-       */
-      ///@{
 
-      /**
-       *  @brief default constuctor
-       *  @return object of class
-       *  Modelling_TwoPointCorrelation_projected
-       */
-      Modelling_TwoPointCorrelation_projected () {}
+      public:
 
-      /**
-       *  @brief default destructor
-       *  @return none
-       */
-      virtual ~Modelling_TwoPointCorrelation_projected () {}
+	/**
+	 *  @name Constructors/destructors
+	 */
+	///@{
 
-      ///@}
-      
+	/**
+	 *  @brief default constuctor
+	 *  @return object of class ModellingTwoPointCorrelation_projected
+	 */
+	Modelling_TwoPointCorrelation_projected () {}
+
+	/**
+	 *  @brief default destructor
+	 *  @return none
+	 */
+	virtual ~Modelling_TwoPointCorrelation_projected () {}
+
+	/**
+	 *  @brief constructor of the Modelling_TwoPointCorrelation_projected
+	 *  
+	 *  @param twop the two-point correlation function to model
+	 *
+	 *  @param redshift the redshift of the two-point correlation
+	 *  signal
+	 *
+	 *  @param cosmology the fiducial cosmology
+	 *
+	 *  @return object of type Modelling_TwoPointCorrelation_projected
+	 */
+	Modelling_TwoPointCorrelation_projected(const shared_ptr<cosmobl::twopt::TwoPointCorrelation> twop, const double redshift, const Cosmology cosmology);
+	
+	///@}
+
+	void fit_bias(const string LikelihoodType, const vector<double> xlimits, const double bias_value, const statistics::Prior bias_prior, const int nChains, const int chain_size, const string dir_output, const double start=0.5, const double stop=1, const int thin=1) override;
+
+	void fit_bias_cosmology(const string LikelihoodType, const vector<double> xlimits, const double bias_value, const statistics::Prior bias_prior, const vector<CosmoPar> CosmoPars, const vector<statistics::Prior> prior_CosmoPars, const int nChains, const int chain_size, const string dir_output, const double start=0.5, const double stop=1, const int thin=1) override;
+
     };
   }
 }

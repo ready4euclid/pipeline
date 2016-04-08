@@ -2,7 +2,6 @@
 // Example code: how to measure the angle-averaged two-point correlation function, i.e. the monopole 
 // =================================================================================================
 
-#include "RandomCatalogue.h"
 #include "TwoPointCorrelation1D_monopole.h"
 
 using namespace cosmobl;
@@ -36,7 +35,7 @@ int main () {
 
   double N_R = 1.; // random/object ratio
   
-  Catalogue random_catalogue {_Box_, catalogue, N_R};
+  Catalogue random_catalogue {_createRandom_box_, catalogue, N_R};
 
   
   // --------------------------------------------------------------------------------------------

@@ -284,7 +284,7 @@ namespace cosmobl {
      *  @{
      */
 
-    /// default integer value
+    /// default string value
     static const string defaultString = "NULL";
     
     /// default integer value

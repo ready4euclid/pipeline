@@ -200,12 +200,13 @@ double cosmobl::Cosmology::dnSM (const int nd, const double MM, const string met
 string cosmobl::Cosmology::create_grid_sigmaM (const string method_SS, const double redshift, const string output_root, const string interpType, const int Num, const double stepsize, const double kmax, const string file_par) const 
 { 
   string norm = (m_sigma8>0) ? "_sigma8"+conv(m_sigma8,par::fDP3) : "_scalar_amp"+conv(m_scalar_amp,par::ee3);
-  string dir_grid = par::DirCosmo+"Cosmology/grid_SigmaM/unit"+conv(m_unit,par::fINT)+"/";
+  string dir_cosmo=fullpath(par::DirCosmo);
+  string dir_grid = dir_cosmo+"Cosmology/Tables/grid_SigmaM/unit"+conv(m_unit,par::fINT)+"/";
   string MK = "mkdir -p "+dir_grid; if (system (MK.c_str())) {};
 
   string file_grid = dir_grid+"grid_"+method_SS+norm+"_h"+conv(m_hh,par::fDP3)+"_OmB"+conv(m_Omega_baryon,par::fDP3)+"_OmCDM"+conv(m_Omega_CDM,par::fDP3)+"_OmL"+conv(m_Omega_DE,par::fDP3)+"_OmN"+conv(m_Omega_neutrinos,par::fDP3)+".dat";
 
-  ifstream fin (file_grid.c_str());
+  ifstream fin(file_grid.c_str());
 
   if (!fin) {
 

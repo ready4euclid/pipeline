@@ -67,30 +67,6 @@ namespace cosmobl {
     // =====================================================================================
 
 
-    class func_conv_gauss
-    {
-    private:
-      vector<double> xx, fx;
-      double xX;
-      double sigma;
-  
-    public:
-      func_conv_gauss (vector<double> _xx, vector<double> _fx, double _xX, double _sigma) 
-	: xx(_xx), fx(_fx), xX(_xX), sigma(_sigma) {}
-  
-      double operator() (const double &XX) 
-      {
-	vector<double> par(2); par[0] = 0.; par[1] = sigma;
-	shared_ptr<void> pp=NULL;
-
-	return interpolated(XX, xx, fx, "Poly", 4)*gaussian(xX-XX, pp, par);
-      }
-    };
-
-
-    // =====================================================================================
-
-
     class func_xi
     {
     private:

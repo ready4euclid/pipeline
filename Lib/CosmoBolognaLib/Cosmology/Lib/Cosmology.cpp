@@ -329,18 +329,18 @@ double cosmobl::Cosmology::D_C (const double redshift) const
   }
   
   else {
-    string dir = par::DirCosmo+"Cosmology/";
+    string dir = par::DirCosmo+"Cosmology/Tables/dc_cDE/";
     string file_in;
-    if (m_model=="LCDM_Baldi_wmap7") file_in = dir+"table_dc/LCDM-wmap7-comovingdist.dat"; 
-    else if (m_model=="EXP005_Baldi_wmap7") file_in = dir+"table_dc/EXP005-wmap7-comovingdist.dat";
-    else if (m_model=="EXP010e2_Baldi_wmap7") file_in = dir+"table_dc/EXP010e2-wmap7-comovingdist.dat";
-    else if (m_model=="LCDM_Baldi_CoDECS") file_in = dir+"table_dc/LCDM_CoDECS-comovingdist.dat"; 
-    else if (m_model=="EXP001_Baldi_CoDECS") file_in = dir+"table_dc/EXP001_CoDECS-comovingdist.dat";
-    else if (m_model=="EXP002_Baldi_CoDECS") file_in = dir+"table_dc/EXP002_CoDECS-comovingdist.dat";
-    else if (m_model=="EXP003_Baldi_CoDECS") file_in = dir+"table_dc/EXP003_CoDECS-comovingdist.dat";
-    else if (m_model=="EXP008e3_Baldi_CoDECS") file_in = dir+"table_dc/EXP008e3_CoDECS-comovingdist.dat";
-    else if (m_model=="EXP010e2_Baldi_CoDECS") file_in = dir+"table_dc/EXP010e2_CoDECS-comovingdist.dat";
-    else if (m_model=="SUGRA003_Baldi_CoDECS") file_in = dir+"table_dc/SUGRA003_CoDECS-comovingdist.dat";
+    if (m_model=="LCDM_Baldi_wmap7") file_in = dir+"LCDM-wmap7-comovingdist.dat"; 
+    else if (m_model=="EXP005_Baldi_wmap7") file_in = dir+"EXP005-wmap7-comovingdist.dat";
+    else if (m_model=="EXP010e2_Baldi_wmap7") file_in = dir+"EXP010e2-wmap7-comovingdist.dat";
+    else if (m_model=="LCDM_Baldi_CoDECS") file_in = dir+"LCDM_CoDECS-comovingdist.dat"; 
+    else if (m_model=="EXP001_Baldi_CoDECS") file_in = dir+"EXP001_CoDECS-comovingdist.dat";
+    else if (m_model=="EXP002_Baldi_CoDECS") file_in = dir+"EXP002_CoDECS-comovingdist.dat";
+    else if (m_model=="EXP003_Baldi_CoDECS") file_in = dir+"EXP003_CoDECS-comovingdist.dat";
+    else if (m_model=="EXP008e3_Baldi_CoDECS") file_in = dir+"EXP008e3_CoDECS-comovingdist.dat";
+    else if (m_model=="EXP010e2_Baldi_CoDECS") file_in = dir+"EXP010e2_CoDECS-comovingdist.dat";
+    else if (m_model=="SUGRA003_Baldi_CoDECS") file_in = dir+"SUGRA003_CoDECS-comovingdist.dat";
     else { string Err = "Error in cosmobl::Cosmology::D_C of Cosmology.cpp: model = " + m_model + "!"; ErrorMsg(Err); }
                      
     ifstream fin (file_in.c_str()); checkIO (file_in,1); 
@@ -371,7 +371,7 @@ double cosmobl::Cosmology::D_C (const double redshift) const
 
 void cosmobl::Cosmology::D_C_table (const string file_table, const double z_min, const double z_max, const int step, vector<double> &Redshift, vector<double> &dc) const
 {
-  string File_table = par::DirCosmo+"Cosmology/table_dc/"+file_table;
+  string File_table = par::DirCosmo+"Cosmology/Tables/dc/"+file_table;
  
   ifstream fin;
   fin.open (File_table.c_str());
@@ -602,19 +602,19 @@ double cosmobl::Cosmology::Redshift (const double d_c, const double z1_guess, co
   else {
     WarningMsg("Attention in cosmobl::Cosmology::Redshift of Cosmology.cpp: the quantity prec is not used");
 
-    string dir = par::DirCosmo+"Cosmology/";
+    string dir = par::DirCosmo+"Cosmology/Tables/dc_cDE/";
     string file_in;
 
-    if (m_model=="LCDM_Baldi_wmap7") file_in = dir+"table_dc/LCDM-wmap7-comovingdist.dat"; 
-    else if (m_model=="EXP005_Baldi_wmap7") file_in = dir+"table_dc/EXP005-wmap7-comovingdist.dat";
-    else if (m_model=="EXP010e2_Baldi_wmap7") file_in = dir+"table_dc/EXP010e2-wmap7-comovingdist.dat";
-    else if (m_model=="LCDM_Baldi_CoDECS") file_in = dir+"table_dc/LCDM_CoDECS-comovingdist.dat"; 
-    else if (m_model=="EXP001_Baldi_CoDECS") file_in = dir+"table_dc/EXP001_CoDECS-comovingdist.dat";
-    else if (m_model=="EXP002_Baldi_CoDECS") file_in = dir+"table_dc/EXP002_CoDECS-comovingdist.dat";
-    else if (m_model=="EXP003_Baldi_CoDECS") file_in = dir+"table_dc/EXP003_CoDECS-comovingdist.dat";
-    else if (m_model=="EXP008e3_Baldi_CoDECS") file_in = dir+"table_dc/EXP003_CoDECS-comovingdist.dat";
-    else if (m_model=="EXP010e2_Baldi_CoDECS") file_in = dir+"table_dc/EXP010e2_CoDECS-comovingdist.dat";
-    else if (m_model=="SUGRA003_Baldi_CoDECS") file_in = dir+"table_dc/SUGRA003_CoDECS-comovingdist.dat";
+    if (m_model=="LCDM_Baldi_wmap7") file_in = dir+"LCDM-wmap7-comovingdist.dat"; 
+    else if (m_model=="EXP005_Baldi_wmap7") file_in = dir+"EXP005-wmap7-comovingdist.dat";
+    else if (m_model=="EXP010e2_Baldi_wmap7") file_in = dir+"EXP010e2-wmap7-comovingdist.dat";
+    else if (m_model=="LCDM_Baldi_CoDECS") file_in = dir+"LCDM_CoDECS-comovingdist.dat"; 
+    else if (m_model=="EXP001_Baldi_CoDECS") file_in = dir+"EXP001_CoDECS-comovingdist.dat";
+    else if (m_model=="EXP002_Baldi_CoDECS") file_in = dir+"EXP002_CoDECS-comovingdist.dat";
+    else if (m_model=="EXP003_Baldi_CoDECS") file_in = dir+"EXP003_CoDECS-comovingdist.dat";
+    else if (m_model=="EXP008e3_Baldi_CoDECS") file_in = dir+"EXP003_CoDECS-comovingdist.dat";
+    else if (m_model=="EXP010e2_Baldi_CoDECS") file_in = dir+"EXP010e2_CoDECS-comovingdist.dat";
+    else if (m_model=="SUGRA003_Baldi_CoDECS") file_in = dir+"SUGRA003_CoDECS-comovingdist.dat";
     else { string Err = "Error in cosmobl::Cosmology::Redshift of Cosmology.cpp: model = " + m_model + "!"; ErrorMsg(Err); }
     
     ifstream fin (file_in.c_str()); checkIO (file_in,1); 

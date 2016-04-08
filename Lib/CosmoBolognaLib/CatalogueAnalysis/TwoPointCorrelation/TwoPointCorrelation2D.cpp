@@ -56,7 +56,7 @@ void cosmobl::twopt::TwoPointCorrelation2D::write_pairs (const shared_ptr<pairs:
 
   for (int i=0; i<PP->nbins_D1(); i++)
     for (int j=0; j<PP->nbins_D2(); j++) 
-      fout << setprecision(0) << PP->PP2D(i, j) << endl;
+      fout << setprecision(5) << PP->PP2D(i, j) << endl;
   
   fout.clear(); fout.close(); cout << "I wrote the file " << file_out << endl;
   
@@ -113,7 +113,7 @@ void cosmobl::twopt::TwoPointCorrelation2D::write_pairs (const vector<shared_ptr
       for (int r1=0; r1<PP[index]->nbins_D1(); r1++)
 	for (int r2=0; r2<PP[index]->nbins_D2(); r2++)
 	  if(PP[index]->PP2D(r1,r2)>0)
-	    fout << i << " " << j << " " << r1 << " " << r2 << " " << setprecision(0) << PP[index]->PP2D(r1,r2) << endl;
+	    fout << i << " " << j << " " << r1 << " " << r2 << " " << setprecision(5) << PP[index]->PP2D(r1,r2) << endl;
 
     }
   }
@@ -238,8 +238,8 @@ vector<shared_ptr<Data> > cosmobl::twopt::TwoPointCorrelation2D::XiJackknife(con
     auto dd_SS = Pair::Create(m_dd->pairType(), m_dd->sMin_D1(), m_dd->sMax_D1(), m_dd->nbins_D1(), m_dd->shift_D1(), m_dd->sMin_D2(), m_dd->sMax_D2(), m_dd->nbins_D2(), m_dd->shift_D2());
     auto rr_SS = Pair::Create(m_rr->pairType(), m_rr->sMin_D1(), m_rr->sMax_D1(), m_rr->nbins_D1(), m_rr->shift_D1(), m_rr->sMin_D2(), m_rr->sMax_D2(), m_rr->nbins_D2(), m_rr->shift_D2());
 
-    double nData_SS = m_data->weightedN_condition(Var::_REGION_, region_list[i], region_list[i]+1, 1);
-    double nRandom_SS = m_random->weightedN_condition(Var::_REGION_, region_list[i], region_list[i]+1, 1);
+    double nData_SS = m_data->weightedN_condition(Var::_Region_, region_list[i], region_list[i]+1, 1);
+    double nRandom_SS = m_random->weightedN_condition(Var::_Region_, region_list[i], region_list[i]+1, 1);
 
     vector<int> w(nRegions, 1);
     w[i] = 0;
@@ -282,8 +282,8 @@ vector<shared_ptr<Data> > cosmobl::twopt::TwoPointCorrelation2D::XiJackknife(con
     auto rr_SS = Pair::Create(m_rr->pairType(), m_rr->sMin_D1(), m_rr->sMax_D1(), m_rr->nbins_D1(), m_rr->shift_D1(), m_rr->sMin_D2(), m_rr->sMax_D2(), m_rr->nbins_D2(), m_rr->shift_D2());
     auto dr_SS = Pair::Create(m_dr->pairType(), m_dr->sMin_D1(), m_dr->sMax_D1(), m_dr->nbins_D1(), m_dr->shift_D1(), m_dr->sMin_D2(), m_dr->sMax_D2(), m_dr->nbins_D2(), m_dr->shift_D2());
 
-    double nData_SS = m_data->weightedN_condition(Var::_REGION_, region_list[i], region_list[i]+1, 1);
-    double nRandom_SS = m_random->weightedN_condition(Var::_REGION_, region_list[i], region_list[i]+1, 1);
+    double nData_SS = m_data->weightedN_condition(Var::_Region_, region_list[i], region_list[i]+1, 1);
+    double nRandom_SS = m_random->weightedN_condition(Var::_Region_, region_list[i], region_list[i]+1, 1);
 
     vector<int> w(nRegions, 1);
     w[i] = 0;
@@ -329,8 +329,8 @@ vector<shared_ptr<Data> > cosmobl::twopt::TwoPointCorrelation2D::XiBootstrap(con
   vector<double> nData_reg, nRandom_reg;
 
   for(int i=0;i<nMocks;i++){
-    nData_reg.push_back(m_data->weightedN_condition(Var::_REGION_, region_list[i], region_list[i]+1, 0));
-    nRandom_reg.push_back(m_random->weightedN_condition(Var::_REGION_, region_list[i], region_list[i]+1, 0));
+    nData_reg.push_back(m_data->weightedN_condition(Var::_Region_, region_list[i], region_list[i]+1, 0));
+    nRandom_reg.push_back(m_random->weightedN_condition(Var::_Region_, region_list[i], region_list[i]+1, 0));
   }
 
   uniform_int_distribution<int> uni(0, nRegions-1);
@@ -384,8 +384,8 @@ vector<shared_ptr<Data> > cosmobl::twopt::TwoPointCorrelation2D::XiBootstrap(con
   vector<double> nData_reg, nRandom_reg;
 
   for(int i=0;i<nMocks;i++){
-    nData_reg.push_back(m_data->weightedN_condition(Var::_REGION_, region_list[i], region_list[i]+1, 0));
-    nRandom_reg.push_back(m_random->weightedN_condition(Var::_REGION_, region_list[i], region_list[i]+1, 0));
+    nData_reg.push_back(m_data->weightedN_condition(Var::_Region_, region_list[i], region_list[i]+1, 0));
+    nRandom_reg.push_back(m_random->weightedN_condition(Var::_Region_, region_list[i], region_list[i]+1, 0));
   }
 
   uniform_int_distribution<int> uni(0, nRegions-1);

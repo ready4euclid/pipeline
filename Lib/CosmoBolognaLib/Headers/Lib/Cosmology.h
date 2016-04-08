@@ -1926,11 +1926,8 @@ namespace cosmobl {
     void run_CAMB (const bool, const double, const string output_root="test", const double k_max=100., const string file_par=par::defaultString) const; 
 
     /**
-     *  @brief write or read the table where the power spectrum is
-     *  stored
-     *  
-     *  this function is useful in particular to speed up the integral
-     *  used to get xi_DM; it can use either CAMB, CLASS or MPTbreeze
+     *  @brief write or read the table where the dark matter power
+     *  spectrum is stored
      *
      *  @param [in] code method used to compute the power spectrum;
      *  valid codes are: CAMB [http://camb.info/], classgal_v1
@@ -1958,9 +1955,40 @@ namespace cosmobl {
      *
      *  @return none
      */
-    void Table_PkCodes (const string, const bool, vector<double> &, vector<double> &, const double, const string output_root="test", const double k_max=100., string file_par=par::defaultString) const;
-         
-  
+    void Table_PkCodes (const string code, const bool NL, vector<double> &lgkk, vector<double> &lgPk, const double redshift, const string output_root="test", const double k_max=100., string file_par=par::defaultString) const;
+
+    /**
+     *  @brief write or read the table where the dark matter two-point
+     *  correlation function is stored
+     *
+     *  @param [in] code method used to compute the power spectrum;
+     *  valid codes are: CAMB [http://camb.info/], classgal_v1
+     *  [http://class-code.net/], MPTbreeze-v1
+     *  [http://arxiv.org/abs/1207.1465], EisensteinHu
+     *  [http://background.uchicago.edu/~whu/transfer/transferpage.html]
+     *
+     *  @param [in] NL 0 &rarr; linear power spectrum; 1 &rarr; non-linear power spectrum
+     *
+     *  @param [out] rr vector of comoving separations
+     *
+     *  @param [out] xi vector of the binned values of &xi;(r)
+     *
+     *  @param [in] redshift redshift
+     *
+     *  @param [in] output_root output_root of the parameter file used
+     *  to compute the power spectrum; it can be any name
+     *
+     *  @param [in] k_max maximum wave vector module up to which the
+     *  power spectrum is computed
+     *
+     *  @param [in] file_par name of the parameter file; if a
+     *  parameter file is provided (i.e. file_par!=NULL), it will be
+     *  used, ignoring the cosmological parameters of the object
+     *
+     *  @return none
+     */
+    void Table_XiCodes (const string code, const bool NL, vector<double> &rr, vector<double> &xi, const double redshift, const string output_root, const double k_max, string file_par) const;
+
     /**
      *  @brief normalization of the power spectrum
      *
@@ -2041,6 +2069,41 @@ namespace cosmobl {
      *  @return P(k)
      */
     double Pk (const double, const string, const bool, const double, const string output_root="test", const int norm=-1, const double k_min=0., const double k_max=100., const bool GSL=1, const double prec=1.e-2, const string file_par=par::defaultString); 
+
+    /**
+     *  @brief the dark matter power spectrum, de-wiggled (see e.g. Anderson et al 2014)
+     *
+     *  this function provides the De-Wiggled dark matter power spectrum,
+     *
+     *  @author Alfonso Veropalumbo
+     *  @author alfonso.veropalumbo@unibo.it
+     *  
+     *  @param kk the wave vector module
+     *
+     *  @param redshift redshift
+     *
+     *  @param sigma_NL the non linear BAO damping
+     *
+     *  @param output_root output_root of the parameter file used to compute
+     *  the power spectrum and &sigma;(mass); it can be any name
+     *
+     *  @param norm 0 &rarr; don't normalize the power spectrum; 1
+     *  &rarr; normalize the power spectrum
+     *
+     *  @param k_min minimum wave vector module up to which the power
+     *  spectrum is computed
+     *
+     *  @param k_max maximum wave vector module up to which the power
+     *  spectrum is computed
+     *
+     *  @param aa parameter \e a of Eq. 24 of Anderson et al. 2012
+     *
+     *  @param prec accuracy of the GSL integration 
+     *
+     *  @return P;<SUB>DW</SUB>(k): the De-Wiggled power
+     *  spectrum of dark matter
+     */
+    double Pk_DeWiggle (const double , const double , const double , const string output_root = "test", const bool norm=1, const double k_min=0., const double k_max=100., const double aa=1., const double prec=1.e-2);
 
     /**
      *  @brief the unnormalized mass variance, &sigma;<SUP>2</SUP>(R)
@@ -2279,7 +2342,7 @@ namespace cosmobl {
      *  averaged (monopole) of the two-point correlation function of
      *  dark matter
      */
-    double xi_DM (const double, const string, const double, const string output_root="test", const bool NL=1, const int norm=-1, const double k_min=0., const double k_max=100., const double aa=0., const bool GSL=1, const double prec=1.e-2, const string file_par=par::defaultString);
+    double xi_DM (const double, const string, const double, const string output_root="test", const bool NL=1, const int norm=-1, const double k_min=0., const double k_max=100., const double aa=0., const bool GSL=0, const double prec=1.e-2, const string file_par=par::defaultString);
 
     /**
      *  @brief the dark matter two-point correlation function, de-wiggled (see e.g. Anderson et al 2014)

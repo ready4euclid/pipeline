@@ -40,7 +40,7 @@ using namespace cosmobl;
 // ============================================================================================
 
 
-void cosmobl::Chain::Statistics (const int max, const int min)
+void cosmobl::statistics::Chain::Statistics (const int max, const int min)
 {
   double Max = (max<=0) ? m_values.size() : max;
   double Min = (min<=0) ? 0 : min;
@@ -60,7 +60,7 @@ void cosmobl::Chain::Statistics (const int max, const int min)
 // ============================================================================================
 
 
-void cosmobl::Chain::ComputeDistribution (const int nbin)
+void cosmobl::statistics::Chain::ComputeDistribution (const int nbin)
 {
   vector<double> ww(m_values.size(),1);
   distribution(m_var, m_dist, m_values, ww, nbin);

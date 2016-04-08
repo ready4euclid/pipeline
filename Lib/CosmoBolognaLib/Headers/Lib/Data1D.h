@@ -99,7 +99,7 @@ namespace cosmobl {
        *  @param xmax maximun value of x to be used 
        *  @return object of class Data1D
        */
-      Data1D (const string input_file , const double xmin=-1.e30, const double xmax=1.e30); 
+      Data1D (const string input_file , const double xmin=-par::defaultDouble, const double xmax=par::defaultDouble); 
 
       /**
        *  @brief constructor of Data1D
@@ -109,7 +109,7 @@ namespace cosmobl {
        *  @param xmax maximun value of x to be used 
        *  @return object of class Data1D
        */
-      Data1D (const vector<double> x, const vector<double> fx, const double xmin=-1.e30, const double xmax=1.e30); 
+      Data1D (const vector<double> x, const vector<double> fx, const double xmin=-par::defaultDouble, const double xmax=par::defaultDouble); 
 
       /**
        *  @brief Constructor of Data1D
@@ -120,7 +120,7 @@ namespace cosmobl {
        *  @param xmax maximun value of x to be used 
        *  @return object of class Data1D
        */
-      Data1D (const vector<double> x, const vector<double> fx, const vector<double> error_fx, const double xmin=-1.e30, const double xmax=1.e30); 
+      Data1D (const vector<double> x, const vector<double> fx, const vector<double> error_fx, const double xmin=-par::defaultDouble, const double xmax=par::defaultDouble); 
 
       /**
        *  @brief Constructor of Data1D
@@ -131,7 +131,7 @@ namespace cosmobl {
        *  @param xmax maximun value of x to be used 
        *  @return object of class Data1D
        */
-      Data1D (const vector<double> x, const vector<double> fx, const vector<vector<double> > covariance_fx, const double xmin=-1.e30, const double xmax=1.e30);
+      Data1D (const vector<double> x, const vector<double> fx, const vector<vector<double> > covariance_fx, const double xmin=-par::defaultDouble, const double xmax=par::defaultDouble);
 
       /**
        *  @brief default destructor
@@ -194,31 +194,31 @@ namespace cosmobl {
        *  @brief return the x vector
        *  @return vector containing the x values
        */
-      vector<double> xx () const override { return m_x; }  
+      vector<double> xx () const override;   
 
       /**
        *  @brief return the m_fx vector
        *  @return vector containing the fx values
        */
-      vector<double> fx () const override { return m_fx; } 
+      vector<double> fx () const override;  
 
       /**
        *  @brief return the m_error_fx vector
        *  @return vector containing the values of fx error
        */
-      vector<double> error_fx () const override { return m_error_fx; } 
+      vector<double> error_fx () const override;  
 
       /**
        *  @brief return the m_covariance vector
        *  @return vector<containing the covariance matrix
        */
-      vector<vector<double> > covariance_fx () const override { return m_covariance_fx; }
+      vector<vector<double> > covariance_fx () const override;
 
       /**
        *  @brief return the m_inverse_covariance vector
        *  @return vector containing the inverse convariance matrix
        */
-      vector<vector<double> > inverse_covariance_fx () const override { return m_inverse_covariance_fx; }
+      vector<vector<double> > inverse_covariance_fx () const override;
 
       /**
        *  @brief set interval variables for x range

@@ -89,16 +89,16 @@ void cosmobl::LogNormal::generate_LogNormal_mock (const double rmin, const strin
   
   // compute the visibility mask
   vector<double> Lim, stat;
-  m_random->MinMax_var(Var::_XX_,Lim,0);
-  m_random->MinMax_var(Var::_YY_,Lim,0);
-  m_random->MinMax_var(Var::_ZZ_,Lim,0);
+  m_random->MinMax_var(Var::_X_,Lim, 0);
+  m_random->MinMax_var(Var::_Y_,Lim, 0);
+  m_random->MinMax_var(Var::_Z_,Lim, 0);
   
   double DeltaX = (Lim[1]-Lim[0]); 
   double DeltaY = (Lim[3]-Lim[2]); 
   double DeltaZ = (Lim[5]-Lim[4]); 
 
   int nTot =m_random->nObjects();
-  m_data->stats_var(Var::_REDSHIFT_,stat);
+  m_data->stats_var(Var::_Redshift_, stat);
 
   int nx = DeltaX/m_rmin;
   nx = (nx%2==0) ? nx : nx+1; 

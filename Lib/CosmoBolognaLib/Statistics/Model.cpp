@@ -38,9 +38,12 @@ using namespace cosmobl;
 // ======================================================================================
 
 
-cosmobl::Model::Model (const vector<shared_ptr<Parameter> > parameters, const shared_ptr<void> model_parameters)
-  : m_parameters(parameters), m_model_parameters(model_parameters)
+cosmobl::statistics::Model::Model (const vector<statistics::Parameter> parameters, const shared_ptr<void> model_parameters)
+  : m_model_parameters(model_parameters)
 {
+  for(size_t i=0;i<parameters.size();i++)
+    m_parameters.push_back(move(make_shared<Parameter>(parameters[i])));
+
   m_npar = m_parameters.size();
   m_npar_eff = npar_eff();
 }
@@ -49,11 +52,11 @@ cosmobl::Model::Model (const vector<shared_ptr<Parameter> > parameters, const sh
 // ======================================================================================
 
 
-double cosmobl::Model::update_parameters (const double new_parameter)
+double cosmobl::statistics::Model::update_parameters (const double new_parameter)
 {
   double parameter;
 
-  if (!m_parameters[0]->freeze()) {
+  if (!m_parameters[0]->isFreezed()) {
     parameter = (m_parameters[0]->prior()->isIncluded(new_parameter)) ? new_parameter : closest(new_parameter,m_parameters[0]->prior()->xmin(),m_parameters[0]->prior()->xmax());
     m_parameters[0]->set_value(parameter);
   }
@@ -70,14 +73,14 @@ double cosmobl::Model::update_parameters (const double new_parameter)
 // ======================================================================================
 
 
-vector<double> cosmobl::Model::update_parameters (const vector<double> new_parameters)
+vector<double> cosmobl::statistics::Model::update_parameters (const vector<double> new_parameters)
 {  
   vector<double> parameters;
   int nn = 0;
   
   for (unsigned int i=0; i<m_npar; i++) {
     
-    if (!m_parameters[i]->freeze()) {
+    if (!m_parameters[i]->isFreezed()) {
       double value = (m_parameters[i]->prior()->isIncluded(new_parameters[nn])) ? new_parameters[nn] : closest(new_parameters[nn], m_parameters[i]->prior()->xmin(), m_parameters[i]->prior()->xmax());
       m_parameters[i]->set_value(value);
       nn ++;

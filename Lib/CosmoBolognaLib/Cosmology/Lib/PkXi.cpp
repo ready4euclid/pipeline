@@ -322,6 +322,58 @@ void cosmobl::Cosmology::Table_PkCodes (const string code, const bool NL, vector
 // =====================================================================================
 
 
+void cosmobl::Cosmology::Table_XiCodes (const string code, const bool NL, vector<double> &rr, vector<double> &xi, const double redshift, const string output_root, const double k_max, string file_par) const
+{
+  vector<double> lgkk, lgPk;
+  Table_PkCodes(code, NL, lgkk, lgPk, redshift, output_root, k_max, file_par);
+
+  string dir_loc = fullpath(par::DirLoc);
+  string dir_cosmo = fullpath(par::DirCosmo);
+
+  string sdir;
+  if (NL==0) sdir = "output_linear/";
+  else if (NL==1) sdir= "output_nonlinear/";
+  else ErrorMsg("Error in cosmobl::Cosmology::Table_XiCodes of PkXi.cpp!");
+  sdir += "h"+conv(m_hh,par::fDP3)+"_OmB"+conv(m_Omega_baryon,par::fDP3)+"_OmCDM"+conv(m_Omega_CDM,par::fDP3)+"_OmL"+conv(m_Omega_DE,par::fDP3)+"_OmN"+conv(m_Omega_neutrinos,par::fDP3)+"_Z"+conv(redshift,par::fDP3)+"_scalar_amp"+conv(m_scalar_amp,par::ee3)+"_n"+conv(m_n_spec,par::fDP3)+"/";
+
+  string dir = dir_cosmo+"External/"+code+"/";
+  string dirFFT = dir_cosmo+"External/fftlog-f90-master/";
+  if (chdir(dirFFT.c_str())) {};
+  string dir_output = dir+sdir;
+
+  string file_in = dir_output+"Pk.dat";
+  string file_out = dir_output+"Xi.dat";
+
+  ifstream fin;
+  fin.open(file_out.c_str());
+  
+  if (!fin) {
+    string cmd = "./fftlog-f90 "+file_in+" "+file_out+" 600";
+    if(system(cmd.c_str())) {}
+  }
+  
+  if (chdir(dir_loc.c_str())) {};
+
+  fin.clear(); fin.close();
+
+  rr.erase(rr.begin(), rr.end());
+  xi.erase(xi.begin(), xi.end());
+
+  fin.open(file_out.c_str()); 
+
+  double RR, XXII;
+  while (fin >>RR >> XXII) {
+    rr.push_back(RR);
+    xi.push_back(XXII);
+  }
+
+  fin.clear(); fin.close();
+}
+
+
+// =====================================================================================
+
+
 void cosmobl::Cosmology::Pk_0 (const string method_Pk, const double redshift, const string output_root, const double k_min, const double k_max, const bool GSL, const double prec, const string file_par)
 {  
   if (m_sigma8<0) ErrorMsg("Error in cosmobl::Cosmology::Pk_0 of PkXi.cpp, sigma8<0!");
@@ -495,6 +547,7 @@ double cosmobl::Cosmology::xi_DM (const double rr, const string method_Pk, const
   if (method_Pk=="MPTbreeze-v1" && NL==0) ErrorMsg("Error in cosmobl::Cosmology::xi_DM of PkXi.cpp: MPTbreeze is non-linear!");  
 
   double Int = -1.; 
+  double fact = (GSL) ? 1./(2.*pow(par::pi,2)) : 1.;
 
   if (GSL) {
     int limit_size = 1000;
@@ -556,34 +609,19 @@ double cosmobl::Cosmology::xi_DM (const double rr, const string method_Pk, const
   }
 
 
-  else { // using Numerical libraries
-   
-    if (method_Pk=="EisensteinHu") {
-      
-      if (m_sigma8<0) ErrorMsg("Error in cosmobl::Cosmology::xi_DM of PkXi.cpp: sigma8<0 !");
-      
-      if (NL==1) WarningMsg("Attention: the correlation function by Eisenstein&Hu is linear! (see xi_DM of PkXi.cpp)");
-      
-      cosmobl::classfunc::func_xiD func (m_Omega_matter, m_Omega_baryon, m_Omega_neutrinos, m_massless_neutrinos, m_massive_neutrinos, m_Omega_DE, m_Omega_radiation, m_hh, m_scalar_amp, m_n_spec, m_w0, m_wa, m_fNL, m_type_NG, m_model, m_unit, method_Pk, rr, redshift, aa);
+  else {  //USE FFTLOG
 
-      Midpnt<cosmobl::classfunc::func_xiD> q1(func,0.,1.e2); 
-      Midinf<cosmobl::classfunc::func_xiD> q2(func,1.e2,1.e3);
-      Int = (rr<1) ? qromo(q1)+qromo(q2) : qromo(q1); // check!!!
-    }
+    if (method_Pk=="EisensteinHu") 
+	ErrorMsg("Error in xi_DM of Cosmology, EisensteinHu method only works with GSL integration");
 
     else if (method_Pk=="CAMB" || method_Pk=="MPTbreeze-v1" || method_Pk=="classgal_v1") {
-      vector<double> lgkk, lgPk;
-      Table_PkCodes (method_Pk, NL, lgkk, lgPk, redshift, output_root, k_max, file_par);
-    
-      cosmobl::classfunc::func_xi func (lgkk, lgPk, rr, aa);
-    
-      Midpnt<cosmobl::classfunc::func_xi> q1(func,0.,1.e2); 
-      Midinf<cosmobl::classfunc::func_xi> q2(func,1.e2,1.e3);
-      Int = (rr<1) ? qromo(q1)+qromo(q2) : qromo(q1); // check!!!
+      vector<double> r,xi;
+      Table_XiCodes (method_Pk, NL, r, xi, redshift, output_root, k_max, file_par);
+      Int = interpolated(rr,r,xi,"Spline",3);
     }
 
     else ErrorMsg("Error in cosmobl::Cosmology::xi_DM of PkXi.cpp: method_Pk is wrong!");
-  
+
   }
 
 
@@ -595,7 +633,7 @@ double cosmobl::Cosmology::xi_DM (const double rr, const string method_Pk, const
   if (method_Pk=="MPTbreeze-v1") PP0 = m_Pk0_MPTbreeze;
   if (method_Pk=="classgal_v1") PP0 = m_Pk0_CLASS;
 
-  return PP0*1./(2.*pow(par::pi,2))*Int;
+  return PP0*fact*Int;
 }
 
 
@@ -1051,6 +1089,25 @@ void cosmobl::Cosmology::get_barred_xi (vector<double> rr, vector<double> Xi, ve
     foutb.clear(); foutb.close(); cout <<"I wrote the file: "<<file_tableb<<endl;
   }
 }
+
+
+// =====================================================================================
+
+
+double cosmobl::Cosmology::Pk_DeWiggle (const double kk, const double redshift, const double sigma_NL, const string output_root, const bool norm, const double k_min, const double k_max, const double aa, const double prec)
+{
+  bool NL = 0;
+
+  string author1 = "CAMB";
+  string author2 = "EisensteinHu";
+
+  double PkCamb = Pk(kk, author1, NL, redshift, output_root, norm, k_min, k_max, 1, prec);
+  double PkEH =  Pk(kk, author2, NL, redshift, output_root, norm, k_min, k_max, 1, prec);
+
+  double PkDEW = PkEH*(1+(PkCamb/PkEH-1)*exp(-0.5*pow(kk*sigma_NL, 2)));
+  return PkDEW;
+}
+
 
 // =====================================================================================
 

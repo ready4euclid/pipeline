@@ -18,31 +18,33 @@ dirLib       = "CosmoBolognaLib/"
 dirNumerical = HOME+"/Numerical/"
 dirH         = dirLib+"Headers/Lib/"
 dirO         = dirLib+"Headers/Objects/"
-dirEH        = dirLib+"Cosmology/EH/"
+dirM         = dirLib+"Headers/Models/"
+dirEH        = dirLib+"External/EH/"
 
 FLAGS = ["-std=c++11", "-fopenmp", "-w"]
 FLAGSL = ["-Wl,-rpath,CosmoBolognaLib/", "-LCosmoBolognaLib/"]
 
-include_dirs = [dirLib, dirH, dirO, dirEH, dirNumerical]
+include_dirs = [dirLib, dirH, dirO, dirM, dirEH, dirNumerical]
 
 libraries = ["gomp", "gsl", "gslcblas", "m", "fftw3", "fftw3_omp"]
 
 sources = ["CBL_wrap.cxx",
+           dirLib+"Func/Data1D_collection.cpp",
+           dirLib+"Func/Data1D.cpp",
+           dirLib+"Func/Data2D.cpp",
+           dirLib+"Func/Data.cpp",
            dirLib+"Func/Func.cpp",
            dirLib+"Func/FuncXi.cpp",
            dirLib+"Func/FuncMultipoles.cpp",
            dirLib+"Func/GSLfunction.cpp",
+           dirLib+"Func/Field3D.cpp",
            dirLib+"Statistics/Chi2.cpp",
            dirLib+"Statistics/Chain.cpp",
-           dirLib+"Statistics/Data1D_collection.cpp",
-           dirLib+"Statistics/Data1D.cpp",
-           dirLib+"Statistics/Data2D.cpp",
-           dirLib+"Statistics/Data.cpp",
            dirLib+"Statistics/Likelihood.cpp",
            dirLib+"Statistics/Model.cpp",
            dirLib+"Statistics/Parameter.cpp",
            dirLib+"Statistics/Prior.cpp",
-           dirLib+"Cosmology/EH/power_whu.cpp",
+           dirLib+"External/EH/power_whu.cpp",
            dirLib+"Cosmology/Lib/Cosmology.cpp",
            dirLib+"Cosmology/Lib/Sigma.cpp",
            dirLib+"Cosmology/Lib/PkXi.cpp",
@@ -80,7 +82,13 @@ sources = ["CBL_wrap.cxx",
            dirLib+"CatalogueAnalysis/ThreePointCorrelation/ThreePointCorrelation_angular_reduced.cpp",
            dirLib+"CatalogueAnalysis/ThreePointCorrelation/ThreePointCorrelation_comoving_connected.cpp",
            dirLib+"CatalogueAnalysis/ThreePointCorrelation/ThreePointCorrelation_comoving_reduced.cpp",
+           dirLib+"Modelling/ModelFunction.cpp",
+           dirLib+"Modelling/ModelBias.cpp",
            dirLib+"Modelling/Modelling.cpp",
+           dirLib+"Modelling/Modelling_TwoPointCorrelation.cpp",
+           dirLib+"Modelling/Modelling_TwoPointCorrelation_monopole.cpp",
+           dirLib+"Modelling/Modelling_TwoPointCorrelation_projected.cpp",
+           dirLib+"Modelling/Modelling_TwoPointCorrelation_deprojected.cpp",
            dirLib+"GlobalFunc/FuncCosmology.cpp",
            dirLib+"GlobalFunc/Func.cpp",
            dirLib+"GlobalFunc/SubSample.cpp"
@@ -97,7 +105,7 @@ CosmoBolognaLib = Extension(  "_CosmoBolognaLib",
                               extra_link_args      = FLAGSL )
 
 setup(  name             = "CosmoBolognaLib",
-        version          = "1.14",
+        version          = "2.0",
         description      = "C++ libraries for cosmological calculations",
         long_description = readme(),
         author           = "Federico Marulli",

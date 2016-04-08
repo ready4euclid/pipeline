@@ -44,6 +44,21 @@
 
 namespace cosmobl {
 
+  /**
+   *  @name Generic functions that use the class Catalogue
+   */
+  ///@{
+
+  /**
+   * @brief overloading of the + operator, to sum two catalogues
+   * @param cc object of class Catalogue 
+   * @return object of class catalogue
+   */
+  inline catalogue::Catalogue operator + (const catalogue::Catalogue &c1, const catalogue::Catalogue &c2)
+    {
+      catalogue::Catalogue ctemp = c1;
+      return ctemp += c2;
+    }
   
   /**
    *  @name Generic functions that use the class Cosmology
@@ -383,6 +398,16 @@ namespace cosmobl {
    *  @return none
    */
   void set_ObjectRegion_SubBoxes (catalogue::Catalogue &data, catalogue::Catalogue &random, const int nx, const int ny, const int nz);
+
+  /**
+   *  @brief set the object region in angular SubBoxes
+   *  @param data input data catalogue
+   *  @param random random catalogue
+   *  @param nRa side fraction used to divide the box in the ra direction 
+   *  @param nDec side fraction used to divide the box in the dec direction 
+   *  @return none
+   */
+  void set_ObjectRegion_RaDec (catalogue::Catalogue &data, catalogue::Catalogue &random, const int nRa, const int nDec);
 
   /**
    *  @brief set the object region in sub-regions using mangle

@@ -2,7 +2,6 @@
 // How to measure the projected two-point correlation function and estimate errors with jackknife
 // ==============================================================================================
 
-#include "RandomCatalogue.h"
 #include "TwoPointCorrelation1D_monopole.h"
 #include "GlobalFunc.h"
 
@@ -48,7 +47,7 @@ int main () {
   // --------------------------------------------------------------------------------------
 
   double N_R = 1.; // random/object ratio
-  Catalogue random_catalogue {_Box_, catalogue, N_R};
+  Catalogue random_catalogue {_createRandom_box_, catalogue, N_R};
 
 
   // --------------------------------------------------------------------------------------------
@@ -57,21 +56,21 @@ int main () {
 
   // binning parameters
 
-  double rMin = 1.;   // minimum separation 
-  double rMax = 50.;  // maximum separation 
-  int nbins = 20;     // number of bins
-  double shift = 0.5; // spatial shift used to set the bin centre 
-      
+  double rMin = 1.;           // minimum separation 
+  double rMax = 50.;          // maximum separation 
+  int nbins = 20;             // number of bins
+  double shift = 0.5;         // spatial shift used to set the bin centre 
+  double piMax_integral = 30; // upper limit of the integral
+  
 
   // measure the projected two-point correlation function and estimate errors with jackknife (with cubic geometry)
 
   int nx = 3, ny = 3, nz = 3;
   set_ObjectRegion_SubBoxes(catalogue, random_catalogue, nx, ny, nz);
   
-  auto TwoP = TwoPointCorrelation::Create(TwoPType::_1D_projected_, catalogue, random_catalogue, _logarithmic_, rMin, rMax, nbins, shift, rMin, rMax, nbins, shift);
+  auto TwoP = TwoPointCorrelation::Create(TwoPType::_1D_projected_, catalogue, random_catalogue, _logarithmic_, rMin, rMax, nbins, shift, rMin, rMax, nbins, shift, piMax_integral);
 
-  double piMax_integral = 30; // upper limit of the integral
-  TwoP->measure(piMax_integral, _Jackknife_, dir_output);
+  TwoP->measure(_Jackknife_, dir_output);
 
   TwoP->write(dir_output, "xi_projected_jackknife.dat");
 

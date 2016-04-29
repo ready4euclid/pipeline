@@ -83,10 +83,10 @@ double cosmobl::Cosmology::mass_function_fast (const double Mass, const double r
 
   // ---------- compute the MF ---------- 
    
-  double sig = interpolated(MASS, mass, sigma, "Rat", 4);
-  double dlsig = interpolated(MASS, mass, dln_sigma, "Rat", 4);
-
-  double MF = MF_generator(MASS, sig, dlsig, redshift, author, Delta)*pow(fact,4.);
+  double sig = interpolated(MASS, mass, sigma, "Steffen");
+  double dlsig = interpolated(MASS, mass, dln_sigma, "Steffen");
+  
+  double MF = MF_generator(MASS, sig, dlsig, redshift, author, Delta)*pow(fact, 4.);
   if (std::isnan(MF)) { string Err = "Error in cosmobl::Cosmology::mass_function_fast of MassFunction.cpp: MF = " + conv(MF,par::fDP3) + "!"; ErrorMsg(Err); }
 
   if (m_fNL!=0) MF *= MF_correction(MASS, redshift, method_SS, output_root, interpType, Num, stepsize, norm, k_min, k_max, GSL, prec, file_par);
@@ -203,17 +203,17 @@ double cosmobl::Cosmology::MF_generator (const double Mass, const double Sigma, 
     else if (Delta==3200) {A0 = 0.260; a0 = 2.66; b0 = 1.41; c0 = 2.44;}
     else {
       A0 = (Delta<1600) ? 0.1*log10(Delta)-0.05 : 0.26;
-      a0 = 1.43+pow(log10(Delta)-2.3,1.5);
-      b0 = 1.+pow(log10(Delta)-1.6,-1.5);
-      c0 = (log10(Delta)>2.35) ? 1.2+pow(log10(Delta)-2.35,1.6) : 1.2; // check!!!
+      a0 = 1.43+pow(max(log10(Delta)-2.3, 0.), 1.5); // check!!!
+      b0 = 1.+pow(log10(Delta)-1.6, -1.5);
+      c0 = 1.2+pow(max(log10(Delta)-2.35, 0.), 1.6); // check!!!
     }
 
-    double alpha = pow(10.,-pow(0.75/log10(Delta/75.),1.2));
-    double AA = A0*pow(1.+redshift,-0.14);
-    double aa = a0*pow(1.+redshift,-0.06);
-    double bb = b0*pow(1.+redshift,-alpha);
+    double alpha = pow(10., -pow(max(0.75/log10(Delta/75.), 0.), 1.2)); // check!!!
+    double AA = A0*pow(1.+redshift, -0.14);
+    double aa = a0*pow(1.+redshift, -0.06);
+    double bb = b0*pow(1.+redshift, -alpha);
     double cc = c0;
-   
+    
     dndm = AA*(pow(sigmaz/bb,-aa)+1.)*exp(-cc/(sigmaz*sigmaz))*RHO/(Mass*Mass)*fabs(Dln_Sigma);
   }
 

@@ -166,7 +166,7 @@ void cosmobl::twopt::TwoPointCorrelation1D_angular::measureJackknife (const stri
   for (int i=0; i<nRegions; i++) {
 
     if (dir_output_JackknifeXi !=par::defaultString) {
-      string file = "xi_Jackknife_"+conv(i, par::fINT);
+      string file = "xi_Jackknife_"+conv(i, par::fINT)+".dat";
       data_SS[i]->write(dir_output_JackknifeXi, file, "theta", "w", 0);
     }
 
@@ -210,7 +210,7 @@ void cosmobl::twopt::TwoPointCorrelation1D_angular::measureBootstrap (const int 
   for (int i=0; i<nMocks; i++) {
 
      if (dir_output_BootstrapXi!=par::defaultString) {
-      string file = "xi_Bootstrap_"+conv(i, par::fINT);
+      string file = "xi_Bootstrap_"+conv(i, par::fINT)+".dat";
       data_SS[i]->write(dir_output_BootstrapXi, file, "theta", "w", 0);
     }
 

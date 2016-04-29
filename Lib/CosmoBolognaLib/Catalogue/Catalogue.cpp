@@ -436,10 +436,8 @@ void cosmobl::catalogue::Catalogue::stats_var (const Var var_name, vector<double
   stats[0] = Average(var(var_name)); 
   stats[2] = Sigma(var(var_name));
   
-  double first, third;
-  Quartile(var(var_name), stats[1], first, third);
-  
-  stats[3] = third-first;
+  stats[1] = Quartile(var(var_name))[1];
+  stats[3] = Quartile(var(var_name))[2]-Quartile(var(var_name))[0];
 }
 
 
@@ -463,9 +461,9 @@ void cosmobl::catalogue::Catalogue::stats_var (const vector<Var> var_name, vecto
 // ============================================================================
 
 
-void cosmobl::catalogue::Catalogue::var_distr (const Var var_name, vector<double> &_var, vector<double> &dist, const int nbin, const bool linear, const string file_out, const double Volume, const bool norm, const double V1, const double V2, const bool bin_type, const bool convolution, const double sigma) const
-{ 
-  distribution(_var, dist, var(var_name), var(Var::_Weight_), nbin, linear, file_out, (norm) ? Volume*weightedN() : Volume, V1, V2, bin_type, convolution, sigma);
+void cosmobl::catalogue::Catalogue::var_distr (const Var var_name, vector<double> &_var, vector<double> &dist, vector<double> &err, const int nbin, const bool linear, const string file_out, const double Volume, const bool norm, const double V1, const double V2, const bool bin_type, const bool convolution, const double sigma) const
+{
+  distribution(_var, dist, err, var(var_name), var(Var::_Weight_), nbin, linear, file_out, (norm) ? Volume*weightedN() : Volume, V1, V2, bin_type, convolution, sigma);
 }
 
 

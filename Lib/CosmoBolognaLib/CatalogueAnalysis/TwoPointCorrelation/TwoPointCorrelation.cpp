@@ -184,9 +184,9 @@ void cosmobl::twopt::TwoPointCorrelation::count_pairs (const shared_ptr<Catalogu
       // (i.e. objects inside the close cells of the chain-mesh)
       vector<long> close_objects = ChM.close_objects(cat1->coordinates(i), (cross) ? -1 : (long)i);
       
-      for (auto &&j : close_objects) // loop on the nearby objects
+      for (auto &&j : close_objects) // loop on the nearby objects 
 	pp_thread->put(cat1->catalogue_object(i), cat2->catalogue_object(j)); // estimate the distance between the two objects and update the pair count
-            
+      
       // estimate the computational time and update the time count
       time_t end_temp; time (&end_temp); double diff_temp = difftime(end_temp, start);
       if (tcount && tid==0) { cout << "\r..." << float(i)*fact_count << "% completed (" << diff_temp << " seconds)\r"; cout.flush(); }    

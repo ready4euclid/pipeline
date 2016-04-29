@@ -37,56 +37,56 @@
 // ============================================================================================
 
 
-double cosmobl::glob::wp_bias_cosmology(double r, shared_ptr<void> parameters, vector<double> model_parameters){
-
+double cosmobl::glob::wp_bias_cosmology (double r, shared_ptr<void> parameters, vector<double> model_parameters)
+{
   shared_ptr<STR_twop_model> pp = static_pointer_cast<STR_twop_model>(parameters);
 
   double bias = model_parameters[0];
-  return bias*bias*pp->cosmology->wp_DM(r, pp->method, pp->redshift, pp->output_root, pp->norm, pp->r_min, pp->r_max, pp-> k_min, pp->k_max, pp->aa, pp->GSL, pp->prec, pp->file_par);
-}
-
-
-// ============================================================================================
-
-
-double cosmobl::glob::wp_bias(double r, shared_ptr<void> parameters, vector<double> model_parameters){
   
-  shared_ptr<STR_twop_model> pp = static_pointer_cast<STR_twop_model>(parameters);
-  double bias = model_parameters[0], err;
-  return bias*bias*interpolated(r,pp->r,pp->xi,pp->type,pp->nPt,err);
+  return bias*bias*pp->cosmology->wp_DM(r, pp->method, pp->redshift, pp->output_root, pp->NL, pp->norm, pp->r_min, pp->r_max, pp-> k_min, pp->k_max, pp->aa, pp->GSL, pp->prec, pp->file_par);
 }
 
 
 // ============================================================================================
 
 
-double cosmobl::glob::xi_bias_cosmology(double r, shared_ptr<void> parameters, vector<double> model_parameters){
+double cosmobl::glob::wp_bias (double r, shared_ptr<void> parameters, vector<double> model_parameters)
+{  
+  shared_ptr<STR_twop_model> pp = static_pointer_cast<STR_twop_model>(parameters);
+  double bias = model_parameters[0];
+  return bias*bias*interpolated(r, pp->r, pp->xi, pp->type);
+}
 
+
+// ============================================================================================
+
+
+double cosmobl::glob::xi_bias_cosmology (double r, shared_ptr<void> parameters, vector<double> model_parameters)
+{
   shared_ptr<STR_twop_model> pp = static_pointer_cast<STR_twop_model>(parameters);
   double bias = model_parameters[0];
   for (size_t i =1;i<model_parameters.size();i++)
     pp->cosmology->set_parameter(pp->Cpar[i-1],model_parameters[i]);
 
   return bias*bias*pp->cosmology->xi_DM(r,pp->method,pp->redshift, pp->output_root, pp->NL, pp->norm, pp->k_min, pp->k_max, pp->aa, pp->GSL, pp->prec, pp->file_par);
-
 }
 
 
 // ============================================================================================
 
 
-double cosmobl::glob::xi_bias(double r, shared_ptr<void> parameters, vector<double> model_parameters){
-
+double cosmobl::glob::xi_bias(double r, shared_ptr<void> parameters, vector<double> model_parameters)
+{
   shared_ptr<STR_twop_model> pp = static_pointer_cast<STR_twop_model>(parameters);
-  double bias = model_parameters[0], err;
-  return bias*bias*interpolated(r,pp->r,pp->xi,pp->type,pp->nPt,err);
+  double bias = model_parameters[0];
+  return bias*bias*interpolated(r, pp->r, pp->xi, pp->type);
 }
 
 
 // ============================================================================================
 
 
-double cosmobl::glob::xi0_bias_cosmology(double r, shared_ptr<void> parameters, vector<double> model_parameters)
+double cosmobl::glob::xi0_bias_cosmology (double r, shared_ptr<void> parameters, vector<double> model_parameters)
 {
   shared_ptr<STR_twop_model> pp = static_pointer_cast<STR_twop_model>(parameters);
   double bias = model_parameters[0];
@@ -103,14 +103,14 @@ double cosmobl::glob::xi0_bias_cosmology(double r, shared_ptr<void> parameters, 
 // ============================================================================================
 
 
-double cosmobl::glob::xi0_bias(double r, shared_ptr<void> parameters, vector<double> model_parameters)
+double cosmobl::glob::xi0_bias (double r, shared_ptr<void> parameters, vector<double> model_parameters)
 {
   shared_ptr<STR_twop_model> pp = static_pointer_cast<STR_twop_model>(parameters);
 
-  double bias = model_parameters[0], err;
+  double bias = model_parameters[0];
   double beta = pp->f/bias;
   double fact = bias*bias*(1+2./3*beta+beta*beta/5);
-  return fact*interpolated(r,pp->r,pp->xi,pp->type,pp->nPt,err);
+  return fact*interpolated(r, pp->r, pp->xi, pp->type);
 }
 
 

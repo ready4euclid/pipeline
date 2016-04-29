@@ -113,7 +113,7 @@ void cosmobl::twopt::TwoPointCorrelation1D_filtered::measure (const ErrorType er
 // ============================================================================================
 
 
-void cosmobl::twopt::TwoPointCorrelation1D_filtered::read(const string dir, const string file) 
+void cosmobl::twopt::TwoPointCorrelation1D_filtered::read (const string dir, const string file) 
 {
   m_dataset->read(dir+file);
 }

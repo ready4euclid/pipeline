@@ -429,46 +429,12 @@ namespace cosmobl {
    *  &rarr; diagonal rational function interpolation; "BaryRat"
    *  &rarr; barycentric rational interpolation
    *
-   *  @param [in] nPt number of points used in the polynomial,
-   *  diagonal rational and barycentric rational interpolations
-   *
-   *  @param [out] err the estimated error in the interpolation or
-   *  extrapolation
-   *
    *  @return the interpolated value of the input function
    *
    *  @warning if _xx is outside the range of the input vector xx, the
    *  returned value is the extrapolation
    */
-  double interpolated (const double, const vector<double>, const vector<double>, const string, const int, double &);
-  
-   /**
-   *  @brief 1D interpolation
-   *
-   *  @param [in] _xx the point where the input function will be
-   *  interpolated
-   *
-   *  @param [in] xx vector containing the binned values of x
-   *
-   *  @param [in] yy vector containing the binned values of the
-   *  function, y(x), to be interpolated or extrapolated
-   *
-   *  @param [in] type the method used to interpolate or extrapolate:
-   *  "Linear" &rarr; linear interpolation; "Poly" &rarr; polynomial
-   *  interpolation; "Spline" &rarr; cubic spline interpolation; "Rat"
-   *  &rarr; diagonal rational function interpolation; "BaryRat"
-   *  &rarr; barycentric rational interpolation
-   *
-   *  @param [in] nPt number of points used in the polynomial,
-   *  diagonal rational and barycentric rational interpolations
-   *
-   *  @return the interpolated or extrapolated value of the
-   *  input function
-   *
-   *  @warning if _xx is outside the range of the input vector xx, the
-   *  returned value is the extrapolation
-   */
-  double interpolated (const double, const vector<double>, const vector<double>, const string, const int);
+  double interpolated (const double _xx, const vector<double> xx, const vector<double> yy, const string type);
   
   /**
    *  @brief 2D interpolation
@@ -494,9 +460,6 @@ namespace cosmobl {
    *  &rarr; diagonal rational function interpolation; "BaryRat"
    *  &rarr; barycentric rational interpolation
    *
-   *  @param [in] nPt number of points used in the polynomial,
-   *  diagonal rational and barycentric rational interpolations
-   *
    *  @return the interpolated or extrapolated value of the
    *  input function
    *
@@ -504,7 +467,7 @@ namespace cosmobl {
    *  vectors x1 and/or x2, the returned value is the extrapolatation
    *
    */
-  double interpolated_2D (const double, const double, const vector<double>, const vector<double>, const vector<vector<double> >, const string, const int);
+  double interpolated_2D (const double _x1, const double _x2, const vector<double> x1, const vector<double> x2, const vector<vector<double> > yy, const string type);
   
   /**
    *  @brief check if a file can be opened
@@ -658,25 +621,52 @@ namespace cosmobl {
   double Filter (const double r, const double rc);
 
   /**
-   *  @brief the l=0 spherical Bessel function 
-   *  @param xx the variable x
-   *  @return the l=0 spherical Bessel function
+   *  @brief the order l Legendre polynomial 
+   *  @param mu the variable mu
+   *  @param l the order l Legendre polynomial
+   *  @return the order l Legendre polynomial
    */
-  double j0 (const double x);
+  double legendre_polynomial (const double mu, const int l);
+
+  /**
+   *  @brief the order l Legendre polynomial integrand
+   *  @param mu the variable mu
+   *  @param params the parameters for the function
+   *  @return the order l Legendre polynomial integrand
+   */
+  double legendre_polynomial_integral (double mu, void *params);
+
+  /**
+   *  @brief the average of the Legendre polynomial
+   *  of the l-th order over the mu range
+   *  @param ll the order of the Legendre polynomial
+   *  @param mu the order of the Legendre polynomial
+   *  @param delta_mu the order of the Legendre polynomial
+   *  @return the average of the Legendre polynomial
+   *  of the l-th order over the mu range
+   */
+   double Legendre_polynomial_mu_average (const int ll, const double mu, const double delta_mu);
+
+   /**
+    *  @brief the l=0 spherical Bessel function 
+    *  @param xx the variable x
+    *  @return the l=0 spherical Bessel function
+    */
+   double j0 (const double xx);
 
   /**
    *  @brief the l=2 spherical Bessel function 
    *  @param xx the variable x
    *  @return the l=2 spherical Bessel function
    */
-  double j2 (const double x);
+  double j2 (const double xx);
 
   /**
    *  @brief the l=4 spherical Bessel function 
    *  @param xx the variable x
    *  @return the l=4 spherical Bessel function
    */
-  double j4 (const double x);
+  double j4 (const double xx);
 
   /**
    *  @brief the order l spherical Bessel function 
@@ -684,47 +674,67 @@ namespace cosmobl {
    *  @param order the order l of spherical Bessel function
    *  @return the order l spherical Bessel function
    */
-  double jl (const double x, const int order);
+  double jl (const double xx, const int order);
 
   /**
-   *  @brief the distance average l=0 spherical Bessel function 
-   *  this function is used to obtain the analytic twop monopole covariance
-   *  @param k the variable k
+   *  @brief the distance average l=0 spherical Bessel function this
+   *  function is used to obtain the analytic twop monopole covariance
+   *  @param kk the variable k
    *  @param r_down the lower limit of the twopcf bin
    *  @param r_up the upper limit of the twopcf bin
    *  @return the distance average l=0 spherical Bessel function
    */
-  double j0_distance_average (const double k, const double r_down, const double r_up);
+  double j0_distance_average (const double kk, const double r_down, const double r_up);
 
   /**
-   *  @brief the distance average l=2 spherical Bessel function 
-   *  this function is used to obtain the analytic twop quadrupole covariance
-   *  @param k the variable k
+   *  @brief the distance average l=2 spherical Bessel function this
+   *  function is used to obtain the analytic twop quadrupole
+   *  covariance
+   *  @param kk the variable k
    *  @param r_down the lower limit of the twopcf bin
    *  @param r_up the upper limit of the twopcf bin
    *  @return the distance average l=2 spherical Bessel function
    */
-  double j2_distance_average (const double k, const double r_down, const double r_up);
+  double j2_distance_average (const double kk, const double r_down, const double r_up);
      
   /**
    *  @brief the generic integrand to obtain the distance average 
    *   spherical Bessel function of order l
-   *  @param r the variable r
+   *  @param rr the variable r
    *  @param params the parameters for the function
    *  @return the distance average l=2 spherical Bessel function
    */
-  double jl_spherical_integrand (double r, void *params);
+  double jl_spherical_integrand (double rr, void *params);
   
- /**
+  /**
    *  @brief the distance average for the order l-th spherical Bessel function 
-   *  @param k the variable k
+   *  @param kk the variable k
    *  @param order the shperical Bessel function order
    *  @param r_down the lower limit of the twopcf bin
    *  @param r_up the upper limit of the twopcf bin
    *  @return the distance average l spherical Bessel function
    */
-   double jl_distance_average (const double k, const int order, const double r_down, const double r_up);
-   
+   double jl_distance_average (const double kk, const int order, const double r_down, const double r_up);
+
+  /**
+   *  @brief function to integrate ordered data via trapezoid rule 
+   *  @param xx the point in which function is defined
+   *  @param yy values of the function 
+   *  @return the definite integral of the function
+   */
+   double trapezoid_integration(const vector<double> xx, const vector<double> yy);
+
+  /**
+   *  @brief function to integrate using GSL qag method 
+   *  @param Func the GSL function to be integrated
+   *  @param a the lower limit of the integral
+   *  @param b the upper limit of the integral
+   *  @param prec the relative error tolerance
+   *  @param limit_size the maximum size of workspace
+   *  @param rule the rule of integration
+   *  @return the definite integral of the function
+   */
+   double GSL_integrate_qag(gsl_function Func, const double a, const double b, const double prec=1.e-2, const int limit_size=1000, const int rule=6);
 
   ///@}
 
@@ -1356,19 +1366,20 @@ namespace cosmobl {
 
   /**
    *  @brief the first, second and third quartiles of a vector
-   *  @param [in] vect the input vector
-   *  @param [out] first quartile
-   *  @param [out] second quartile
-   *  @param [out] third quartile
-   *  @return none
+   *  @param vect the input vector
+   *  @return a vector containing the first, second and third
+   *  quartiles
    */
   template <typename T> 
-    void Quartile (vector<T> vect, T & first, T & second, T & third) 
+    vector<T> Quartile (vector<T> vect) 
     {
       sort (vect.begin(),vect.end()); 
       vector<T> vect1, vect2;
+      
       int start;
       int n = vect.size();
+      T first = 0, second = 0, third = 0;
+      
       if (n>0) {
 	if (n==1) {
 	  first = -1e10;
@@ -1376,41 +1387,40 @@ namespace cosmobl {
 	  third = 1e10;
 	}
 	if (n>1) {
-	  if (n % 2 == 0) { // the number of elemens is even
+	  if (n % 2 == 0)  // the number of elemens is even
 	    start = int(vect.size()*0.5);
-	  } else {
+	  else 
 	    start = int(vect.size()*0.5)+1;
-	  }
-	  for (unsigned int i=0; i<vect.size()*0.5; i++)
+	  
+	  for (size_t i=0; i<vect.size()*0.5; i++)
 	    vect1.push_back(vect[i]);
-	  for (unsigned int i=start; i<vect.size(); i++)
+	  for (size_t i=start; i<vect.size(); i++)
 	    vect2.push_back(vect[i]);
 
 	  // first quartile
 	  n = vect1.size();
-	  if (n % 2 == 0) { 
+	  if (n % 2 == 0) 
 	    first = (vect1[n*0.5-1]+vect1[(n*0.5)])*0.5;
-	  } else {
+	  else 
 	    first = vect1[(n+1)*0.5-1];
-	  }
-
+	  
 	  // second quartile = median
 	  n = vect.size();
-	  if (n % 2 == 0) { 
+	  if (n % 2 == 0)  
 	    second = (vect[n*0.5-1]+vect[(n*0.5)])*0.5;
-	  } else {
+	  else
 	    second = vect[(n+1)*0.5-1];
-	  }
-
+	 
 	  // third quartile
 	  n = vect2.size();
-	  if (n % 2 == 0) { 
+	  if (n % 2 == 0) 
 	    third = (vect2[n*0.5-1]+vect2[(n*0.5)])*0.5;
-	  } else {
+	  else 
 	    third = vect2[(n+1)*0.5-1];
-	  }
 	}
       }
+
+      return {first, second, third};
     }
 
   /**
@@ -1734,6 +1744,7 @@ namespace cosmobl {
    *  variable 
    *  @param [out] fx vector containing the binned values of the
    *  distribution
+   *  @param [out] err vector containing the binned Poisson errors
    *  @param [in] FF vector containing the given set of data
    *  @param [in] WW vector containing the weights
    *  @param [in] nbin the number of bins
@@ -1748,7 +1759,7 @@ namespace cosmobl {
    *  @param [in] sigma &sigma; of the Gaussian kernel
    *  @return none
    */
-  void distribution (vector<double> &xx, vector<double> &fx, const vector<double> FF, const vector<double> WW, const int nbin, const bool linear=1, const string file_out=par::defaultString, const double fact=1., const double V1=par::defaultDouble, const double V2=par::defaultDouble, const bool bin_type=1, const bool conv=0, const double sigma=0);
+  void distribution (vector<double> &xx, vector<double> &fx, vector<double> &err, const vector<double> FF, const vector<double> WW, const int nbin, const bool linear=1, const string file_out=par::defaultString, const double fact=1., const double V1=par::defaultDouble, const double V2=par::defaultDouble, const bool bin_type=1, const bool conv=0, const double sigma=0);
 
   /**
    *  @brief simple Monte Carlo integration of f(x)
@@ -1798,13 +1809,10 @@ namespace cosmobl {
    *  interpolation; "BaryRat" &rarr; barycentric rational
    *  interpolation
    *
-   *  @param Num number of points used in the polynomial, diagonal
-   *  rational and barycentric rational interpolations
-   *
    *  @param stepsize the binning size
    *  @return the first derivative of the function y(x)
    */
-  double D1 (const double, const vector<double>, const vector<double>, const string, const int, const double);
+  double D1 (const double, const vector<double>, const vector<double>, const string, const double);
 
   /**
    *  @brief compute the second derivative of a given function
@@ -1819,13 +1827,10 @@ namespace cosmobl {
    *  interpolation; "BaryRat" &rarr; barycentric rational
    *  interpolation
    *
-   *  @param Num number of points used in the polynomial, diagonal
-   *  rational and barycentric rational interpolations
-   *
    *  @param stepsize the binning size
    *  @return the second derivative of the function y(x)
    */
-  double D2 (const double, const vector<double>, const vector<double>, const string, const int, const double);
+  double D2 (const double, const vector<double>, const vector<double>, const string, const double);
 
   /**
    *  @brief compute the n-th order derivative of a given function
@@ -1841,13 +1846,10 @@ namespace cosmobl {
    *  interpolation; "BaryRat" &rarr; barycentric rational
    *  interpolation
    *
-   *  @param Num number of points used in the polynomial, diagonal
-   *  rational and barycentric rational interpolations
-   *
    *  @param stepsize the binning size
    *  @return the nd derivative of the function y(x)
    */
-  double Deriv (const int, const double, const vector<double>, const vector<double>, const string, const int Num=-1, const double stepsize=1.);
+  double Deriv (const int, const double, const vector<double>, const vector<double>, const string, const double stepsize=1.);
 
   /**
    *  @brief compute the n-th order derivative of a given function
@@ -1868,7 +1870,7 @@ namespace cosmobl {
    *  @param stepsize the binning size
    *  @return the nd derivative of the function y(x)
    */
-  template<typename T> double Deriv(const int nd, const double XX, const T &Func, const string interpType, const int Num=-1, const double stepsize=1.) {
+  template<typename T> double Deriv (const int nd, const double XX, const T &Func, const string interpType, const int Num=-1, const double stepsize=1.) {
     double err = -1.;
     double DD = dfridr(Func, XX, stepsize, err);
       
@@ -1887,13 +1889,13 @@ namespace cosmobl {
       for (unsigned int i=0; i<xg.size(); i++) 
 	yg.push_back(Func(xg[i]));
 
-      DD = Deriv(nd,XX,xg,yg,interpType,Num,stepsize);
+      DD = Deriv(nd, XX, xg, yg, interpType, stepsize);
     
     } 
   
     if (err>fabs(DD)*1.e-1) { 
       double errR = err/fabs(DD)*100.;
-      string Warn = "Attention: the error in the derivative is = " + conv(errR,par::fDP3) + " % !"; 
+      string Warn = "Attention: the error in the derivative is = " + conv(errR, par::fDP3) + " % !"; 
       WarningMsg(Warn);
     }
 
@@ -3031,6 +3033,83 @@ namespace cosmobl {
    */
   double Pl_integrand(const double mu, void *parameters);
 
+  /**
+   * @brief integrand of the 2d power spectrum to obtain sigma^2(k)
+   * @param mu the value mu
+   * @param parameters the parameters for the integration
+   * @return the sigma2 integrand
+   */
+  double sigma2_integrand(const double mu, void *parameters);
+
+  /**
+   * @brief integrand to obtain the 2PCF multipoles
+   * @param kk the value kk
+   * @param parameters the parameters for the integration
+   * @return the 2pcf multipoles integrand
+   */
+  double covariance_XiMultipoles_integrand(const double kk, void *parameters);
+
+  /**
+   * @brief integrand to obtain covariance for the 2PCF multipoles
+   * @param kk the value kk
+   * @param parameters the parameters for the integration
+   * @return the covariance of 2pcf multipoles integrand
+   */
+  double XiMultipoles_integrand(const double kk, void *parameters);
+
+  /**
+   * @brief function to obtain Pk multipoles from linear RSD (Kaiser)
+   * @param orders the l-th multipole desired
+   * @param kk the scales k
+   * @param Pk the power spectrum
+   * @param bias the bias factor
+   * @param f the linear growth factor
+   * @return the power spectrum multipoles
+   */
+  vector<vector<double> > Pk_multipole_Kaiser(const vector<int> orders, const vector<double> kk, const vector<double> Pk, const double bias, const double f);
+
+  /**
+   * @brief multipole expansion of the per-mode covariance sigma2_k
+   * (see i.e. Grieb et al. 2016, eq. 15)
+   * @param nObjects number of objects in the sample
+   * @param Volume the sample volume
+   * @param kk the scales kk
+   * @param Pk_multipoles the power spectrum multipoles 
+   * @param orders the power spectrum multipoles orders
+   * @return the sigma2_k (see i.e. Grieb et al. 2016, eq. 15)
+   */
+  vector< vector<double> > sigma2_k(const double nObjects, const double Volume, const vector<double> kk, const vector<vector<double> > Pk_multipoles, const vector<int> orders);
+
+  /**
+   * @brief Covariance matrix for 2pcf multipoles
+   * @param nbin number of configuration space bins
+   * @param rMin minimum configuration space scale
+   * @param rMax maximum configuration space scale
+   * @param nObjects number of objects in the sample
+   * @param Volume the sample volume
+   * @param kk the scales kk
+   * @param Pk_multipoles the power spectrum multipoles 
+   * @param orders the power spectrum multipoles orders
+   * @return the 2pcf multipoles covariance matrix
+   */
+  vector<vector<double> > Covariance_XiMultipoles (const int nbin, const double rMin, const double rMax, const double nObjects, const double Volume, const vector<double> kk, const vector<vector<double> > Pk_multipoles, const vector<int> orders);
+
+  /**
+   * @brief Covariance matrix for 2pcf wedges
+   * @param mu the lower wedge integratin limit
+   * @param delta_mu the wedge mu bin size
+   * @param nbin number of configuration space bins
+   * @param rMin minimum configuration space scale
+   * @param rMax maximum configuration space scale
+   * @param nObjects number of objects in the sample
+   * @param Volume the sample volume
+   * @param kk the scales kk
+   * @param Pk_multipoles the power spectrum multipoles 
+   * @param orders the power spectrum multipoles orders
+   * @return the 2pcf multipoles covariance matrix
+   */
+  vector<vector<double> > Covariance_XiWedges (const vector<double> mu, const vector<double> delta_mu, const int nbin, const double rMin, const double rMax, const double nObjects, const double Volume, const vector<double> kk, const vector<vector<double> > Pk_multipoles, const vector<int> orders);
+
   ///@}
 
 
@@ -3092,15 +3171,20 @@ namespace cosmobl {
       int order;
       double k;
     };
+  
+    struct STR_Pl_mu_integral
+    {
+      int order;
+    };
 
     struct STR_Pl_integrand
     {
       int l;
-      vector<double> mu, Pmu;
+      double Pk,bias,f;
     };
   }
-
 }
+
 
 #include "FuncClassFunc.h"
 #include "Chi2ClassFunc.h"

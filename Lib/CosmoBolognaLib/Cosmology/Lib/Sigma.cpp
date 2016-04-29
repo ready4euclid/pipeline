@@ -210,30 +210,27 @@ string cosmobl::Cosmology::create_grid_sigmaM (const string method_SS, const dou
 
   if (!fin) {
 
-    cout <<"I'm creating the grid file with sigma(M): "<<file_grid.c_str()<<"..."<<endl;
+    cout << endl << "I'm creating the grid file with sigma(M): " << file_grid.c_str() << "..." << endl;
     
-    ofstream fout (file_grid.c_str()); checkIO (file_grid,0); 
+    ofstream fout (file_grid.c_str()); checkIO (file_grid, 0); 
 
-    double Mmin = 1.e6;
-    double Mmax = 3.e16;
-    int bin = 1000;
-    double delta_logM = (log10(Mmax)-log10(Mmin))/bin;
-
-    double MM = Mmin;
+    vector<double> MM = logarithmic_bin_vector(1000, 1.e6, 3.e16);
+    
     double SSS, Sigma, Dln_Sigma;
     
-    for (int k=0; k<bin; k++) {
-      SSS = SSM_norm(MM, method_SS, redshift, output_root, kmax, file_par);
+    for (size_t k=0; k<MM.size(); k++) {
+      cout.setf(ios::fixed); cout.setf(ios::showpoint); cout.precision(1);
+      cout << "\r..." << double(k)/double(MM.size())*100. << "% completed \r"; cout.flush(); 
+
+      SSS = SSM_norm(MM[k], method_SS, redshift, output_root, kmax, file_par);
       Sigma = sqrt(SSS);
-      Dln_Sigma = dnSM(1, MM, method_SS, redshift, output_root, interpType, Num, stepsize, kmax, file_par)*(MM/(2.*SSS));
-      fout <<MM<<"   "<<Sigma<<"   "<<Dln_Sigma<<endl;
-      cout <<"M = "<<MM<<" ---> Sigma(M) =  "<<Sigma<<", dlnSigma(M) = "<<Dln_Sigma<<endl;
-      MM *= pow(10.,delta_logM);
+      Dln_Sigma = dnSM(1, MM[k], method_SS, redshift, output_root, interpType, Num, stepsize, kmax, file_par)*(MM[k]/(2.*SSS));
+      fout << MM[k] << "   " << Sigma << "   " << Dln_Sigma << endl;
     }
 
-    fout.clear(); fout.close();
-    //cout <<"I wrote the file: "<<file_grid<<endl;
+    fout.clear(); fout.close(); cout << endl << "I wrote the file: " << file_grid << endl;
   }
+  
   fin.clear(); fin.close();
 
   return file_grid;

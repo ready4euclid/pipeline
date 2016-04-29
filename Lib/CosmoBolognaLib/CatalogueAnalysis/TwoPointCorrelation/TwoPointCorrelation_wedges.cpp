@@ -231,13 +231,13 @@ void cosmobl::twopt::TwoPointCorrelation_wedges::measureJackknife (const string 
   else
     data = XiJackknife(dd_regions, rr_regions);
 
-  vector<vector<double> > ww,covariance;
-  for(size_t i=0;i<data.size();i++){
+  vector<vector<double> > ww, covariance;
+  for (size_t i=0; i<data.size(); i++) {
     ww.push_back(data[i]->fx());
-    if (dir_output_ResampleXi != par::defaultString){
-      string filename = dir_output_ResampleXi+"xi_wedges_Jackknife_"+conv(i,par::fINT);
-      ofstream fout(filename.c_str());
-      fout.clear(); fout.close();
+    
+    if (dir_output_ResampleXi != par::defaultString) {
+      string file = dir_output_ResampleXi+"xi_wedges_Jackknife_"+conv(i,par::fINT)+".dat";
+      ErrorMsg("Work in progress in cosmobl::twopt::TwoPointCorrelation_wedges::measureJackknife of TwoPointCorrelation_wedges.cpp...");
     }
   }
 
@@ -271,13 +271,13 @@ void cosmobl::twopt::TwoPointCorrelation_wedges::measureBootstrap (const int nMo
     data = XiBootstrap(nMocks, dd_regions, rr_regions);
 
   vector<vector<double> > ww, covariance;
-  for(size_t i=0;i<data.size();i++){
+  
+  for(size_t i=0; i<data.size(); i++) {
     ww.push_back(data[i]->fx());
-    if (dir_output_ResampleXi != par::defaultString){
-      string filename = dir_output_ResampleXi+"xi_wedges_Bootstrap_"+conv(i, par::fINT);
-      ofstream fout(filename.c_str());
-      fout.clear(); fout.close();
-
+    
+    if (dir_output_ResampleXi != par::defaultString) {
+      string filename = dir_output_ResampleXi+"xi_wedges_Bootstrap_"+conv(i, par::fINT)+".dat";
+      ErrorMsg("Work in progress in cosmobl::twopt::TwoPointCorrelation_wedges::measureBootstrap of TwoPointCorrelation_wedges.cpp...");
     }
   }
   covariance_matrix(ww, covariance, 0);

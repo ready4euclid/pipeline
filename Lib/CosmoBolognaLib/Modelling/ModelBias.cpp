@@ -90,19 +90,17 @@ void cosmobl::ModelBias::set_xi_parameters_cosmology (const shared_ptr<Cosmology
 // ============================================================================================
 
 
-void cosmobl::ModelBias::set_wp_parameters (const vector<double> r, const shared_ptr<Cosmology> cosmology, const double redshift, const double pi_max, const string type, const int nPt, const string method, const string output_root, const int norm, const double r_min, const double r_max, const double k_min, const double k_max, const double aa, const bool GSL, const double prec, const string file_par)
+void cosmobl::ModelBias::set_wp_parameters (const vector<double> r, const shared_ptr<Cosmology> cosmology, const double redshift, const double pi_max, const string type, const int nPt, const string method, const string output_root, const bool NL, const int norm, const double r_min, const double r_max, const double k_min, const double k_max, const double aa, const bool GSL, const double prec, const string file_par)
 {
-
   auto model_parameters = make_shared<cosmobl::glob::STR_twop_model>(cosmobl::glob::STR_twop_model());
 
-  model_parameters->r=r;
+  model_parameters->r = r;
 
-  for(size_t i=0;i<r.size();i++)
-    model_parameters->xi.push_back(cosmology->wp_DM(r[i], method, redshift, output_root,norm,r_min,r_max,k_min,k_max,aa,GSL,prec,file_par));
+  for (size_t i=0; i<r.size(); i++)
+    model_parameters->xi.push_back(cosmology->wp_DM(r[i], method, redshift, output_root, NL, norm, r_min, r_max, k_min, k_max, aa, GSL, prec, file_par));
   
-
-  model_parameters->type=type;
-  model_parameters->nPt=nPt;
+  model_parameters->type = type;
+  model_parameters->nPt = nPt;
 
   m_model_parameters = move(model_parameters);
 

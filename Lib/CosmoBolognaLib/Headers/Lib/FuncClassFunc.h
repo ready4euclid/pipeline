@@ -51,16 +51,74 @@ namespace cosmobl {
     private: 
       vector<double> xg, yg;
       string interpType;
-      int Num;
 
     public:
-      func_grid (vector<double> _xg, vector<double> _yg, string _interpType, int _Num)
-	: xg(_xg), yg(_yg), interpType(_interpType), Num(_Num) {}  
+      func_grid (vector<double> _xg, vector<double> _yg, string _interpType)
+	: xg(_xg), yg(_yg), interpType(_interpType) {}  
   
       double operator() (double XX) 
       {
-	return interpolated(XX, xg, yg, interpType, Num);
+	return interpolated(XX, xg, yg, interpType);
       }
+    };
+
+
+    // =====================================================================================
+
+
+    class func_grid_GSL
+    {
+       private: 
+          gsl_spline *m_spline;
+          const gsl_interp_type *m_type;
+          gsl_interp_accel *m_acc;
+          size_t m_size;
+
+       public:
+          func_grid_GSL (vector<double> _xg, vector<double> _yg, string _interpType)
+          {
+             m_size = _xg.size();
+             m_acc = gsl_interp_accel_alloc();
+
+             if (_interpType=="Linear") 
+                m_type = gsl_interp_linear;
+
+             else if (_interpType=="Poly") 
+                m_type = gsl_interp_polynomial;
+
+             else if (_interpType=="Spline") 
+                m_type = gsl_interp_cspline;
+
+             else if (_interpType=="Spline_periodic") 
+                m_type = gsl_interp_cspline_periodic;
+
+             else if (_interpType=="Akima") 
+                m_type = gsl_interp_akima;
+
+             else if (_interpType=="Akima_periodic") 
+                m_type = gsl_interp_akima_periodic;
+
+             else if (_interpType=="Steffen") 
+                m_type = gsl_interp_steffen;
+
+             else 
+                ErrorMsg("Error in interpolated of Func.cpp: the value of string 'type' is not permitted!");
+
+             m_spline = gsl_spline_alloc (m_type, m_size); 
+             gsl_spline_init (m_spline, _xg.data(), _yg.data(), m_size);
+          }  
+
+          void free()
+          {
+             gsl_spline_free (m_spline);
+             gsl_interp_accel_free (m_acc);
+          }
+
+          double operator() (double XX) 
+          {
+             return gsl_spline_eval (m_spline, XX, m_acc);
+          }
+
     };
 
 
@@ -81,7 +139,7 @@ namespace cosmobl {
       { 
 	double lgk = log10(kk);
 
-	double lgPkK = interpolated(lgk, lgkk, lgPk, "Linear", -1);
+	double lgPkK = interpolated(lgk, lgkk, lgPk, "Linear");
 
 	double Int = pow(10.,lgPkK)*sin(kk*rr)*kk/rr;
 
@@ -107,7 +165,7 @@ namespace cosmobl {
       { 
 	double lgr = log10(rr);
 
-	double lgxiR = interpolated(lgr, lgrr, lgxi, "Linear", -1);
+	double lgxiR = interpolated(lgr, lgrr, lgxi, "Linear");
 
 	return pow(10.,lgxiR)*sin(rr*kk)*rr/kk;
       }
@@ -129,7 +187,7 @@ namespace cosmobl {
 
       double operator() (double rrr) 
       { 
-	return interpolated(rrr, rr, xi, "Linear", -1)/sqrt(rrr*rrr-rp*rp)*rrr;
+	return interpolated(rrr, rr, xi, "Linear")/sqrt(rrr*rrr-rp*rp)*rrr;
       }
 
     };
@@ -150,7 +208,7 @@ namespace cosmobl {
   
       double operator() (const double &rad) 
       {
-	double xiR = interpolated(rad, rr, xi, "Poly", 4); 
+	double xiR = interpolated(rad, rr, xi, "Poly"); 
 
 	return (3.-2.25*rad/RR+0.1875*pow(rad/RR,3))*rad*rad*xiR;
       }
@@ -172,7 +230,7 @@ namespace cosmobl {
   
       double operator() (const double &rad) 
       {
-	double wpR = interpolated(rad, rp, wp, "Poly", 4); 
+	double wpR = interpolated(rad, rp, wp, "Poly"); 
 
 	double xx = rad/RR, gg;
 	if (xx<=2) 
@@ -202,7 +260,7 @@ namespace cosmobl {
       {
 	double lgr = log10(rr);
 
-	double lgxiR = interpolated(lgr, lgrr, lgxi, "Linear", -1);
+	double lgxiR = interpolated(lgr, lgrr, lgxi, "Linear");
     
 	return (type==0) ? pow(10.,lgxiR)*pow(rr,2) : pow(10.,lgxiR)*pow(rr,4);
       }
@@ -220,17 +278,16 @@ namespace cosmobl {
     private: 
       vector<double> xg, yg;
       string interpType;
-      int Num;
 
     public:
       func_grid_minimum_1D (vector<double> _xg, vector<double> _yg, string _interpType, int _Num)
-	: xg(_xg), yg(_yg), interpType(_interpType), Num(_Num) {}  
+	: xg(_xg), yg(_yg), interpType(_interpType) {}  
   
       double operator() (VecDoub XX) 
       {
 	if (XX[0]>Max(xg) || XX[0] <Min(xg)) return 1.e30;
 
-	return interpolated(XX[0], xg, yg, interpType, Num);
+	return interpolated(XX[0], xg, yg, interpType);
       }
     };
 
@@ -243,20 +300,42 @@ namespace cosmobl {
       vector<double> x1g, x2g;
       vector<vector<double> > yg;
       string interpType;
-      int Num;
-
+      
     public:
       func_grid_minimum_2D (vector<double> _x1g, vector<double> _x2g, vector< vector<double> > _yg , string _interpType, int _Num)
-	: x1g(_x1g), x2g(_x2g), yg(_yg), interpType(_interpType), Num(_Num) {}  
+	: x1g(_x1g), x2g(_x2g), yg(_yg), interpType(_interpType) {}  
   
       double operator() (VecDoub XX) 
       {
 	if (XX[0]>Max(x1g) || XX[0] <Min(x1g)) {return 1.e30;}
 	if (XX[1]>Max(x2g) || XX[1] <Min(x2g)) return 1.e30;
 	
-	return interpolated_2D(XX[0], XX[1], x1g, x2g, yg, interpType, Num);
+	return interpolated_2D(XX[0], XX[1], x1g, x2g, yg, interpType);
       }
     };
+
+  }
+
+  namespace glob {
+     struct STR_sigma2_integrand
+     {
+        int l1, l2;
+        double density_inv,kk;
+        vector<int> orders;
+        vector<classfunc::func_grid_GSL> Pk_multipoles_interp;
+     };
+
+     struct STR_XiMultipoles_integrand
+     {
+        double r;
+        int l;
+        classfunc::func_grid_GSL *Pkl;
+     };
+
+     struct STR_covariance_XiMultipoles_integrand
+     {
+        classfunc::func_grid_GSL *s2, *jl1r1, *jl2r2;
+     };
 
   }
 }

@@ -14,18 +14,18 @@ dir_H = $(addprefix $(PWD)/,$(Dir_H))
 dir_O = $(addprefix $(PWD)/,$(Dir_O))
 dir_M = $(addprefix $(PWD)/,$(Dir_M))
 dir_EH = $(addprefix $(PWD)/,$(Dir_EH))
+dir_PYLIB =  $(HOME)/.local/lib/python2.7/site-packages/
 
 dir_Python = $(PWD)/Python/
 
 HH = $(dir_H)*.h $(dir_O)*.h $(dir_M)*.h
 
-FLAGS_INC = -I$(dir_H) -I$(dir_O) -I$(dir_M) -I$(dir_EH) -isystem $(HOME)/Numerical/ -I$(HOME)/include/ 
+FLAGS_INC = -I$(HOME)/include/ -I/usr/local/include/ -I$(dir_H) -I$(dir_O) -I$(dir_M) -I$(dir_EH) -isystem $(HOME)/Numerical/ 
 FLAGS_FFTW = -lfftw3 -lfftw3_omp
 FLAGS_GSL = -lgsl -lgslcblas -lm -L$(HOME)/lib 
 FLAGS_LINK = -shared
 
 PFLAGS = -I/usr/include/python2.7 
-
 
 ES = so
 
@@ -37,6 +37,9 @@ ifeq ($(SYS),MAC)
 	FLAGS_FFTW = -lfftw3 
 	FLAGS_LINK = -dynamiclib -undefined suppress -flat_namespace
         ES = dylib
+	dir_PYLIB = $(HOME)/Library/Python/2.7/lib/python/site-packages/
+	FLAGS_PY = -L/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config -lpython2.7 -ldl
+
 endif
 
 FLAGST = $(FLAGS0) $(FLAGS)
@@ -209,8 +212,8 @@ allExamples:
 	cd $(PWD)/Examples/clustering/codes ; make 3pt && cd ../..
 
 python: $(OBJ_CBL) $(dir_Python)CBL_wrap.o
-	g++ -shared $(OBJ_CBL) $(dir_Python)CBL_wrap.o -o $(HOME)/.local/lib/python2.7/site-packages/_CosmoBolognaLib.$(ES) $(FLAGS_GSL) $(FLAGS_FFTW) -lgomp
-	cp $(dir_Python)CosmoBolognaLib.py* $(HOME)/.local/lib/python2.7/site-packages/
+	$(C) -shared $(OBJ_CBL) $(dir_Python)CBL_wrap.o -o $(dir_PYLIB)_CosmoBolognaLib.so $(FLAGS_GSL) $(FLAGS_FFTW) -lgomp $(FLAGS_PY)
+	cp $(dir_Python)CosmoBolognaLib.py* $(dir_PYLIB)
 
 python2: $(dir_Python)CBL_wrap.cxx $(dir_Python)CBL.i $(dir_Python)setup.py $(HH) $(PWD)/Makefile
 	$(call colorecho, "\n"Compiling the python wrapper. It may take a few minutes ... "\n")
@@ -265,7 +268,7 @@ purgepy:
 
 clean:
 	make cleanExamples
-	rm -f $(OBJ_ALL) core* $(PWD)/*~ $(dir_FUNC)*~ $(dir_STAT)/*~ $(dir_STAT)/*~  $(dir_STAT)/*~ $(dir_STAT)/*~ $(dir_STAT)/*~ $(dir_STAT)/*~ $(dir_STAT)/*~ $(dir_COSM)*~ $(dir_CM)*~ $(dir_CAT)*~ $(dir_LN)*~ $(dir_TWOP)*~ $(dir_MODEL)*~ $(dir_THREEP)*~ $(dir_GLOB)*~ $(dir_H)*~ $(dir_O)*~ $(dir_M)*~ $(PWD)/\#* $(dir_FUNC)\#* $(dir_STAT)\#* $(dir_COSM)\#* $(dir_CM)\#* $(dir_CAT)\#* $(dir_LN)\#* $(dir_TWOP)\#* $(dir_MODEL)\#* $(dir_THREEP)\#* $(dir_GLOB)\#* $(dir_H)\#* $(dir_O)\#* $(dir_M)\#* $(PWD)/Doc/WARNING_LOGFILE*
+	rm -f $(OBJ_ALL) core* $(PWD)/*~ $(dir_FUNC)*~ $(dir_STAT)/*~ $(dir_STAT)/*~  $(dir_STAT)/*~ $(dir_STAT)/*~ $(dir_STAT)/*~ $(dir_STAT)/*~ $(dir_STAT)/*~ $(dir_COSM)*~ $(dir_CM)*~ $(dir_CAT)*~ $(dir_LN)*~ $(dir_TWOP)*~ $(dir_MODEL)*~ $(dir_THREEP)*~ $(dir_GLOB)*~ $(dir_H)*~ $(dir_O)*~ $(dir_M)*~ $(PWD)/\#* $(dir_FUNC)\#* $(dir_STAT)\#* $(dir_COSM)\#* $(dir_CM)\#* $(dir_CAT)\#* $(dir_LN)\#* $(dir_TWOP)\#* $(dir_MODEL)\#* $(dir_THREEP)\#* $(dir_GLOB)\#* $(dir_H)\#* $(dir_O)\#* $(dir_M)\#* $(PWD)/Doc/WARNING_LOGFILE* $(PWD)/Doc/*~
 
 purge:
 	make clean
@@ -275,16 +278,18 @@ purgeALL:
 	make purge
 	make cleanpy
 	rm -rf Cosmology/Tables/* ;
-	rm -rf External/grid_SigmaM/* ;
-	rm -rf External/table_dc/* ;
-	rm -rf External/EisensteinHu/output_linear/* ;
+	cd External/CAMB ; make clean ; cd .. ;
 	rm -rf External/CAMB/output_linear/* ;
 	rm -rf External/CAMB/output_nonlinear/* ;
-	rm -rf External/grid_NG/* ;
-	rm -rf External/MPTbreeze-v1/output_linear/* ;
-	rm -rf External/MPTbreeze-v1/output_nonlinear/* ;
+	cd External/classgal_v1/ ; make clean ; cd .. ;
 	rm -rf External/classgal_v1/output_linear/* ;
 	rm -rf External/classgal_v1/output_nonlinear/* ;
+	rm -rf External/EH/*.o External/EH/*~ ;
+	cd External/fftlog-f90-master/ ; make clean ; cd .. ;
+	cd External/mangle/src ; make clean ; cd .. ;
+	rm -rf External/MPTbreeze-v1/*~ ;
+	rm -rf External/MPTbreeze-v1/output_linear/* ;
+	rm -rf External/MPTbreeze-v1/output_nonlinear/* ;
 
 
 #################################################################### 

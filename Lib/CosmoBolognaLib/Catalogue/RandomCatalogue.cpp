@@ -145,8 +145,8 @@ cosmobl::catalogue::Catalogue::Catalogue (const RandomType type, const Catalogue
   // smoothing the redshift distribution by Gaussian kernel with 0 mean and sigma standard deviation 
   
   vector<double> redshift = catalogue.var(_Redshift_), redshiftB = redshift;
-  vector<double> xx, yy;
-  distribution(xx, yy, redshift, {}, nbin, 1, par::defaultString, 1, Min(redshift), Max(redshift), 1, conv, sigma);
+  vector<double> xx, yy, err;
+  distribution(xx, yy, err, redshift, {}, nbin, 1, par::defaultString, 1, Min(redshift), Max(redshift), 1, conv, sigma);
 
   
   // extracting the redshifts from the smoothed distribution
@@ -368,11 +368,11 @@ cosmobl::catalogue::Catalogue::Catalogue (const RandomType type, const int nRand
 
   // compute the redshift distribution and store
 
-  vector<double> xx, fx;
+  vector<double> xx, fx, err;
   double redshift_min = Min(redshift)*0.9999;
   double redshift_max = Max(redshift)*1.0001;
   string file_nz = "file_nz";
-  distribution(xx, fx, redshift, {}, step_redshift, 1, file_nz, 1., redshift_min, redshift_max, 1, 1, 0.05);
+  distribution(xx, fx, err, redshift, {}, step_redshift, 1, file_nz, 1., redshift_min, redshift_max, 1, 1, 0.05);
   
     
   // construct the random catalogue using venice

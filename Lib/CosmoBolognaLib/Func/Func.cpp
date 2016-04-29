@@ -533,75 +533,64 @@ double cosmobl::DoubleSwap (const double d)
 // ============================================================================
 
 
-double cosmobl::interpolated (const double _xx, const vector<double> xx, const vector<double> yy, const string type, const int nPt, double &err)
+double cosmobl::interpolated (const double _xx, const vector<double> xx, const vector<double> yy, const string type)
 {
   if (xx.size()!=yy.size()) 
     ErrorMsg("Error in interpolated of Func.cpp)!");
 
   size_t size = xx.size();
 
-  if(_xx<xx[0]){ //Perform a linear extrapolation
+  if (_xx<xx[0]) // perform a linear extrapolation
     return yy[0]+(_xx-xx[0])/(xx[1]-xx[0])*(yy[1]-yy[0]);
-  }
-  else if(_xx>xx[size-1]){
+
+  else if (_xx>xx[size-1])
     return yy[size-2]+(_xx-xx[size-2])/(xx[size-1]-xx[size-2])*(yy[size-1]-yy[size-2]);
-  }
+  
 
   gsl_interp_accel *acc = gsl_interp_accel_alloc();
-  const gsl_interp_type *T;
+  const gsl_interp_type *TT;
   
   if (type=="Linear") 
-    T = gsl_interp_linear;
+    TT = gsl_interp_linear;
 
   else if (type=="Poly") 
-    T = gsl_interp_polynomial;
+    TT = gsl_interp_polynomial;
 
   else if (type=="Spline") 
-    T = gsl_interp_cspline;
+    TT = gsl_interp_cspline;
 
   else if (type=="Spline_periodic") 
-    T = gsl_interp_cspline_periodic;
+    TT = gsl_interp_cspline_periodic;
   
   else if (type=="Akima") 
-    T = gsl_interp_akima;
+    TT = gsl_interp_akima;
   
   else if (type=="Akima_periodic") 
-    T = gsl_interp_akima_periodic;
+    TT = gsl_interp_akima_periodic;
   
   else if (type=="Steffen") 
-    T = gsl_interp_steffen;
+    TT = gsl_interp_steffen;
   
   else 
     ErrorMsg("Error in interpolated of Func.cpp: the value of string 'type' is not permitted!");
 
-  gsl_interp *interp = gsl_interp_alloc(T, size);
-  gsl_interp_init(interp,xx.data(),yy.data(),size);
+  gsl_interp *interp = gsl_interp_alloc(TT, size);
+  gsl_interp_init(interp, xx.data(), yy.data(), size);
   double _yy = gsl_interp_eval(interp, xx.data(), yy.data() ,_xx,acc);
 
   gsl_interp_free(interp);
   gsl_interp_accel_free(acc);
+  
   return _yy;
-
 }
 
 
 // ============================================================================
 
 
-double cosmobl::interpolated (const double _xx, const vector<double> xx, const vector<double> yy, const string type, const int nPt)
+double cosmobl::interpolated_2D (const double _x1, const double _x2, const vector<double> x1, const vector<double> x2, const vector<vector<double> > yy, const string type)
 {
-  double err = -1.;
-  return interpolated(_xx, xx, yy, type, nPt, err);
-}
-
-
-// ============================================================================
-
-
-double cosmobl::interpolated_2D (const double _x1, const double _x2, const vector<double> x1, const vector<double> x2, const vector<vector<double> > yy, const string type, const int nPt)
-{
-
-  bool extr=0;
+  bool extr = false;
 
   const size_t size_x1 = x1.size();
   const size_t size_x2 = x2.size();
@@ -612,18 +601,18 @@ double cosmobl::interpolated_2D (const double _x1, const double _x2, const vecto
 
   gsl_interp_accel *x1acc = gsl_interp_accel_alloc();
   gsl_interp_accel *x2acc = gsl_interp_accel_alloc();
-  const gsl_interp2d_type *T=gsl_interp2d_bilinear;
+  const gsl_interp2d_type *TT = gsl_interp2d_bilinear;
 
   if (type=="Linear") 
-    T = gsl_interp2d_bilinear;
+    TT = gsl_interp2d_bilinear;
 
   else if (type=="Cubic") 
-    T = gsl_interp2d_bicubic;
+    TT = gsl_interp2d_bicubic;
 
-  gsl_interp2d *interp = gsl_interp2d_alloc(T, size_x1, size_x2);
+  gsl_interp2d *interp = gsl_interp2d_alloc(TT, size_x1, size_x2);
 
-  for(size_t i=0;i<size_x1;i++)
-    for(size_t j=0;j<size_x2;j++)
+  for (size_t i=0; i<size_x1; i++)
+    for (size_t j=0; j<size_x2; j++)
       ydata[j+i*size_x2] = yy[i][j];
 
   double val;
@@ -682,18 +671,18 @@ void cosmobl::invert_matrix (const vector<vector<double> > mat, vector<vector<do
     for (int j=0; j<n; j++)
       gsl_matrix_set(mm, i, j, mat[i][j]);
 
-  // Make LU decomposition of matrix m
+  // make the LU decomposition of the matrix mm
   gsl_linalg_LU_decomp (mm, perm, &s);
 
-  // Invert the matrix m
+  // invert the matrix mm
   gsl_linalg_LU_invert (mm, perm, im);
 
   for (int i=0; i<n; i++)
     for (int j=0; j<n; j++)
       mat_inv[i][j] = gsl_matrix_get(im,i,j);
 
-  for(int i=0; i<n; i++) {
-    for(int j=0; j<n; j++) {
+  for (int i=0; i<n; i++) {
+    for (int j=0; j<n; j++) {
       double fact = (i==j) ? 1 : 0;
       double prod = 0;
       for (int el=0; el<n; el++)
@@ -1125,9 +1114,9 @@ int cosmobl::check_memory (const double frac, const bool exit, const string func
 // ============================================================================
 
   
-double cosmobl::D1 (const double XX, const vector<double> xx, const vector<double> yy, const string interpType, const int Num, const double stepsize)
+double cosmobl::D1 (const double XX, const vector<double> xx, const vector<double> yy, const string interpType, const double stepsize)
 {
-  cosmobl::classfunc::func_grid Func (xx, yy, interpType, Num);
+  cosmobl::classfunc::func_grid Func (xx, yy, interpType);
   double err = -1.;
   double D1 = dfridr(Func, XX, stepsize, err);
   if (err>D1*1.e-3) ErrorMsg("Error in D1 of Func.cpp!");
@@ -1138,13 +1127,13 @@ double cosmobl::D1 (const double XX, const vector<double> xx, const vector<doubl
 // ============================================================================
 
 
-double cosmobl::D2 (const double XX, const vector<double> xx, const vector<double> yy, const string interpType, const int Num, const double stepsize)
+double cosmobl::D2 (const double XX, const vector<double> xx, const vector<double> yy, const string interpType, const double stepsize)
 {
   vector<double> dy;
   for (unsigned int i=0; i<xx.size(); i++)
-    dy.push_back(D1(xx[i], xx, yy, interpType, Num, stepsize));
+    dy.push_back(D1(xx[i], xx, yy, interpType, stepsize));
   
-  cosmobl::classfunc::func_grid Func (xx, dy, interpType, Num);
+  cosmobl::classfunc::func_grid Func (xx, dy, interpType);
   double err = -1.;
   double D2 = dfridr(Func, XX, stepsize, err);
   if (err>D2*1.e-3) ErrorMsg("Error in D2 of Func.h!");
@@ -1155,14 +1144,14 @@ double cosmobl::D2 (const double XX, const vector<double> xx, const vector<doubl
 // ============================================================================
 
 
-double cosmobl::Deriv (const int nd, const double XX, const vector<double> xx, const vector<double> yy, const string interpType, const int Num, const double stepsize)
+double cosmobl::Deriv (const int nd, const double XX, const vector<double> xx, const vector<double> yy, const string interpType, const double stepsize)
 {
   vector<double> dy;
-  for (unsigned int i=0; i<xx.size(); i++) 
-    if (nd-1>0) dy.push_back(Deriv(nd-1,xx[i],xx,yy,interpType,Num,stepsize));
+  for (size_t i=0; i<xx.size(); i++) 
+    if (nd-1>0) dy.push_back(Deriv(nd-1, xx[i], xx, yy, interpType, stepsize));
     else dy.push_back(yy[i]);
 
-  cosmobl::classfunc::func_grid Func (xx, dy, interpType, Num);
+  cosmobl::classfunc::func_grid Func (xx, dy, interpType);
   double err = -1.;
   double DD = dfridr(Func, XX, stepsize, err);
 
@@ -1238,7 +1227,7 @@ void cosmobl::random_numbers (const int nRan, const int idum, const vector<doubl
   for (int i=0; i<step; i++) {
     
     xx_interp.push_back(XXB);
-    fx_interp.push_back(interpolated(XXB, xx, fx, "Poly", 4));
+    fx_interp.push_back(interpolated(XXB, xx, fx, "Poly"));
     
     XXB += delta_bin;
   }
@@ -1435,7 +1424,7 @@ double cosmobl::func_grid_lin (double xx, void *params)
 {
   struct cosmobl::glob::STR_grid *pp = (struct cosmobl::glob::STR_grid *) params;
 
-  return interpolated(xx, pp->_xx, pp->_yy, "Linear", -1);
+  return interpolated(xx, pp->_xx, pp->_yy, "Linear");
 }
 
 
@@ -1448,7 +1437,7 @@ double cosmobl::func_grid_loglin (double xx, void *params)
  
   double lgx = log10(xx);
 
-  return interpolated(lgx, pp->_xx, pp->_yy, "Linear", -1);
+  return interpolated(lgx, pp->_xx, pp->_yy, "Linear");
 }
 
 
@@ -1461,7 +1450,7 @@ double cosmobl::func_grid_log (double xx, void *params)
  
   double lgx = log10(xx);
 
-  return pow(10., interpolated(lgx, pp->_xx, pp->_yy, "Linear", -1));
+  return pow(10., interpolated(lgx, pp->_xx, pp->_yy, "Linear"));
 }
 
 
@@ -1472,7 +1461,7 @@ double cosmobl::func_grid_lin_2D (double *xx, size_t dim, void *params)
 {
   struct cosmobl::glob::STR_grid_2D *pp = (struct cosmobl::glob::STR_grid_2D *) params;
    
-  return interpolated_2D(xx[0], xx[1], pp->_xx1, pp->_xx2, pp->_yy, "Linear", -1);
+  return interpolated_2D(xx[0], xx[1], pp->_xx1, pp->_xx2, pp->_yy, "Linear");
 }
 
 
@@ -1486,7 +1475,7 @@ double cosmobl::func_grid_loglin_2D (double *xx, size_t dim, void *params)
   double lgx1 = log10(xx[0]);
   double lgx2 = log10(xx[1]);
 
-  return interpolated_2D(lgx1, lgx2, pp->_xx1, pp->_xx2, pp->_yy, "Linear", -1);
+  return interpolated_2D(lgx1, lgx2, pp->_xx1, pp->_xx2, pp->_yy, "Linear");
 }
 
 
@@ -1500,7 +1489,7 @@ double cosmobl::func_grid_log_2D (double *xx, size_t dim, void *params)
   double lgx1 = log10(xx[0]);
   double lgx2 = log10(xx[1]);
 
-  return pow(10., interpolated_2D(lgx1, lgx2, pp->_xx1, pp->_xx2, pp->_yy, "Linear", -1));
+  return pow(10., interpolated_2D(lgx1, lgx2, pp->_xx1, pp->_xx2, pp->_yy, "Linear"));
 }
 
 /// @endcond
@@ -1596,7 +1585,7 @@ void cosmobl::fill_distr (const vector<double> var, const vector<double> prob, c
     while (go_on==0) {
       double VV = minVar+deltaVar*ran1();
       double pp = 2*deltaP*ran2()+minP;
-      double p2 = interpolated(VV, var, prob, "Spline", 3);
+      double p2 = interpolated(VV, var, prob, "Spline");
       if (abs(pp-p2)/p2<=0.01) { out_Var.push_back(VV); go_on = 1; }
     }
   }
@@ -1675,7 +1664,7 @@ void cosmobl::fill_distr (const int nRan, const vector<double> xx, const vector<
   vector<double> Fx(sz, 0.);
   vector<double> new_x = linear_bin_vector(sz, minVar, maxVar); 
 
-  cosmobl::classfunc::func_grid Int (xx, fx, "Poly", 4);
+  cosmobl::classfunc::func_grid Int (xx, fx, "Poly");
 
   Midpnt<cosmobl::classfunc::func_grid> qtot(Int, minVar, maxVar);
   double NN = qromo(qtot); // normalization of f(x)
@@ -1687,7 +1676,7 @@ void cosmobl::fill_distr (const int nRan, const vector<double> xx, const vector<
 
   for (int i=0; i<nRan; i++) {
     double pp = ran();
-    varRandom.push_back(interpolated(pp, Fx, new_x, "Poly", 4));
+    varRandom.push_back(interpolated(pp, Fx, new_x, "Poly"));
   }
 
 }
@@ -1850,12 +1839,9 @@ void cosmobl::convolution (const vector<double> f1, const vector<double> f2, vec
 // ============================================================================
 
 
-void cosmobl::distribution (vector<double> &xx, vector<double> &fx, const vector<double> FF, const vector<double> WW, const int nbin, const bool linear, const string file_out, const double fact, const double V1, const double V2, const bool bin_type, const bool conv, const double sigma)
+void cosmobl::distribution (vector<double> &xx, vector<double> &fx, vector<double> &err, const vector<double> FF, const vector<double> WW, const int nbin, const bool linear, const string file_out, const double fact, const double V1, const double V2, const bool bin_type, const bool conv, const double sigma)
 {
   if (xx.size()>0 || fx.size()>0 || FF.size()<=0 || nbin<=0) ErrorMsg("Error in distribution of Func.cpp!");
-
-  ofstream fout;
-  if (file_out!=par::defaultString) { fout.open (file_out.c_str()); checkIO(file_out,0); }
   
   double minFF = (V1>cosmobl::par::defaultDouble) ? V1 : Min(FF)*0.9999;
   double maxFF = (V2>cosmobl::par::defaultDouble) ? V2 : Max(FF)*1.0001;
@@ -1888,10 +1874,17 @@ void cosmobl::distribution (vector<double> &xx, vector<double> &fx, const vector
     double val = gsl_histogram_get(histo, i);
     
     if (linear) xx.push_back(0.5*(x1+x2));
-    else xx.push_back(pow(10.,0.5*(log10(x1)+log10(x2))));
+    else xx.push_back(pow(10., 0.5*(log10(x1)+log10(x2))));
 
-    if (bin_type) fx.push_back(val/((x2-x1)*fact));
-    else fx.push_back(val/((log10(x2)-log10(x1))*fact));
+    if (bin_type) {
+      fx.push_back(val/((x2-x1)*fact));
+      err.push_back(sqrt(val)/((x2-x1)*fact));
+    }
+    else {
+      fx.push_back(val/((log10(x2)-log10(x1))*fact));
+      err.push_back(sqrt(val)/((log10(x2)-log10(x1))*fact));
+    }
+    
   }
 
   
@@ -1946,105 +1939,146 @@ void cosmobl::distribution (vector<double> &xx, vector<double> &fx, const vector
       fx[i-i1] = func[i]/nbinN;
   }
 
-  if (file_out!=par::defaultString) {
+  
+  if (file_out!=par::defaultString && file_out!="") {
+
+    ofstream fout(file_out.c_str()); checkIO(file_out, 0);
+    
     for (size_t i=0; i<xx.size(); i++)
-      fout << xx[i] << "   " << fx[i] << endl;
+      fout << xx[i] << "   " << fx[i] << "   " << err[i] << endl;
+
     fout.clear(); fout.close(); cout << "I wrote the file: " << file_out << endl;
   }
-  
+
 }
 
 
 // ============================================================================
 
 
-double cosmobl::j0(const double x)
+double cosmobl::legendre_polynomial(const double mu, const int l)
 {
-   return gsl_sf_bessel_jl(0,x);
+  return gsl_sf_legendre_Pl(l,mu);
 }
 
 
 // ============================================================================
 
 
-double cosmobl::j2(const double x)
+double cosmobl::legendre_polynomial_integral (double mu, void *params)
 {
-   return gsl_sf_bessel_jl(2,x);
+
+  //  cosmobl::glob::STR_jl_distance_average *par = (cosmobl::glob::STR_jl_distance_average *)(params);
+  int *l = (int *)(params);
+  return legendre_polynomial(mu, *l);
+}
+
+
+// ============================================================================
+
+double cosmobl::Legendre_polynomial_mu_average (const int ll, const double mu, const double delta_mu)
+{
+  gsl_function Func;
+  Func.function = &cosmobl::legendre_polynomial_integral;
+  int lll = ll;
+  Func.params = &lll;
+
+  return GSL_integrate_qag(Func, mu, mu+delta_mu, 1.e-3, 1000, 6)/delta_mu;
 }
 
 
 // ============================================================================
 
 
-double cosmobl::j4(const double x)
+double cosmobl::j0 (const double xx)
 {
-   return gsl_sf_bessel_jl(4,x);
+  return gsl_sf_bessel_jl(0, xx);
 }
 
 
 // ============================================================================
 
 
-double cosmobl::jl(const double x, const int order)
+double cosmobl::j2 (const double xx)
 {
-   return gsl_sf_bessel_jl(order,x);
+  return gsl_sf_bessel_jl(2, xx);
 }
 
 
 // ============================================================================
 
 
-double cosmobl::j0_distance_average (const double k, const double r_down, const double r_up)
+double cosmobl::j4 (const double xx)
 {
-   double volume = (pow(r_up,3)-pow(r_down,3))/3;
-   double up = (sin(k*r_up)-k*r_up*cos(k*r_up))*pow(k,-3);
-   double down = (sin(k*r_down)-k*r_down*cos(k*r_down))*pow(k,-3);
-   return (up-down)/volume;
+  return gsl_sf_bessel_jl(4, xx);
 }
 
 
 // ============================================================================
 
 
-double cosmobl::j2_distance_average (const double k, const double r_down, const double r_up)
+double cosmobl::jl (const double xx, const int order)
 {
-   double volume = (pow(r_up,3)-pow(r_down,3))/3;
-   double up = (3*gsl_sf_Si(k*r_up)-4*sin(k*r_up)+k*r_up*cos(k*r_up))*pow(k,-3);
-   double down = (3*gsl_sf_Si(k*r_down)-4*sin(k*r_down)+k*r_down*cos(k*r_down))*pow(k,-3);
-   return (up-down)/volume;
+  return gsl_sf_bessel_jl(order, xx);
 }
 
 
 // ============================================================================
 
 
-double cosmobl::jl_spherical_integrand (double r, void *params)
+double cosmobl::j0_distance_average (const double kk, const double r_down, const double r_up)
 {
-   cosmobl::glob::STR_jl_distance_average *par = (cosmobl::glob::STR_jl_distance_average *)(params);
-   return r*r*gsl_sf_bessel_jl(par->order,par->k*r);
+  double volume = (pow(r_up,3)-pow(r_down,3))/3;
+  double up = (sin(kk*r_up)-kk*r_up*cos(kk*r_up))*pow(kk,-3);
+  double down = (sin(kk*r_down)-kk*r_down*cos(kk*r_down))*pow(kk,-3);
+  return (up-down)/volume;
 }
 
 
 // ============================================================================
 
 
-double cosmobl::jl_distance_average (const double k, const int order, const double r_down, const double r_up)
+double cosmobl::j2_distance_average (const double kk, const double r_down, const double r_up)
 {
-   double volume = (pow(r_up,3)-pow(r_down,3))/3;
-   cosmobl::glob::STR_jl_distance_average str;
-   str.order = order;
-   str.k = k;
+  double volume = (pow(r_up,3)-pow(r_down,3))/3;
+  double up = (3*gsl_sf_Si(kk*r_up)-4*sin(kk*r_up)+kk*r_up*cos(kk*r_up))*pow(kk,-3);
+  double down = (3*gsl_sf_Si(kk*r_down)-4*sin(kk*r_down)+kk*r_down*cos(kk*r_down))*pow(kk,-3);
+  return (up-down)/volume;
+}
 
-   gsl_function Func;
-   Func.function=&cosmobl::jl_spherical_integrand;
-   Func.params=&str;
-   double Int, error;
-   double prec=1.e-2;
-   int limit_size = 1000;
-   gsl_integration_workspace *ww = gsl_integration_workspace_alloc (limit_size);
-   gsl_integration_qag (&Func, r_down, r_up, 0., prec, limit_size, 6, ww, &Int, &error); 
 
-   return Int/volume;
+// ============================================================================
+
+
+double cosmobl::jl_spherical_integrand (double rr, void *params)
+{
+  cosmobl::glob::STR_jl_distance_average *par = (cosmobl::glob::STR_jl_distance_average *)(params);
+  return rr*rr*gsl_sf_bessel_jl(par->order, par->k*rr);
+}
+
+
+// ============================================================================
+
+
+double cosmobl::jl_distance_average (const double kk, const int order, const double r_down, const double r_up)
+{
+  double volume = (pow(r_up,3)-pow(r_down,3))/3;
+
+  cosmobl::glob::STR_jl_distance_average str;
+  str.order = order;
+  str.k = kk;
+
+  gsl_function Func;
+   
+  Func.function=&cosmobl::jl_spherical_integrand;
+  Func.params=&str;
+
+  double prec=1.e-2;
+  int limit_size = 1000;
+
+  double Int = cosmobl::GSL_integrate_qag(Func, r_down, r_up, prec, limit_size, 6);
+
+  return Int/volume;
 }
 
 
@@ -2102,6 +2136,41 @@ vector<double> cosmobl::generate_correlated_data(const vector<double> mean, cons
   }
 
   return cov_sample;
+}
+
+
+// ============================================================================
+
+
+double cosmobl::trapezoid_integration(const vector<double> xx, const vector<double> yy)
+{
+  double Int = 0.;
+
+  for (size_t i=0; i<xx.size()-1; i++)
+    Int += 0.5*(yy[i+1]+yy[i])*(xx[i+1]-xx[i]);
+  
+  return Int;
+}
+
+
+// ============================================================================
+
+
+double cosmobl::GSL_integrate_qag (gsl_function Func, const double a, const double b, const double prec, const int limit_size, const int rule)
+{
+  gsl_set_error_handler_off();
+
+  double Int, error;
+  gsl_integration_workspace *ww = gsl_integration_workspace_alloc(limit_size);
+  gsl_integration_qag (&Func, a, b, 0., prec, limit_size, rule, ww, &Int, &error); 
+  gsl_integration_workspace_free(ww);
+
+  if (error/fabs(Int)>prec) {
+    string Msg = "Warning in GSL_integrate_qag: unable to reach the requested precision: "+conv(error/fabs(Int), par::fDP3)+" "+conv(prec, par::fDP3);
+    WarningMsg(Msg);
+  }
+  
+  return Int;
 }
 
 

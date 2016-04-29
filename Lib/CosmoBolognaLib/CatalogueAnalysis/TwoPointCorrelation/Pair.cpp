@@ -671,9 +671,9 @@ void cosmobl::pairs::Pair1D_comoving_log::put (const shared_ptr<Object> obj1, co
 {
   double x1 = obj1->xx(), y1 = obj1->yy(), z1 = obj1->zz(), w1 = obj1->weight();
   double x2 = obj2->xx(), y2 = obj2->yy(), z2 = obj2->zz(), w2 = obj2->weight();
-
+  
   double tt = Euclidean_distance(x1, x2, y1, y2, z1, z2); 
-
+  
   if (m_rMin < tt && tt < m_rMax) {
 
     double ww = w1*w2;

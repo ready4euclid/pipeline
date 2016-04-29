@@ -160,8 +160,8 @@ void cosmobl::twopt::TwoPointCorrelation_projected::measureJackknife (const stri
     ww.push_back(data[i]->fx());
 
     if (dir_output_ResampleXi != par::defaultString && dir_output_ResampleXi != "") {
-      string filename = "xi_projected_Jackkknife_"+conv(i, par::fINT);
-      data[i]->write(dir_output_ResampleXi, filename, "rp", "xi_projected", 0);
+      string file = "xi_projected_Jackkknife_"+conv(i, par::fINT)+".dat";
+      data[i]->write(dir_output_ResampleXi, file, "rp", "xi_projected", 0);
     }
   }
 
@@ -198,8 +198,8 @@ void cosmobl::twopt::TwoPointCorrelation_projected::measureBootstrap (const int 
   for (size_t i=0; i<data.size(); i++) {
     ww.push_back(data[i]->fx());
     if (dir_output_ResampleXi != par::defaultString){
-      string filename = "xi_projected_Bootstrap_"+conv(i, par::fINT);
-      data[i]->write(dir_output_ResampleXi, filename, "rp", "xi_projected", 0);
+      string file = "xi_projected_Bootstrap_"+conv(i, par::fINT)+".dat";
+      data[i]->write(dir_output_ResampleXi, file, "rp", "xi_projected", 0);
     }
   }
   covariance_matrix(ww, covariance, 0);

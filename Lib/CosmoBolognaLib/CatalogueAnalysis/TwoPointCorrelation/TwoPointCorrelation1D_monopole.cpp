@@ -165,7 +165,7 @@ void cosmobl::twopt::TwoPointCorrelation1D_monopole::measureJackknife (const str
   for (int i=0; i<nRegions; i++) {
 
     if (dir_output_JackknifeXi !=par::defaultString && dir_output_JackknifeXi!="") {
-      string file = "xi_Jackknife_"+conv(i, par::fINT);
+      string file = "xi_Jackknife_"+conv(i, par::fINT)+".dat";
       data_SS[i]->write(dir_output_JackknifeXi, file, "rad", "xi", 0);
     }
 
@@ -209,7 +209,7 @@ void cosmobl::twopt::TwoPointCorrelation1D_monopole::measureBootstrap (const int
   for (int i=0; i<nMocks; i++) {
 
      if (dir_output_BootstrapXi!=par::defaultString && dir_output_BootstrapXi!="") {
-      string file = "xi_Bootstrap_"+conv(i, par::fINT);
+      string file = "xi_Bootstrap_"+conv(i, par::fINT)+".dat";
       data_SS[i]->write(dir_output_BootstrapXi, file, "rad", "xi", 0);
     }
 

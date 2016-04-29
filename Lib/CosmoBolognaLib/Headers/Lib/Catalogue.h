@@ -659,6 +659,7 @@ namespace cosmobl {
        * @param [in] var_name the variable name
        * @param [out] _var vector of variables
        * @param [out] dist vector of values of f(varibles)
+       * @param [out] err vector of Poissonian errors of f(varibles)
        * @param [in] nbin number of bins
        * @param [in] linear 1 &rarr; linear binning; 0 &rarr;
        * logarithmic binning
@@ -677,7 +678,7 @@ namespace cosmobl {
        * gaussian function used to convolve the distribution
        * @return none
        */
-      void var_distr (const Var, vector<double> &, vector<double> &, const int, const bool linear=1, const string file_out=par::defaultString, const double Volume=1., const bool norm=0, const double V1=par::defaultDouble, const double V2=par::defaultDouble, const bool bin_type=1, const bool convolution=0, const double sigma=0.) const;
+      void var_distr (const Var var_name, vector<double> &_var, vector<double> &dist, vector<double> &err, const int nbin, const bool linear=1, const string file_out=par::defaultString, const double Volume=1., const bool norm=0, const double V1=par::defaultDouble, const double V2=par::defaultDouble, const bool bin_type=1, const bool convolution=0, const double sigma=0.) const;
     
       /**
        * @brief get the total weight of the objects of the catalogue
@@ -899,10 +900,9 @@ namespace cosmobl {
        * @return object of class catalogue
        */
       Catalogue operator += (shared_ptr<Catalogue> cc)
-      {    
-	for (auto &&i : cc->m_sample)
-	  m_sample.push_back(move(i));
-
+      {
+	for (auto &&ss : cc->m_sample)
+	  m_sample.push_back(shared_ptr<Object>(new Object(*ss)));
 	return *this;
       }
 
@@ -912,10 +912,9 @@ namespace cosmobl {
        * @return object of class catalogue
        */
       Catalogue operator += (const Catalogue cc)
-      {    
-	for (auto &&i : cc.m_sample)
-	  m_sample.push_back(move(i));
-
+      {
+	for (auto &&ss : cc.m_sample)
+	  m_sample.push_back(shared_ptr<Object>(new Object(*ss)));
 	return *this;
       }
 

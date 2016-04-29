@@ -38,10 +38,10 @@ using namespace cosmobl;
 // ======================================================================================
 
 
-cosmobl::statistics::Model::Model (const vector<statistics::Parameter> parameters, const shared_ptr<void> model_parameters)
+cosmobl::statistics::Model::Model (const vector<Parameter> parameters, const shared_ptr<void> model_parameters)
   : m_model_parameters(model_parameters)
 {
-  for(size_t i=0;i<parameters.size();i++)
+  for (size_t i=0; i<parameters.size(); i++)
     m_parameters.push_back(move(make_shared<Parameter>(parameters[i])));
 
   m_npar = m_parameters.size();

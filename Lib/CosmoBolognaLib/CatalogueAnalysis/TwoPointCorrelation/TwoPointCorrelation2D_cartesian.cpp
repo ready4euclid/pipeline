@@ -109,7 +109,7 @@ void cosmobl::twopt::TwoPointCorrelation2D_cartesian::set_parameters (const binT
 // ============================================================================================
 
 
-void cosmobl::twopt::TwoPointCorrelation2D_cartesian::read(const string dir, const string file) 
+void cosmobl::twopt::TwoPointCorrelation2D_cartesian::read (const string dir, const string file) 
 {
   m_dataset->read(dir+file);
 }
@@ -121,7 +121,7 @@ void cosmobl::twopt::TwoPointCorrelation2D_cartesian::read(const string dir, con
 void cosmobl::twopt::TwoPointCorrelation2D_cartesian::write (const string dir, const string file, const int rank) const 
 {
   checkDim(m_dataset->xx(), m_dd->nbins_D1(), "rp"); checkDim(m_dataset->yy(), m_dd->nbins_D2(), "pi");
-  m_dataset->write(dir, file, "rp", "pi", "xi", rank);
+  m_dataset->write(dir, file, "rp", "pi", "xi", true, rank);
 }
 
 
@@ -197,7 +197,7 @@ void cosmobl::twopt::TwoPointCorrelation2D_cartesian::measureJackknife (const st
   for (int i=0; i<nRegions; i++) {
 
     if(dir_output_JackknifeXi !=par::defaultString) {
-      string file = "xi_Jackknife_"+conv(i, par::fINT);
+      string file = "xi_Jackknife_"+conv(i, par::fINT)+".dat";
       data_SS[i]->write(dir_output_JackknifeXi, file, "rp", "pi", "xi", 0);
     }
 
@@ -249,7 +249,7 @@ void cosmobl::twopt::TwoPointCorrelation2D_cartesian::measureBootstrap (const in
 
   for (int i=0; i<nMocks; i++) {
     if (dir_output_BootstrapXi!=par::defaultString) {
-      string file = "xi_Bootstrap_"+conv(i, par::fINT);
+      string file = "xi_Bootstrap_"+conv(i, par::fINT)+".dat";
       data_SS[i]->write(dir_output_BootstrapXi, file, "rp", "pi", "xi", 0);
     }
     xi_SubSample.push_back(data_SS[i]->fxy());

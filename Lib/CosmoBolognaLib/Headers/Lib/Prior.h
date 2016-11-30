@@ -41,15 +41,12 @@
 
 namespace cosmobl {
 
-  /**
-   *  @brief The namespace of functions and classes used for statistical
-   *  analysis
-   *  
-   * The \e statistic namespace contains all the functions and classes
-   * used for statistical analyis
-   */
   namespace statistics {
 
+    /**
+     * @var typedef prior_func
+     * @brief definition of a function for the priors 
+     */
     typedef function<double(double, shared_ptr<void>, vector<double>)> prior_func;
 
     /**
@@ -59,16 +56,20 @@ namespace cosmobl {
     enum PriorType {
       
       /// Identity function
-      _IdentityPrior_,
+      _UniformPrior_,
 
       ///Gaussian function
       _GaussianPrior_,
 
       /// Poisson function
       _PoissonPrior_,
- 
-      /// User defined Function
-      _FunctionPrior_,
+      
+      /// User defined Tabulated Function
+      _InterpolatedPrior_,
+
+      /// Discrete prior
+      _DiscretePrior_
+      
     };
 
     /**
@@ -80,215 +81,233 @@ namespace cosmobl {
      */
     class Prior {
 
-      protected:
+    protected:
 
-	/// the prior function
-	prior_func m_func;
+      /// the prior function
+      prior_func m_func;
 
-	/// parameters of the prior func
-	vector<double> m_prior_func_pars;
+      /// the prior random generator
+      shared_ptr<random::RandomNumbers> m_prior_random;
 
-	/// the prior lower limit
-	double m_xmin;
+      /// the prior lower limit
+      double m_xmin;
 
-	/// the prior upper limit
-	double m_xmax;
+      /// the prior upper limit
+      double m_xmax;
 
-        /// discrete prior
-	bool m_Discrete;
+      /// parameters of the prior func
+      vector<double> m_prior_func_pars;
 
-	/// discrete values
-	vector<double> m_discrete_values;
+      /// void pointer for the prior func
+      shared_ptr<void> m_prior_func_fixed_pars;
 
-	/// Normalization of the prior distribution
-	double m_prior_normalization;
+      /// prior normalization
+      double m_prior_normalization;
 
-	/// Maximum probability of the prior distribution
-	double m_prior_max_prob;
-
-	/* function to set normalization and
-	 * maximum probability of the prior function, used
-	 * to sample values
-	 *
-	 * return none
-	 */
-	void set_distribution_parameters();
+      /**
+       * @brief set prior normalization 
+       * @return none
+       */
+      void m_set_prior_normalization ();
 
 
-      public:
+    public:
 
-	  /**
-	   *  @name Constructors/destructors
-	   */
-	  ///@{
+      /**
+       *  @name Constructors/destructors
+       */
+      ///@{
 
-	  /**
-	   *  @brief default constructor
-	   *
-	   *  @return object of class Prior
-	   */
-	  Prior (); 
+      /**
+       *  @brief default constructor
+       *
+       *  @return object of class Prior
+       */
+      Prior () : Prior(statistics::PriorType::_UniformPrior_, 0., 0.) {}
 
-	  /**
-	   *  @brief constructor of a flat prior
-	   *
-	   *  @param priorType the type of prior to be created
-	   *
-	   *  @param pmin lower limit of the prior
-	   *
-	   *  @param pmax upper limit of the prior
-	   *
-           *  @param discrete_values discrete values for the prior
-           *
-	   *  @return object of class Prior
-	   */
-	  Prior (const PriorType priorType, const double pmin, const double pmax, const vector<double> discrete_values = {});
+      /**
+       *  @brief constructor of a flat prior
+       *
+       *  @param priorType the type of prior to be created
+       *
+       *  @param xmin lower limit of the prior
+       *
+       *  @param xmax upper limit of the prior
+       *
+       *  @param seed the prior seed for random sampling
+       *
+       *  @return object of class Prior
+       */
+      Prior (const PriorType priorType, const double xmin, const double xmax, const int seed=1);
 
-	  /**
-	   *  @brief constructor
-	   *
-	   *  @param priorType the type of prior to be created
-	   *
-	   *  @param prior_params parameters of the prior function or discrete
-	   *  list of values for discrete prior
-	   *
-	   *  @param Limits limits of the prior
-	   *
-           *  @param discrete_values discrete values for the prior
-           *
-	   *  @return object of class Prior
-	   */
-	  Prior (const PriorType priorType, const vector<double> prior_params, const vector<double> Limits = {}, const vector<double> discrete_values = {});
+      /**
+       *  @brief constructor
+       *
+       *  @param priorType the type of prior to be created
+       *
+       *  @param prior_params parameters of the prior function or discrete
+       *  list of values for discrete prior
+       *
+       *  @param xmin lower limit of the prior
+       *
+       *  @param xmax upper limit of the prior
+       *
+       *  @param seed the prior seed for random sampling
+       *
+       *  @return object of class Prior
+       */
+      Prior (const PriorType priorType, const vector<double> prior_params, const double xmin, const double xmax, const int seed=1);
 
-	  /**
-	   *  @brief constructor
-	   *
-	   *  @param priorType the type of prior to be created
-	   *  @param func user-defined function for the prior
-	   *  @param prior_params parameters of the prior function or discrete
-	   *  list of values for discrete prior
-	   *  @param Limits limits of the prior
-	   *
-           *  @param discrete_values discrete values for the prior
-           *
-	   *  @return object of class Prior
-	   */
-	  Prior (const PriorType priorType, const prior_func func, const vector<double> prior_params, const vector<double> Limits = {}, const vector<double> discrete_values = {});
+      /**
+       *  @brief constructor
+       *
+       *  @param priorType the type of prior to be created
+       *
+       *  @param discrete_values list of discrete values 
+       *
+       *  @param weights list of weights for discrete values
+       *
+       *  @param seed the prior seed for random sampling
+       *
+       *  @return object of class Prior
+       */
+      Prior (const PriorType priorType, const vector<double> discrete_values, const vector<double> weights, const int seed=1);
 
-	  /**
-	   *  @brief default destructor
-	   *
-	   *  @return none
-	   */
-	  ~Prior () {} 
+      /**
+       *  @brief default destructor
+       *
+       *  @return none
+       */
+      ~Prior () = default;
 
-	  ///@}
+      ///@}
 
-	  /**
-	   * @brief evaluate prior 
-	   *
-	   * @param xx the value for prior calculation
-	   *
-	   * @return the prior value
-	   */
-	  double operator() (double xx) {
-	    shared_ptr<void> pp = NULL;
-	    if (xx<m_xmin || xx>m_xmax) return 1.e30;
-	    else return m_func(xx, pp, m_prior_func_pars)/m_prior_normalization;
-	  }
+      /**
+       * @brief evaluate prior 
+       *
+       * @param xx the value for prior calculation
+       *
+       * @return the prior value
+       */
+      double operator() (double xx) 
+      {
+	if (xx<m_xmin || xx>m_xmax) return 0;
+	else return m_func(xx, m_prior_func_fixed_pars, m_prior_func_pars)/m_prior_normalization;
+      }
 
-	  /**
-	   * @brief set the prior limits 
-	   *
-	   * @param pmin lower limit of the prior
-           *
-           * @param pmax upper limit of the prior
-	   *
-	   * @return none
-	   */
-	  void set_limits (const double pmin, const double pmax);
+      /**
+       * @brief set prior seed
+       * @param seed the prior seed
+       * return none
+       */
+      void set_seed (const int seed) {m_prior_random->set_seed(seed);}
 
-	  /**
-	   * @brief set parameters for gaussian prior 
-	   *
-	   * @param prior_params parameters of the prior function
-	   *
-	   * @return none
-	   */
-	  void set_parameters (const vector<double> prior_params);
+      /**
+       * @brief set the prior limits 
+       *
+       * @param xmin lower limit of the prior
+       *
+       * @param xmax upper limit of the prior
+       *
+       * @return none
+       */
+      void set_limits (const double xmin, const double xmax);
 
-	  /**
-	   * @brief set prior function 
-	   *
-	   * @param func the prior function
-	   *
-	   * @param prior_params the prior function parameters
-	   *
-	   * @return none
-	   */       
-	  void set_func_parameters (const prior_func func, const vector<double> prior_params);
+      /**
+       * @brief set an uniform prior with input limits and seed
+       *
+       * @param xmin lower limit of the prior
+       *
+       * @param xmax upper limit of the prior
+       *
+       * @param seed the prior seed for random sampling
+       *
+       * @return none
+       */
+      void set_uniform_prior (const double xmin, const double xmax, const int seed=1);
 
-	  /**
-	   * @brief set discrete values 
-	   *
-	   * @param discrete_values vector containing discrete values
-	   *
-	   * @return none
-	   */       
-	  void set_discrete_values (const vector<double> discrete_values);
+      /**
+       * @brief set normal prior 
+       *
+       * @param mean the normal distribution mean
+       *
+       * @param sigma the normal distribution standard deviation
+       *
+       * @param seed the prior seed for random sampling
+       *
+       * @return none
+       */
+      void set_gaussian_prior (const double mean, const double sigma, const int seed=1);
 
-	  /**
-	   * @brief return the private member m_xmin
-	   *
-	   * @return the prior lower limit
-	   */
-	  double xmin() const {return m_xmin;}
+      /**
+       * @brief set poisson prior  
+       *
+       * @param mean the poisson distribution mean
+       *
+       * @param seed the prior seed for random sampling
+       *
+       * @return none
+       */       
+      void set_poisson_prior (const double mean, const int seed=1);
 
-	  /**
-	   * @brief return the private member m_xmax
-	   *
-	   * @return the prior upper limit
-	   */
-	  double xmax() const {return m_xmax;}
+      /**
+       * @brief set discrete prior values and weights 
+       *
+       * @param discrete_values vector containing discrete values
+       *
+       * @param weights list of weights for discrete values
+       *
+       * @param seed the prior seed for random sampling
+       *
+       * @return none
+       */       
+      void set_discrete_values (const vector<double> discrete_values, const vector<double> weights, const int seed=1);
 
-	  /**
-	   * @brief check if the prior is discrete
-	   *
-	   * return 0 &rarr; continuous; 1 &rarr; discrete
-	   */
-	  bool isDiscrete() const {return m_Discrete;}
+      /**
+       * @brief return the private member m_xmin
+       *
+       * @return the prior lower limit
+       */
+      double xmin () const { return m_xmin; }
 
-	  /**
-	   * @brief check if a value is included in the prior limits
-	   *
-	   * @return 0 &rarr; not included in prior range; 1 &rarr; included in prior range
-	   */
-	  bool isIncluded (const double value) const;
+      /**
+       * @brief return the private member m_xmax
+       *
+       * @return the prior upper limit
+       */
+      double xmax () const { return m_xmax; }
 
-	  /**
-	   * @brief sample a value from the prior
-	   *
-	   * @return value of the parameter
-	   */
-	  double sample();
+      /**
+       * @brief check if a value is included in the prior limits
+       * @param value the value to be checked
+       * @return 0 &rarr; not included in prior range; 1 &rarr; included in prior range
+       */
+      bool isIncluded (const double value) const;
 
-	  /**
-	   * @brief sample a value from the prior
-	   *
-	   * @param seed the seed for random number generation
-	   *
-	   * @return value of the parameter
-	   */
-	  double sample(const int seed);
+      /**
+       * @brief sample a value from the prior
+       *
+       * @return value of the parameter
+       */
+      double sample () const;
 
-	  /**
-	   * @brief sample a value from the prior
-	   *
-	   * @param value value to be checked
-	   *
-	   * @return value of the parameter
-	   */
-	  double apply_discrete(const double value) const;
+      /**
+       * @brief sample a value from the prior
+       *
+       * @param seed the seed for random number generation
+       *
+       * @return value of the parameter
+       */
+      double sample(const int seed);
+
+      /**
+       * @brief sample values from the prior
+       *
+       * @param nvalues the number of points to be generated
+       *
+       * @return values of the parameter
+       */
+      vector<double> sample_vector(const int nvalues);
 
     };
   }

@@ -30,10 +30,11 @@ Main contributors:
   - Alfonso Veropalumbo (two-point angular correlation, jackknife and bootstrap, lognormal mocks, BAO modelling)
 
 Other contributors:
- - Cosimo Fedeli (non-Gaussian cosmologies)
- - Carlo Giocoli (mass accretion history)
- - Mauro Roncarelli (fast comoving distance estimates) 
- - Tommaso Ronconi (voids)
+  - Carlo Cannarozzo (void detection)
+  - Cosimo Fedeli (non-Gaussian cosmologies)
+  - Carlo Giocoli (mass accretion history)
+  - Mauro Roncarelli (fast comoving distance estimates) 
+  - Tommaso Ronconi (void number counts)
 
 
 -----------------------------------------------------------------------------------------------------
@@ -45,12 +46,6 @@ first, make sure that the following external libraries are present in your syste
 - GSL (GNU Scientific Library) (v2.1 is required)
 - FFTW (Fastest Fourier Transform in the West)
 - OpenMP (Open Multiprocessing) 
-- Numerical Recipes Third Edition
-
-( please note that some minor changes to the original Numerical
-  Recipes header files are required @n to prevent compiling errors due to
-  multiple definitions; in case of trouble, please do not hesitate to
-  ask me )
 
 then:
 

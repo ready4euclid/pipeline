@@ -69,47 +69,258 @@ namespace cosmobl {
        *  @brief default constructor
        *  @return object of class Mock
        */
-      Mock () {}
-    
-      /**
-       *  @brief constructor that uses comoving coordinates
-       *  @param xx comoving coordinate
-       *  @param yy comoving coordinate
-       *  @param zz comoving coordinate
-       *  @param weight weight
-       *  @param vx peculiar velocity
-       *  @param vy peculiar velocity
-       *  @param vz peculiar velocity    
-       *  @param mass mass
-       *  @param generic generic variable
-       *  @return object of class Mock
-       */
-      Mock (const double xx, const double yy, const double zz, const double weight=1., const double vx=par::defaultDouble, const double vy=par::defaultDouble, const double vz=par::defaultDouble, const double mass=par::defaultDouble, const double generic=par::defaultDouble) 
-	: Halo(xx, yy, zz, weight, vx, vy, vz, mass), m_generic(generic) {}
+      Mock ()
+	: Halo(), m_generic(par::defaultDouble) {}
 
       /**
-       *  @brief constructor that uses observed coordinates
+       *  @brief constructor that uses comoving coordinates
+       *
+       *  @param coord structure containing the comoving coordinates
+       *  {x, y, z}
+       *
+       *  @param weight weight
+       *
+       *  @param region region, used e.g. for jackknife and bootstrap
+       *
+       *  @param field the field where the object has been observed
+       *
+       *  @param x_displacement the displacement along the x-axis
+       *
+       *  @param y_displacement the displacement along the y-axis
+       *
+       *  @param z_displacement the displacement along the z-axis
+       *
+       *  @param vx halo peculiar velocity along the x direction
+       *
+       *  @param vy halo peculiar velocity along the y direction
+       *
+       *  @param vz halo peculiar velocity along the z direction
+       *
+       *  @param mass the mock mass
+       *
+       *  @param generic the mock generic variable
+       *
+       *  @return object of class Mock
+       */
+      Mock (const comovingCoordinates coord, const double weight=1., const long region=par::defaultLong, const string field=par::defaultString, const double x_displacement=par::defaultDouble, const double y_displacement=par::defaultDouble, const double z_displacement=par::defaultDouble, const double vx=par::defaultDouble, const double vy=par::defaultDouble, const double vz=par::defaultDouble, const double mass=par::defaultDouble, const double generic=par::defaultDouble) 
+	: Halo(coord, weight, region, field, x_displacement, y_displacement, z_displacement, vx, vy, vz, mass), m_generic(generic) {}
+
+      /**
+       *  @brief constructor that uses comoving coordinates and a
+       *  cosmological model to estimate the redshift
+       *
+       *  @param coord structure containing the comoving coordinates
+       *  {x, y, z}
+       *
+       *  @param cosm object of class Cosmology, used to estimate
+       *  comoving distances
+       *
+       *  @param z1_guess minimum prior on the redshift
+       *
+       *  @param z2_guess maximum prior on the redshift 
+       *
+       *  @param weight weight
+       *
+       *  @param region region, used e.g. for jackknife and bootstrap
+       *
+       *  @param field the field where the object has been observed
+       *
+       *  @param x_displacement the displacement along the x-axis
+       *
+       *  @param y_displacement the displacement along the y-axis
+       *
+       *  @param z_displacement the displacement along the z-axis
+       *
+       *  @param vx halo peculiar velocity along the x direction
+       *
+       *  @param vy halo peculiar velocity along the y direction
+       *
+       *  @param vz halo peculiar velocity along the z direction
+       *
+       *  @param mass the mock mass
+       *   
+       *  @param generic the mock generic variable
+       *
+       *  @return object of class Mock
+       */
+      Mock (const comovingCoordinates coord, const cosmology::Cosmology &cosm, const double z1_guess=0., const double z2_guess=10., const double weight=1., const long region=par::defaultLong, const string field=par::defaultString, const double x_displacement=par::defaultDouble, const double y_displacement=par::defaultDouble, const double z_displacement=par::defaultDouble, const double vx=par::defaultDouble, const double vy=par::defaultDouble, const double vz=par::defaultDouble, const double mass=par::defaultDouble, const double generic=par::defaultDouble) 
+	: Halo(coord, cosm, z1_guess, z2_guess, weight, region, field, x_displacement, y_displacement, z_displacement, vx, vy, vz, mass), m_generic(generic) {}
+
+      /**
+       *  @brief constructor that uses observed coordinates in radians
+       *
+       *  @param coord structure containing the observed coordinates
+       *  {R.A., Dec, redshift}
+       *
+       *  @param weight weight
+       *
+       *  @param region region, used e.g. for jackknife and bootstrap
+       *
+       *  @param field the field where the object has been observed
+       *
+       *  @param x_displacement the displacement along the x-axis
+       *
+       *  @param y_displacement the displacement along the y-axis
+       *
+       *  @param z_displacement the displacement along the z-axis
+       *
+       *  @param vx halo peculiar velocity along the x direction
+       *
+       *  @param vy halo peculiar velocity along the y direction
+       *
+       *  @param vz halo peculiar velocity along the z direction
+       *
+       *  @param mass the mock mass
+       *
+       *  @param generic the mock generic variable
+       *
+       *  @return object of class Mock
+       */
+      Mock (const observedCoordinates coord, const double weight=1., const long region=par::defaultLong, const string field=par::defaultString, const double x_displacement=par::defaultDouble, const double y_displacement=par::defaultDouble, const double z_displacement=par::defaultDouble, const double vx=par::defaultDouble, const double vy=par::defaultDouble, const double vz=par::defaultDouble, const double mass=par::defaultDouble, const double generic=par::defaultDouble) 
+	: Halo(coord, weight, region, field, x_displacement, y_displacement, z_displacement, vx, vy, vz, mass), m_generic(generic) {}
+      
+      /**
+       *  @brief constructor that uses observed coordinates in any
+       *  angular units
+       *
+       *  @param coord structure containing the observed coordinates
+       *  {R.A., Dec, redshift}
+       *
+       *  @param inputUnits the units of the input coordinates
+       *
+       *  @param weight weight
+       *
+       *  @param region region, used e.g. for jackknife and bootstrap
+       *
+       *  @param field the field where the object has been observed
+       *
+       *  @param x_displacement the displacement along the x-axis
+       *
+       *  @param y_displacement the displacement along the y-axis
+       *
+       *  @param z_displacement the displacement along the z-axis
+       *
+       *  @param vx halo peculiar velocity along the x direction
+       *
+       *  @param vy halo peculiar velocity along the y direction
+       *
+       *  @param vz halo peculiar velocity along the z direction
+       *
+       *  @param mass the mock mass
+       *
+       *  @param generic the mock generic variable
+       *
+       *  @return object of class Mock
+       */
+      Mock (const observedCoordinates coord, const CoordUnits inputUnits, const double weight=1., const long region=par::defaultLong, const string field=par::defaultString, const double x_displacement=par::defaultDouble, const double y_displacement=par::defaultDouble, const double z_displacement=par::defaultDouble, const double vx=par::defaultDouble, const double vy=par::defaultDouble, const double vz=par::defaultDouble, const double mass=par::defaultDouble, const double generic=par::defaultDouble) 
+	: Halo(coord, inputUnits, weight, region, field, x_displacement, y_displacement, z_displacement, vx, vy, vz, mass), m_generic(generic) {}
+      
+      /**
+       *  @brief constructor that uses observed coordinates in radians
+       *  and a cosmological model to estimate the comoving
+       *  coordinates
+       *
+       *  @param coord structure containing the observed coordinates
+       *  {R.A., Dec, redshitf}
+       *
+       *  @param cosm object of class Cosmology, used to estimate
+       *  comoving distances
+       *
+       *  @param weight weight
+       *
+       *  @param region region, used e.g. for jackknife and bootstrap
+       *
+       *  @param field the field where the object has been observed
+       *
+       *  @param x_displacement the displacement along the x-axis
+       *
+       *  @param y_displacement the displacement along the y-axis
+       *
+       *  @param z_displacement the displacement along the z-axis
+       *
+       *  @param vx halo peculiar velocity along the x direction
+       *
+       *  @param vy halo peculiar velocity along the y direction
+       *
+       *  @param vz halo peculiar velocity along the z direction
+       *
+       *  @param mass the mock mass
+       *
+       *  @param generic the mock generic variable
+       *
+       *  @return object of class Mock
+       */
+      Mock (const observedCoordinates coord, const cosmology::Cosmology &cosm, const double weight=1., const long region=par::defaultLong, const string field=par::defaultString, const double x_displacement=par::defaultDouble, const double y_displacement=par::defaultDouble, const double z_displacement=par::defaultDouble, const double vx=par::defaultDouble, const double vy=par::defaultDouble, const double vz=par::defaultDouble, const double mass=par::defaultDouble, const double generic=par::defaultDouble) 
+	: Halo(coord, cosm, weight, region, field, x_displacement, y_displacement, z_displacement, vx, vy, vz, mass), m_generic(generic) {}
+
+      /**
+       *  @brief constructor that uses observed coordinates and a
+       *  cosmological model to estimate the comoving coordinates
+       *
+       *  @param coord structure containing the observed coordinates
+       *  {R.A., Dec, redshift}
+       *
+       *  @param inputUnits the units of the input coordinates
+       *
+       *  @param cosm object of class Cosmology, used to estimate comoving distances
+       *
+       *  @param weight weight
+       *
+       *  @param region region, used e.g. for jackknife and bootstrap
+       *
+       *  @param field the field where the object has been observed
+       *
+       *  @param x_displacement the displacement along the x-axis
+       *
+       *  @param y_displacement the displacement along the y-axis
+       *
+       *  @param z_displacement the displacement along the z-axis
+       *
+       *  @param vx halo peculiar velocity along the x direction
+       *
+       *  @param vy halo peculiar velocity along the y direction
+       *
+       *  @param vz halo peculiar velocity along the z direction
+       *
+       *  @param mass the mock mass
+       *
+       *  @param generic the mock generic variable
+       *
+       *  @return object of class Mock
+       */
+      Mock (const observedCoordinates coord, const CoordUnits inputUnits, const cosmology::Cosmology &cosm, const double weight=1., const long region=par::defaultLong, const string field=par::defaultString, const double x_displacement=par::defaultDouble, const double y_displacement=par::defaultDouble, const double z_displacement=par::defaultDouble, const double vx=par::defaultDouble, const double vy=par::defaultDouble, const double vz=par::defaultDouble, const double mass=par::defaultDouble, const double generic=par::defaultDouble) 
+	: Halo(coord, inputUnits, cosm, weight, region, field, x_displacement, y_displacement, z_displacement, vx, vy, vz, mass), m_generic(generic) {}
+
+      /**
+       *  @brief constructor that uses both comoving and observed coordinates
+       *  @param xx comoving coordinate
+       *  @param yy comoving coordinate
+       *  @param zz comoving coordinate 
        *  @param ra Right Ascension
        *  @param dec Declination
        *  @param redshift redshift
-       *  @param cosm object of class Cosmology, used to estimate
-       *  comoving distances
-       *  @param weight weight
-       *  @param vx peculiar velocity
-       *  @param vy peculiar velocity
-       *  @param vz peculiar velocity    
-       *  @param mass mass
-       *  @param generic generic variable
+       *  @param weight weight   
+       *  @param region region, used e.g. for jackknife and bootstrap
+       *  @param field the field where the object has been observed
+       *  @param x_displacement the displacement along the x-axis
+       *  @param y_displacement the displacement along the y-axis
+       *  @param z_displacement the displacement along the z-axis
+       *  @param vx halo peculiar velocity along the x direction
+       *  @param vy halo peculiar velocity along the y direction
+       *  @param vz halo peculiar velocity along the z direction
+       *  @param mass the mock mass
+       *  @param generic the mock generic variable
+       *
        *  @return object of class Mock
        */
-      Mock (const double ra, const double dec, const double redshift, const Cosmology &cosm, const double weight=1., const double vx=par::defaultDouble, const double vy=par::defaultDouble, const double vz=par::defaultDouble, const double mass=par::defaultDouble, const double generic=par::defaultDouble) 
-	: Halo(ra, dec, redshift, cosm, weight, vx, vy, vz, mass), m_generic(generic) {}
-
+      Mock (const double xx, const double yy, const double zz, const double ra, const double dec, const double redshift, const double weight=1., const long region=par::defaultLong, const string field=par::defaultString, const double x_displacement=par::defaultDouble, const double y_displacement=par::defaultDouble, const double z_displacement=par::defaultDouble, const double vx=par::defaultDouble, const double vy=par::defaultDouble, const double vz=par::defaultDouble, const double mass=par::defaultDouble, const double generic=par::defaultDouble) 
+	: Halo(xx, yy, zz, ra, dec, redshift, weight, region, field, x_displacement, y_displacement, z_displacement, vx, vy, vz, mass), m_generic(generic) {}
+      
       /**
        *  @brief default destructor
        *  @return none
        */
-      ~Mock () {}
+      ~Mock () = default;
 
       ///@}
   

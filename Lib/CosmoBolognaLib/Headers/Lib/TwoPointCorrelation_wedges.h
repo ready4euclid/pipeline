@@ -62,384 +62,463 @@ namespace cosmobl {
      */
     class TwoPointCorrelation_wedges : public TwoPointCorrelation2D_polar {
 
-      protected:
+    protected:
 
-	/**
-	 *  @brief measure wedges of the correlation function
-	 *  
-	 *  @param rr absolute separation 
-	 *
-	 *  @param mu angular separation
-	 *
-	 *  @param xi 2d cartesian 2pcf
-	 *
-	 *  @param error_xi error on the 2d polar 2pcf
-	 *
-	 *  @return pointer to an object of type Data
-	 */
-	shared_ptr<Data> WedgesTwoP(const vector<double> rr, const vector<double> mu, const vector<vector<double> > xi, const vector<vector<double> > error_xi) override;
+      /**
+       *  @brief measure the wedges of the two-point correlation
+       *  function
+       *  
+       *  @param rr absolute separation 
+       *
+       *  @param mu angular separation
+       *
+       *  @param xi 2d cartesian 2pcf
+       *
+       *  @param error_xi error on the 2d polar 2pcf
+       *
+       *  @return pointer to an object of type Data
+       */
+      shared_ptr<data::Data> Wedges (const vector<double> rr, const vector<double> mu, const vector<vector<double> > xi, const vector<vector<double> > error_xi) override;
 
-	/**
-	 *  @brief measure the wedges of the two-point correlation
-	 *  function, &xi;(r) with Poisson error
-	 *  @param dir_output_pairs output directory used to store the
-	 *  number of pairs
-	 *  @param dir_input_pairs vector of input directories used to
-	 *  store the number of pairs (if the pairs are read from files)
-	 *  @param count_dd 1 &rarr; count the number of data-data
-	 *  opairs; 0 &rarr; read the number of data-data pairs from
-	 *  file
-	 *  @param count_rr 1 &rarr; count the number of random-random
-	 *  opairs; 0 &rarr; read the number of random-random pairs from
-	 *  file
-	 *  @param count_dr 1 &rarr; count the number of data-random
-	 *  opairs; 0 &rarr; read the number of data-random pairs from
-	 *  file
-	 *  @param tcount 1 &rarr; activate the time counter; 0 &rarr;
-	 *  don't activate the time counter; 
-	 *  @return none
-	 */
-	void measurePoisson (const string dir_output_pairs = par::defaultString, const vector<string> dir_input_pairs={}, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
+      /**
+       *  @brief return a data object with extra info
+       *  
+       *  @param rad vector containing the binned separations
+       *
+       *  @param wedges vector containing the binned wedges of the
+       *  correlation function
+       *
+       *  @param error vector containing the errors
+       *
+       *  @return pointer to an object of type Data
+       */
+      shared_ptr<data::Data> data_with_extra_info (const vector<double> rad, const vector<double> wedges, const vector<double> error) const;
+      
+      /**
+       *  @brief measure the wedges of the two-point correlation
+       *  function with Poisson errors
+       *
+       *  @param dir_output_pairs output directory used to store the
+       *  number of pairs
+       *
+       *  @param dir_input_pairs vector of input directories used to
+       *  store the number of pairs (if the pairs are read from files)
+       *
+       *  @param count_dd true &rarr; count the number of data-data
+       *  pairs; false &rarr; read the number of data-data pairs from
+       *  file
+       *
+       *  @param count_rr true &rarr; count the number of
+       *  random-random pairs; false &rarr; read the number of
+       *  random-random pairs from file
+       *
+       *  @param count_dr true &rarr; count the number of data-random
+       *  pairs; false &rarr; read the number of data-random pairs
+       *
+       *  @param tcount true &rarr; activate the time counter; false
+       *  &rarr; no time counter
+       *
+       *  @param estimator the estimator used to measure the two-point
+       *  correlation function
+       *
+       *  @return none
+       */
+      void measurePoisson (const string dir_output_pairs = par::defaultString, const vector<string> dir_input_pairs={}, const bool count_dd=true, const bool count_rr=true, const bool count_dr=true, const bool tcount=true, const Estimator estimator=_LandySzalay_) override;
 
-	/**
-	 *  @brief measure the wedges of the two-point correlation
-	 *  function, &xi;(r), estimate the covariance with Jackknife resampling
-	 *
-	 *  @param dir_output_pairs output directory used to store the
-	 *  number of pairs
-	 *
-	 *  @param dir_input_pairs vector of input directories used to store the
-	 *  number of pairs (if the pairs are read from files)
-	 *
-	 *  @param dir_output_ResampleXi output directory used to store the
-	 *  Jackknife resampling Xi, with Poisson error
-	 *
-	 *  @param count_dd 1 &rarr; count the number of data-data
-	 *  opairs; 0 &rarr; read the number of data-data pairs from
-	 *  file
-	 *
-	 *  @param count_rr 1 &rarr; count the number of random-random
-	 *  opairs; 0 &rarr; read the number of random-random pairs from
-	 *  file
-	 *
-	 *  @param count_dd 1 &rarr; count the number of data-random
-	 *  opairs; 0 &rarr; read the number of data-random pairs from
-	 *  file
-	 *
-	 *  @param count_rr 1 &rarr; count the number of random-random
-	 *  pairs; 0 &rarr; read the number of random-random pairs
-	 *
-	 *  @param count_dr 1 &rarr; count the number of data-random
-	 *  pairs; 0 &rarr; read the number of data-random pairs
-	 *
-	 *  @param tcount 1 &rarr; activate the time counter; 0 &rarr;
-	 *  don't activate the time counter; 
-	 *
-	 *  @return none
-	 */
-	void measureJackknife (const string dir_output_pairs = par::defaultString, const vector<string> dir_input_pairs={}, const string dir_output_ResampleXi = par::defaultString, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
+      /**
+       *  @brief measure the wedges of the two-point correlation
+       *  function estimating the covariance with Jackknife resampling
+       *
+       *  @param dir_output_pairs output directory used to store the
+       *  number of pairs
+       *
+       *  @param dir_input_pairs vector of input directories used to
+       *  store the number of pairs (if the pairs are read from files)
+       *
+       *  @param dir_output_resample output directory used to store
+       *  the Jackknife resampling correlation functions, with Poisson
+       *  errors
+       *
+       *  @param count_dd true &rarr; count the number of data-data
+       *  pairs; false &rarr; read the number of data-data pairs from
+       *  file
+       *
+       *  @param count_rr true &rarr; count the number of
+       *  random-random pairs; false &rarr; read the number of
+       *  random-random pairs from file
+       *
+       *  @param count_dr true &rarr; count the number of data-random
+       *  pairs; false &rarr; read the number of data-random pairs
+       *
+       *  @param tcount true &rarr; activate the time counter; false
+       *  &rarr; no time counter
+       *
+       *  @param estimator the estimator used to measure the two-point
+       *  correlation function
+       *
+       *  @return none
+       */
+      void measureJackknife (const string dir_output_pairs = par::defaultString, const vector<string> dir_input_pairs={}, const string dir_output_resample = par::defaultString, const bool count_dd=true, const bool count_rr=true, const bool count_dr=true, const bool tcount=true, const Estimator estimator=_LandySzalay_) override;
 
-	/**
-	 *  @brief measure the wedges of the two-point correlation
-	 *  function, &xi;(r), estimate the covariance with Bootstrap resampling
-	 *
-	 *  @param nMocks number of mocks to be generated with bootstrap resampling
-	 *
-	 *  @param dir_output_pairs output directory used to store the
-	 *  number of pairs
-	 *
-	 *  @param dir_input_pairs vector of input directories used to store the
-	 *  number of pairs (if the pairs are read from files)
-	 *
-	 *  @param dir_output_ResampleXi output directory used to store the
-	 *  Jackknife resampling Xi, with Poisson error
-	 *
-	 *  @param count_dd 1 &rarr; count the number of data-data
-	 *  opairs; 0 &rarr; read the number of data-data pairs from
-	 *  file
-	 *
-	 *  @param count_rr 1 &rarr; count the number of random-random
-	 *  opairs; 0 &rarr; read the number of random-random pairs from
-	 *  file
-	 *
-	 *  @param count_dd 1 &rarr; count the number of data-random
-	 *  opairs; 0 &rarr; read the number of data-random pairs from
-	 *  file
-	 *
-	 *  @param count_rr 1 &rarr; count the number of random-random
-	 *  pairs; 0 &rarr; read the number of random-random pairs
-	 *
-	 *  @param count_dr 1 &rarr; count the number of data-random
-	 *  pairs; 0 &rarr; read the number of data-random pairs
-	 *
-	 *  @param tcount 1 &rarr; activate the time counter; 0 &rarr;
-	 *  don't activate the time counter; 
-	 *
-	 *  @return none
-	 */
-	void measureBootstrap (const int nMocks, const string dir_output_pairs = par::defaultString, const vector<string> dir_input_pairs={}, const string dir_output_ResampleXi = par::defaultString, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
+      /**
+       *  @brief measure the wedges of the two-point correlation
+       *  function estimating the covariance with Bootstrap resampling
+       *
+       *  @param nMocks number of mocks to be generated with bootstrap
+       *  resampling
+       *
+       *  @param dir_output_pairs output directory used to store the
+       *  number of pairs
+       *
+       *  @param dir_input_pairs vector of input directories used to
+       *  store the number of pairs (if the pairs are read from files)
+       *
+       *  @param dir_output_resample output directory used to store
+       *  the Bootstrap resampling correlation function, with Poisson
+       *  errors
+       *
+       *  @param count_dd true &rarr; count the number of data-data
+       *  pairs; false &rarr; read the number of data-data pairs from
+       *  file
+       *
+       *  @param count_rr true &rarr; count the number of
+       *  random-random pairs; false &rarr; read the number of
+       *  random-random pairs from file
+       *
+       *  @param count_dr true &rarr; count the number of data-random
+       *  pairs; false &rarr; read the number of data-random pairs
+       *
+       *  @param tcount true &rarr; activate the time counter; false
+       *  &rarr; no time counter
+       *
+       *  @param estimator the estimator used to measure the two-point
+       *  correlation function
+       *
+       *  @return none
+       */
+      void measureBootstrap (const int nMocks, const string dir_output_pairs = par::defaultString, const vector<string> dir_input_pairs={}, const string dir_output_resample = par::defaultString, const bool count_dd=true, const bool count_rr=true, const bool count_dr=true, const bool tcount=true, const Estimator estimator=_LandySzalay_) override;
 
-	/**
-	 *  @brief measure the jackknife resampling of the two-point correlation
-	 *  function, &xi;(r) 
-	 *
-	 *  @param dd vector of data-data pairs, divider per regions
-	 *
-	 *  @param rr vector of random-random pairs, divider per regions
-	 *
-	 *  @return none
-	 */
-	vector<shared_ptr<Data> > XiJackknife(const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr) override;
+      /**
+       *  @brief measure the jackknife resampling of the wedges of the
+       *  two-point correlation function
+       *
+       *  @param dd vector of data-data pairs, divided per regions
+       *
+       *  @param rr vector of random-random pairs, divided per regions
+       *
+       *  @return a vector of pointers to objects of type Data
+       */
+      vector<shared_ptr<data::Data> > XiJackknife (const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr) override;
 
-	/**
-	 *  @brief measure the jackknife resampling of the two-point correlation
-	 *  function, &xi;(r)        
-	 *
-	 *  @param dd vector of data-data pairs, divider per regions
-	 *
-	 *  @param rr vector of random-random pairs, divider per regions
-	 *
-	 *  @param dr vector of random-random pairs, divider per regions  
-	 *
-	 *  @return none
-	 */
-	vector<shared_ptr<Data> > XiJackknife(const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr) override;
+      /**
+       *  @brief measure the jackknife resampling of the wedges of
+       *  two-point correlation function
+       *
+       *  @param dd vector of data-data pairs, divided per regions
+       *
+       *  @param rr vector of random-random pairs, divided per regions
+       *
+       *  @param dr vector of random-random pairs, divided per regions  
+       *
+       *  @return a vector of pointers to objects of type Data
+       */
+      vector<shared_ptr<data::Data> > XiJackknife (const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr) override;
 
-	/**
-	 *  @brief measure the bootstrap resampling of the two-point correlation
-	 *  function, &xi;(r)       
-	 * 
-	 *  @param nMocks number of bootstrap resamplings
-	 *
-	 *  @param dd vector of data-data pairs, divider per regions
-	 *
-	 *  @param rr vector of random-random pairs, divider per regions      
-	 *
-	 *  @return none
-	 */
-	vector<shared_ptr<Data> > XiBootstrap(const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr) override;
+      /**
+       *  @brief measure the bootstrap resampling of the wedges of the
+       *  two-point correlation function
+       * 
+       *  @param nMocks number of bootstrap resamplings
+       *
+       *  @param dd vector of data-data pairs, divided per regions
+       *
+       *  @param rr vector of random-random pairs, divided per regions
+       *
+       *  @return a vector of pointers to objects of type Data
+       */
+      vector<shared_ptr<data::Data> > XiBootstrap (const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr) override;
 
-	/** 
-	 *  @brief measure the bootstrap resampling of the two-point correlation
-	 *  function, &xi;(r)     
-	 *
-	 *  @param nMocks number of bootstrap resamplings
-	 *
-	 *  @param dd vector of data-data pairs, divider per regions
-	 *
-	 *  @param rr vector of random-random pairs, divider per regions 
-	 *
-	 *  @param dr vector of random-random pairs, divider per regions  
-	 *
-	 *  @return none
-	 */
-	vector<shared_ptr<Data> > XiBootstrap(const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr) override;
+      /**
+       *  @brief measure the bootstrap resampling of the wedges of the
+       *  two-point correlation function
+       *
+       *  @param nMocks number of bootstrap resamplings
+       *
+       *  @param dd vector of data-data pairs, divided per regions
+       *
+       *  @param rr vector of random-random pairs, divided per regions 
+       *
+       *  @param dr vector of random-random pairs, divided per regions  
+       *
+       *  @return a vector of pointers to objects of type Data
+       */
+      vector<shared_ptr<data::Data> > XiBootstrap (const int nMocks, const vector<shared_ptr<pairs::Pair> > dd, const vector<shared_ptr<pairs::Pair> > rr, const vector<shared_ptr<pairs::Pair> > dr) override;
 
-      public:
+    public:
 
-	/**
-	 *  @name Constructors/destructors
-	 */
-	///@{
+      /**
+       *  @name Constructors/destructors
+       */
+      ///@{
 
-	/**
-	 *  @brief default constructor
-	 *  @return object of class TwoPointCorrelation_wedges
-	 */
-	TwoPointCorrelation_wedges () { m_twoPType = _1D_wedges_; }
+      /**
+       *  @brief default constructor
+       *  @return object of class TwoPointCorrelation_wedges
+       */
+      TwoPointCorrelation_wedges () { m_twoPType = _1D_wedges_; }
 
-	/**
-	 *  @brief constructor
-	 *  @param data object of class Catalogue containing the input
-	 *  catalogue
-	 *  @param random of class Catalogue containing the random data
-	 *  catalogue
-	 *  @param binType_rad binning type in absolute separations:
-	 *  0 &rarr; linear; 1 &rarr; logarithmic
-	 *  @param rMin minimum absolute separation used to count
-	 *  the pairs
-	 *  @param rMax maximum absolute separation used to count
-	 *  the pairs
-	 *  @param nbins_rad number of bins in the absolute
-	 *  separation
-	 *  @param shift_rad shift parameter in the absolute
-	 *  separation, i.e. the radial shift is binSize*shift
-	 *  @param muMin minimum angular used to count the pairs
-	 *  @param muMax maximum angular used to count the pairs
-	 *  @param nbins_mu number of bins in the angular
-	 *  separation
-	 *  @param shift_mu shift parameter in the angular
-	 *  separation, i.e. the radial shift is binSize*shift
-	 *  @return object of class TwoPointCorrelation_wedges
-	 */
-	TwoPointCorrelation_wedges (catalogue::Catalogue data, catalogue::Catalogue random, const binType binType_rad, const double rMin, const double rMax, const int nbins_rad, const double shift_rad, const double muMin, const double muMax, const int nbins_mu, const double shift_mu)
-	  : TwoPointCorrelation2D_polar(data, random, binType_rad, rMin, rMax, nbins_rad, shift_rad, _linear_, muMin, muMax, nbins_mu, shift_mu)
+      /**
+       *  @brief constructor
+       *  @param data object of class Catalogue containing the input
+       *  catalogue
+       *  @param random of class Catalogue containing the random data
+       *  catalogue
+       *  @param binType_rad binning type in absolute separations
+       *  @param rMin minimum absolute separation used to count
+       *  the pairs
+       *  @param rMax maximum absolute separation used to count
+       *  the pairs
+       *  @param nbins_rad number of bins in the absolute
+       *  separation
+       *  @param shift_rad shift parameter in the absolute
+       *  separation, i.e. the radial shift is binSize*shift
+       *  @param muMin minimum angular used to count the pairs
+       *  @param muMax maximum angular used to count the pairs
+       *  @param nbins_mu number of bins in the angular
+       *  separation
+       *  @param shift_mu shift parameter in the angular
+       *  separation, i.e. the radial shift is binSize*shift
+       *  @param angularUnits angular units
+       *  @param angularWeight angular weight function
+       *  @param compute_extra_info true &rarr; compute extra
+       *  information related to the pairs, such as the mean pair
+       *  separation and redshift
+       *  @return object of class TwoPointCorrelation_wedges
+       */
+      TwoPointCorrelation_wedges (catalogue::Catalogue data, catalogue::Catalogue random, const binType binType_rad, const double rMin, const double rMax, const int nbins_rad, const double shift_rad, const double muMin, const double muMax, const int nbins_mu, const double shift_mu, const CoordUnits angularUnits=_radians_, function<double(double)> angularWeight=nullptr, const bool compute_extra_info=false)
+	: TwoPointCorrelation2D_polar(data, random, binType_rad, rMin, rMax, nbins_rad, shift_rad, _linear_, muMin, muMax, nbins_mu, shift_mu, angularUnits, angularWeight, compute_extra_info)
 	{ m_twoPType = _1D_wedges_; }
 
-	/**
-	 *  @brief constructor
-	 *  @param data object of class Catalogue containing the input
-	 *  catalogue
-	 *  @param random of class Catalogue containing the random data
-	 *  catalogue
-	 *  @param binType_rad binning type in absolute separations:
-	 *  0 &rarr; linear; 1 &rarr; logarithmic
-	 *  @param rMin minimum absolute separation used to count
-	 *  the pairs
-	 *  @param rMax maximum absolute separation used to count
-	 *  the pairs
-	 *  @param binSize_rad bin size in the absolute separation
-	 *  @param shift_rad shift parameter in the absolute
-	 *  separation, i.e. the radial shift is binSize*shift
-	 *  @param muMin minimum angular separation used to count
-	 *  the pairs
-	 *  @param muMax maximum angular separation used to count
-	 *  the pairs
-	 *  @param binSize_mu bin size in the angular separation
-	 *  @param shift_mu shift parameter in the angular
-	 *  separation, i.e. the radial shift is binSize*shift
-	 *  @return object of class TwoPointCorrelation_wedges
-	 */
-	TwoPointCorrelation_wedges (catalogue::Catalogue data, catalogue::Catalogue random, const binType binType_rad, const double rMin, const double rMax, const double binSize_rad, const double shift_rad, const double muMin, const double muMax, const double binSize_mu, const double shift_mu)
-	  : TwoPointCorrelation2D_polar(data, random, binType_rad, rMin, rMax, binSize_rad, shift_rad, _linear_, muMin, muMax, binSize_mu, shift_mu)
+      /**
+       *  @brief constructor
+       *  @param data object of class Catalogue containing the input
+       *  catalogue
+       *  @param random of class Catalogue containing the random data
+       *  catalogue
+       *  @param binType_rad binning type in absolute separations
+       *  @param rMin minimum absolute separation used to count
+       *  the pairs
+       *  @param rMax maximum absolute separation used to count
+       *  the pairs
+       *  @param binSize_rad bin size in the absolute separation
+       *  @param shift_rad shift parameter in the absolute
+       *  separation, i.e. the radial shift is binSize*shift
+       *  @param muMin minimum angular separation used to count
+       *  the pairs
+       *  @param muMax maximum angular separation used to count
+       *  the pairs
+       *  @param binSize_mu bin size in the angular separation
+       *  @param shift_mu shift parameter in the angular
+       *  separation, i.e. the radial shift is binSize*shift
+       *  @param angularUnits angular units
+       *  @param angularWeight angular weight function
+       *  @param compute_extra_info true &rarr; compute extra
+       *  information related to the pairs, such as the mean pair
+       *  separation and redshift
+       *  @return object of class TwoPointCorrelation_wedges
+       */
+      TwoPointCorrelation_wedges (catalogue::Catalogue data, catalogue::Catalogue random, const binType binType_rad, const double rMin, const double rMax, const double binSize_rad, const double shift_rad, const double muMin, const double muMax, const double binSize_mu, const double shift_mu, const CoordUnits angularUnits=_radians_, function<double(double)> angularWeight=nullptr, const bool compute_extra_info=false)
+	: TwoPointCorrelation2D_polar(data, random, binType_rad, rMin, rMax, binSize_rad, shift_rad, _linear_, muMin, muMax, binSize_mu, shift_mu, angularUnits, angularWeight, compute_extra_info)
 	{ m_twoPType = _1D_wedges_; }
 
-	/**
-	 *  @brief default destructor
-	 *  @return none
-	 */
-	~TwoPointCorrelation_wedges () = default;
+      /**
+       *  @brief default destructor
+       *  @return none
+       */
+      ~TwoPointCorrelation_wedges () = default;
 
-	///@}
+      ///@}
 
-        /**
-         *  @brief get the x coordinates
-         *  @return the x coordinates
-         */
-        vector<double> xx () const  override;
+      
+      /**
+       *  @brief get the x coordinates
+       *  @return the x coordinates
+       */
+      vector<double> xx () const  override;
 
-	/**
-	 *  @brief get the perpendicular wedge of the polar xi
-	 *  @return the perpendicular wedge of the polar xi
-	 */
-	vector<double> xiPerpendicular () const override;
+      /**
+       *  @brief get the perpendicular wedge
+       *  @return the perpendicular wedge
+       */
+      vector<double> xiPerpendicular () const override;
 
-	/**
-	 *  @brief get the perpendicular wedge of the polar xi
-	 *  @return the error on the perpendicular wedge of the polar xi
-	 */
-	vector<double> errorPerpendicular () const override;
+      /**
+       *  @brief get the errors on the perpendicular wedge
+       *  @return the errors on the perpendicular wedge
+       */
+      vector<double> errorPerpendicular () const override;
 
-	/**
-	 *  @brief get the parallel wedge of the polar xi
-	 *  @return the xiPar coordinates
-	 */
-	vector<double> xiParallel () const override;
+      /**
+       *  @brief get the parallel wedge 
+       *  @return the parallel wedge 
+       */
+      vector<double> xiParallel () const override;
 
-	/*
-	 *  @brief get the error on the parallel wedge of the polar xi
-	 *  @return the error on the parallel wedge of the polar xi
-	 */
-	vector<double> errorParallel () const override;
+      /**
+       *  @brief get the errors on the parallel wedge
+       *  @return the error on the parallel wedge
+       */
+      vector<double> errorParallel () const override;
 
-	/**
-	 *  @brief get the y coordinates
-	 *  @return the y coordinates
-	 */
-	vector<double> yy () const 
-	{ cosmobl::ErrorMsg("Error in yy() of TwoPointCorrelation_wedges.h!"); vector<double> vv; return vv; }
+      /**
+       *  @brief get the y coordinates
+       *  @return the y coordinates
+       */
+      vector<double> yy () const 
+	{ cosmobl::ErrorCBL("Error in yy() of TwoPointCorrelation_wedges.h!"); vector<double> vv; return vv; }
 
-	/**
-	 *  @brief get the the binned correlation function 
-	 *  @return the binned correlation function 
-	 */
-	vector<double> xi1D () const
-	{ cosmobl::ErrorMsg("Error in xi1D() of TwoPointCorrelation_wedges.h!"); vector<double> vv; return vv; }
+      /**
+       *  @brief get the the binned correlation function 
+       *  @return the binned correlation function 
+       */
+      vector<double> xi1D () const
+	{ cosmobl::ErrorCBL("Error in xi1D() of TwoPointCorrelation_wedges.h!"); vector<double> vv; return vv; }
 
-	/**
-	 *  @brief get the error on the binned correlation function
-	 *  function
-	 *  @return the error on the binned correlation function
-	 *  function
-	 */
-	vector<double> error1D () const
-	{ cosmobl::ErrorMsg("Error in error1D() of TwoPointCorrelation_wedges.h!"); vector<double> vv; return vv; }
+      /**
+       *  @brief get the error on the binned correlation function
+       *  function
+       *  @return the error on the binned correlation function
+       *  function
+       */
+      vector<double> error1D () const
+	{ cosmobl::ErrorCBL("Error in error1D() of TwoPointCorrelation_wedges.h!"); vector<double> vv; return vv; }
 
-	/**
-	 *  @brief get the the binned correlation function 
-	 *  @return the binned correlation function 
-	 */
-	vector<vector<double> > xi2D () const 
-	{ cosmobl::ErrorMsg("Error in xi2D() of TwoPointCorrelation_wedges.h!"); vector<vector<double> > vv; return vv; }
+      /**
+       *  @brief get the the binned 2D correlation function 
+       *  @return the binned 2D correlation function 
+       */
+      vector<vector<double> > xi2D () const 
+	{ cosmobl::ErrorCBL("Error in xi2D() of TwoPointCorrelation_wedges.h!"); vector<vector<double> > vv; return vv; }
 
-	/**
-	 *  @brief get the error on the binned correlation function
-	 *  function
-	 *  @return the error on the binned correlation function
-	 *  function
-	 */
-	vector<vector<double> > error2D () const 
-	{ cosmobl::ErrorMsg("Error in error2D() of TwoPointCorrelation_multipoles.h!"); vector<vector<double> > vv; return vv; }
+      /**
+       *  @brief get the errors on the binned 2D correlation function
+       *  function
+       *  @return the errors on the binned 2D correlation function
+       *  function
+       */
+      vector<vector<double> > error2D () const 
+	{ cosmobl::ErrorCBL("Error in error2D() of TwoPointCorrelation_multipoles.h!"); vector<vector<double> > vv; return vv; }
 
-	/**
-	 *  @name Member functions to count the number of pairs and measure the two-point correlation function
-	 */
-	///@{
+      
+      /**
+       *  @name Member functions to count the number of pairs and measure the two-point correlation function
+       */
+      ///@{
 
-	/**
-	 *  @brief measure the wedges of the two-point correlation
-	 *  function, &xi;(r)
-	 *  @param errorType the type of error to be computed
-	 *  @param dir_output_pairs output directory used to store the
-	 *  number of pairs
-	 *  @param dir_input_pairs vector of input directories used to
-	 *  store the number of pairs (if the pairs are read from files)
-	 *  @param dir_output_ResampleXi output directory used to store xi from
-	 *  resampled catalogues
-	 *  @param nMocks number of resampling to be generate with bootsrap*
-	 *  @param count_dd 1 &rarr; count the number of data-data
-	 *  opairs; 0 &rarr; read the number of data-data pairs from
-	 *  file
-	 *  @param count_rr 1 &rarr; count the number of random-random
-	 *  opairs; 0 &rarr; read the number of random-random pairs from
-	 *  file
-	 *  @param count_dr 1 &rarr; count the number of data-random
-	 *  opairs; 0 &rarr; read the number of data-random pairs from
-	 *  file
-	 *  @param tcount 1 &rarr; activate the time counter; 0 &rarr;
-	 *  don't activate the time counter; 
-	 *  @return none
-	 */
-	void measure (const ErrorType errorType=ErrorType::_Poisson_, const string dir_output_pairs=par::defaultString, const vector<string> dir_input_pairs={},  const string dir_output_ResampleXi=par::defaultString, const int nMocks=0, const int count_dd=1, const int count_rr=1, const int count_dr=1, const bool tcount=1) override;
+      /**
+       *  @brief measure the wedges of the two-point correlation
+       *  function
+       *
+       *  @param errorType type of error
+       *  
+       *  @param dir_output_pairs output directory used to store the
+       *  number of pairs
+       *
+       *  @param dir_input_pairs vector of input directories used to
+       *  store the number of pairs (if the pairs are read from files)
+       *
+       *  @param dir_output_resample output directory of the
+       *  resampled correlation function
+       *
+       *  @param nMocks number of resampling used for bootstrap
+       *
+       *  @param count_dd true &rarr; count the number of data-data
+       *  pairs; false &rarr; read the number of data-random pairs from
+       *  file
+       *
+       *  @param count_rr true &rarr; count the number of random-random
+       *  pairs; false &rarr; read the number of random-random pairs
+       *
+       *  @param count_dr true &rarr; count the number of data-random
+       *  pairs; false &rarr; read the number of data-random pairs
+       *
+       *  @param tcount true &rarr; activate the time counter; false
+       *  &rarr; no time counter
+       *
+       *  @param estimator the estimator used to measure the two-point
+       *  correlation function
+       *
+       *  @return none
+       */
+      void measure (const ErrorType errorType=ErrorType::_Poisson_, const string dir_output_pairs=par::defaultString, const vector<string> dir_input_pairs={},  const string dir_output_resample=par::defaultString, const int nMocks=0, const bool count_dd=true, const bool count_rr=true, const bool count_dr=true, const bool tcount=true, const Estimator estimator=_LandySzalay_) override;
 
-	///@}
+      ///@}
 
 
-	/**
-	 *  @name Input/Output methods
-	 */
-	///@{
+      /**
+       *  @name Member functions for input/output 
+       */
+      ///@{
 
-	/**
-	 *  @brief read the wedges of the two-point correlation function
-	 *  @param dir input directory
-	 *  @param file input file
-	 *  @return none
-	 */
-	void read (const string dir, const string file) override
-	{ ErrorMsg("Error in TwoPointCorrelation_wedges::read of TwoPointCorrelation_wedges.h: work in progress!"); }  
+      /**
+       *  @brief read the wedges of the two-point correlation function
+       *  @param dir input directory
+       *  @param file input file
+       *  @return none
+       */
+      void read (const string dir, const string file) override
+      { (void)dir; (void)file; ErrorCBL("Error in TwoPointCorrelation_wedges::read of TwoPointCorrelation_wedges.h: work in progress!"); }  
 
-	/**
-	 *  @brief write the wedges of the two-point correlation
-	 *  function
-	 *  @param dir output directory
-	 *  @param file output file
-	 *  @param rank cpu index (for MPI usage)
-	 *  @return none
-	 */
-	void write (const string dir=par::defaultString, const string file=par::defaultString, const int rank=0) const override;
+      /**
+       *  @brief write the wedges of the two-point correlation
+       *  function
+       *  @param dir output directory
+       *  @param file output file
+       *  @param rank cpu index (for MPI usage)
+       *  @return none
+       */
+      void write (const string dir=par::defaultString, const string file=par::defaultString, const int rank=0) const override;
 
-	///@}
+      ///@}
+
+      /**
+       *  @name Member functions to compute, read and write the covariance matrix
+       */
+      ///@{ 
+
+      /**
+       *  @brief read the measured covariance matrix
+       *  @param dir input directory
+       *  @param file input file
+       *  @return none
+       */
+      void read_covariance_matrix (const string dir, const string file) override;
+
+      /**
+       *  @brief write the measured two-point correlation
+       *  @param dir output directory
+       *  @param file output file
+       *  @return none
+       */
+      void write_covariance_matrix (const string dir, const string file) const override;
+
+      /**
+       *  @brief compute the covariance matrix
+       *  @param xi_collection vector containing the xi to compute the covariance matrix
+       *  @param doJK 1 &rarr; compute jackknife covariance matrix; 0 compute standard covariance matrix
+       *  @return none
+       */
+      void compute_covariance_matrix (vector<shared_ptr<data::Data> > xi_collection, bool doJK) override;
+
+      /**
+       *  @brief compute the covariance matrix
+       *  @param file_xi vector containing the path to the xi to compute the covariance matrix
+       *  @param doJK 1 &rarr; compute jackknife covariance matrix; 0 compute standard covariance matrix
+       *  @return none
+       */
+      void compute_covariance_matrix (vector<string> file_xi, bool doJK) override;
+
+      ///@} 
 
     };
   }

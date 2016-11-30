@@ -2,7 +2,7 @@
 
 %module CosmoBolognaLib
 
-%import "../Doc/documentation.i"
+//%import "../Doc/documentation.i"
 
 %include Lib/Func.i
 %include Lib/Stat.i
@@ -14,3 +14,5 @@
 %include Lib/ThreePointCorrelation.i
 %include Lib/Modelling.i
 %include Lib/GlobalFunc.i
+%include Lib/ReadParameters.i
+

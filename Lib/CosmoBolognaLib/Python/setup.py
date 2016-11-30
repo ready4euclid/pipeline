@@ -2,6 +2,7 @@
 
 from setuptools import setup, Extension
 import os
+import platform
 
 from distutils.sysconfig import get_config_vars
 
@@ -15,7 +16,6 @@ def readme():
 HOME = os.getenv("HOME")
 
 dirLib       = "CosmoBolognaLib/" 
-dirNumerical = HOME+"/Numerical/"
 dirH         = dirLib+"Headers/Lib/"
 dirO         = dirLib+"Headers/Objects/"
 dirM         = dirLib+"Headers/Models/"
@@ -24,14 +24,25 @@ dirEH        = dirLib+"External/EH/"
 FLAGS = ["-std=c++11", "-fopenmp", "-w"]
 FLAGSL = ["-Wl,-rpath,CosmoBolognaLib/", "-LCosmoBolognaLib/"]
 
-include_dirs = [dirLib, dirH, dirO, dirM, dirEH, dirNumerical]
+include_dirs = [dirLib, dirH, dirO, dirM, dirEH]
 
 libraries = ["gomp", "gsl", "gslcblas", "m", "fftw3", "fftw3_omp"]
+print platform.system()
+
+if platform.system()=='Darwin':
+    os.environ["CC"] = "gcc"
+    os.environ["CXX"] = "g++"
+    os.environ["MPICXX"] = "mpic++"
+    FLAGS=['-arch','x86_64',"-std=c++11", "-fopenmp", "-w"]
+    FLAGSL=['-arch','x86_64',"-Wl,-rpath,CosmoBolognaLib/", "-LCosmoBolognaLib/"]
+    libraries = ["gomp", "gsl", "gslcblas", "m", "fftw3"]
 
 sources = ["CBL_wrap.cxx",
            dirLib+"Func/Data1D_collection.cpp",
            dirLib+"Func/Data1D.cpp",
            dirLib+"Func/Data2D.cpp",
+           dirLib+"Func/Data1D_extra.cpp",
+           dirLib+"Func/Data2D_extra.cpp",
            dirLib+"Func/Data.cpp",
            dirLib+"Func/Func.cpp",
            dirLib+"Func/FuncXi.cpp",
@@ -60,10 +71,16 @@ sources = ["CBL_wrap.cxx",
            dirLib+"ChainMesh/ChainMesh.cpp",
            dirLib+"Catalogue/Object.cpp",
            dirLib+"Catalogue/Catalogue.cpp",
-           dirLib+"Catalogue/RandomCatalogue.cpp",     
+           dirLib+"Catalogue/RandomCatalogue.cpp",
+           dirLib+"Catalogue/RandomCatalogueVIPERS.cpp",     
+           dirLib+"Catalogue/VoidCatalogue.cpp",
            dirLib+"Catalogue/ChainMesh_Catalogue.cpp",
            dirLib+"LogNormal/LogNormal.cpp",
            dirLib+"CatalogueAnalysis/TwoPointCorrelation/Pair.cpp",
+           dirLib+"CatalogueAnalysis/TwoPointCorrelation/Pair1D.cpp",
+           dirLib+"CatalogueAnalysis/TwoPointCorrelation/Pair2D.cpp",
+           dirLib+"CatalogueAnalysis/TwoPointCorrelation/Pair1D_extra.cpp",
+           dirLib+"CatalogueAnalysis/TwoPointCorrelation/Pair2D_extra.cpp",
            dirLib+"CatalogueAnalysis/TwoPointCorrelation/TwoPointCorrelation.cpp",
            dirLib+"CatalogueAnalysis/TwoPointCorrelation/TwoPointCorrelation1D.cpp",
            dirLib+"CatalogueAnalysis/TwoPointCorrelation/TwoPointCorrelation1D_angular.cpp",
@@ -83,15 +100,19 @@ sources = ["CBL_wrap.cxx",
            dirLib+"CatalogueAnalysis/ThreePointCorrelation/ThreePointCorrelation_comoving_connected.cpp",
            dirLib+"CatalogueAnalysis/ThreePointCorrelation/ThreePointCorrelation_comoving_reduced.cpp",
            dirLib+"Modelling/ModelFunction.cpp",
-           dirLib+"Modelling/ModelBias.cpp",
            dirLib+"Modelling/Modelling.cpp",
            dirLib+"Modelling/Modelling_TwoPointCorrelation.cpp",
+           dirLib+"Modelling/Modelling_TwoPointCorrelation1D.cpp",
+           dirLib+"Modelling/Modelling_TwoPointCorrelation2D.cpp",
+           dirLib+"Modelling/Modelling_TwoPointCorrelation_cartesian.cpp",
            dirLib+"Modelling/Modelling_TwoPointCorrelation_monopole.cpp",
            dirLib+"Modelling/Modelling_TwoPointCorrelation_projected.cpp",
            dirLib+"Modelling/Modelling_TwoPointCorrelation_deprojected.cpp",
            dirLib+"GlobalFunc/FuncCosmology.cpp",
            dirLib+"GlobalFunc/Func.cpp",
-           dirLib+"GlobalFunc/SubSample.cpp"
+           dirLib+"GlobalFunc/SubSample.cpp",
+           dirLib+"GlobalFunc/Reconstruction.cpp",
+           dirLib+"ReadParameters/ReadParameters.cpp"
        ]
 
 
@@ -105,7 +126,7 @@ CosmoBolognaLib = Extension(  "_CosmoBolognaLib",
                               extra_link_args      = FLAGSL )
 
 setup(  name             = "CosmoBolognaLib",
-        version          = "2.0",
+        version          = "3.1",
         description      = "C++ libraries for cosmological calculations",
         long_description = readme(),
         author           = "Federico Marulli",

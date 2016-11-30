@@ -39,61 +39,76 @@ using namespace cosmobl;
 // ============================================================================================
 
 
-cosmobl::statistics::Parameter::Parameter(double value, bool freeze, string name)
+cosmobl::statistics::Parameter::Parameter (const double value, const ParameterType pType, const string name)
 {
-  m_value=value;
-  m_freeze = freeze;
+  m_value = value;
+  m_pType = pType;
   m_name = name;
-  m_prior= make_shared<Prior>();
+  m_prior = make_shared<Prior>(statistics::Prior(statistics::PriorType::_UniformPrior_, value*0.9, value*1.1));
 }
 
 
 // ============================================================================================
 
 
-cosmobl::statistics::Parameter::Parameter(const double value, const double pmin, const double pmax, vector<double> discrete_values, const string name)
+cosmobl::statistics::Parameter::Parameter (const double value, const double xmin, const double xmax, const ParameterType pType, const string name)
 {
   m_value = value;
   m_name = name;
-  m_prior = make_shared<statistics::Prior>(statistics::Prior(statistics::PriorType::_IdentityPrior_,pmin,pmax,discrete_values));
+  m_pType = pType;
+  m_prior = make_shared<statistics::Prior>(statistics::Prior(statistics::PriorType::_UniformPrior_, xmin, xmax));
 }
 
 
 // ============================================================================================
 
 
-cosmobl::statistics::Parameter::Parameter(const double value, const statistics::PriorType priorType, const vector<double> prior_params, const vector<double> Limits, const vector<double> discrete_values, const string name)
+cosmobl::statistics::Parameter::Parameter (const double value, const statistics::PriorType priorType, const vector<double> prior_params, const double xmin, const double xmax, const ParameterType pType, const string name)
 {
   m_value = value;
   m_name = name;
-  m_prior = make_shared<statistics::Prior>(statistics::Prior(priorType,prior_params,Limits,discrete_values));
+  m_pType = pType;
+  m_prior = make_shared<statistics::Prior>(statistics::Prior(priorType, prior_params, xmin, xmax));
 }
 
 
 // ============================================================================================
 
 
-cosmobl::statistics::Parameter::Parameter(const double value, const statistics::prior_func func, const vector<double> prior_params, const vector<double> Limits, const vector<double> discrete_values, const string name)
+cosmobl::statistics::Parameter::Parameter (const double value, const statistics::PriorType priorType, const vector<double> discrete_values, const vector<double> weights, const ParameterType pType, const string name)
 {
   m_value = value;
   m_name = name;
-  m_prior = make_shared<statistics::Prior>(statistics::Prior(statistics::PriorType::_FunctionPrior_, func,prior_params,Limits,discrete_values));
+  m_pType = pType;
+  m_prior = make_shared<statistics::Prior>(statistics::Prior(priorType, discrete_values, weights));
 }
 
 // ============================================================================================
 
 
-cosmobl::statistics::Parameter::Parameter(const double value, const statistics::Prior prior, string name)
+cosmobl::statistics::Parameter::Parameter (const double value, const statistics::Prior prior, const ParameterType pType, const string name)
 {
   m_value = value;
   m_name = name;
+  m_pType = pType;
   m_prior = make_shared<statistics::Prior>(prior);
 }
 
 // ============================================================================================
 
 
-void cosmobl::statistics::Parameter::set_chains(int nchains, int chain_size){
+void cosmobl::statistics::Parameter::set_value (const double value)
+{
+  if (!isFixed())
+    m_value = prior()->isIncluded(value) ? value : closest(value, prior()->xmin(), prior()->xmax());
+}
+
+
+// ============================================================================================
+
+
+void cosmobl::statistics::Parameter::set_chains (const int nchains, const int chain_size)
+{
   m_nchains = nchains;
   m_chain_size = chain_size;
   m_chains.resize(nchains);
@@ -102,7 +117,35 @@ void cosmobl::statistics::Parameter::set_chains(int nchains, int chain_size){
     auto chain = make_shared<Chain>(Chain(m_chain_size));
     m_chains[i] = chain;
   }
-  
+}
+
+
+// ============================================================================================
+
+
+void cosmobl::statistics::Parameter::set_chain_value (const int chain, const int position, const double value)
+{
+  if (chain >= m_nchains)
+    ErrorCBL("Error in set_chain value of Parameter.cpp, chain number >= number of chains");
+  if (position >= m_chain_size)
+    ErrorCBL("Error in set_chain value of Parameter.cpp, position in chain >= chain size");
+
+  m_chains[chain]->set_chain_value(position, value);
+}
+
+
+// ============================================================================================
+
+
+void cosmobl::statistics::Parameter::set_chains_values (const int position, const vector<double> values)
+{
+  if (int(values.size()) != m_nchains)
+    ErrorCBL("Error in set_chain value of Parameter.cpp, size of values != number of chains");
+  if (position >= m_chain_size)
+    ErrorCBL("Error in set_chain value of Parameter.cpp, position in chain >= chain size");
+
+  for (int i=0; i<m_nchains; i++)
+    m_chains[i]->set_chain_value(position,values[i]);
 
 }
 
@@ -110,59 +153,103 @@ void cosmobl::statistics::Parameter::set_chains(int nchains, int chain_size){
 // ============================================================================================
 
 
-shared_ptr<statistics::Chain> cosmobl::statistics::Parameter::merge_chains(int max, int min, int thin){
+void cosmobl::statistics::Parameter::set_chains_values_from_prior (const int position)
+{
+  if (position >= m_chain_size)
+    ErrorCBL("Error in set_chain value of Parameter.cpp, position in chain >= chain size");
 
+  vector<double> values = sample_from_prior(m_nchains);
+  for (int i=0; i<m_nchains; i++)
+    m_chains[i]->set_chain_value(position,values[i]);
+
+}
+
+
+// ============================================================================================
+
+
+shared_ptr<statistics::Chain> cosmobl::statistics::Parameter::merge_chains (const int max, const int min, const int thin)
+{
   vector<double> values;
 
-  for(auto &&cc : m_chains){
+  for (auto &&cc : m_chains) {
     int cmin = (min<=0) ? 0 : min;
     int cmax = (max<=0) ? cc->chain_size() : max;
-    for(int i=cmin;i<cmax;i+=thin)
+    for (int i=cmin; i<cmax; i+=thin)
       values.push_back(cc->chain_value(i));
   }
   
   shared_ptr<statistics::Chain> chain=make_shared<Chain>(statistics::Chain(values.size()));
 
-  for(size_t i=0;i<values.size();i++)
+  for (size_t i=0; i<values.size(); i++)
     chain->set_chain_value(i,values[i]);
 
   return chain;
 }
 
 
-
 // ============================================================================================
 
 
-double cosmobl::statistics::Parameter::eval_proposed(const double proposed_value){
-  m_proposed_value = proposed_value;
-  return eval_proposed();
-}
-
-
-// ============================================================================================
-
-
-double cosmobl::statistics::Parameter::eval_proposed() const
-{
-  return PriorProbability(m_proposed_value)/PriorProbability();
-}
-
-
-// ============================================================================================
-
-
-void cosmobl::statistics::Parameter::confirm_proposed_value(){
-  m_value = m_proposed_value;
-}
-
-
-// ============================================================================================
-
-
-double cosmobl::statistics::Parameter::random_value() const
+double cosmobl::statistics::Parameter::random_value () const
 {
   return m_prior->sample();
-//  m_value = (m_prior->xmax()-m_prior->xmin())*random+m_prior->xmin();
-//  return m_value;
+}
+
+
+// ============================================================================================
+
+
+double cosmobl::statistics::Parameter::chains_convergence (const int max, const int min, const int thin)
+{
+  double RR = 0.;
+  
+  if (!isFixed()) {
+
+    auto chain = merge_chains(max, min, thin);
+    chain->Statistics();
+    
+    cout << endl;
+    coutCBL << par::col_green << m_name << par::col_default << ":" << endl;
+    coutCBL << setprecision(6) << " mean = "  << chain->mean() << endl;
+    coutCBL << " std = " << chain->std() << endl;
+    coutCBL << " median = " << chain->median() << endl;
+
+    set_value(chain->mean());
+    m_std = chain->std();
+
+    vector<double> mean, var;
+
+    for (auto &&cc : chains()) {
+      cc->Statistics(max, min);
+      mean.push_back(cc->mean());
+      var.push_back(cc->std()*cc->std());
+    }
+    
+    double W  = Average(var);
+    double B = m_chain_size*Sigma(mean)*Sigma(mean);
+    RR = sqrt((double(m_chain_size-1)/m_chain_size*W+B/m_chain_size)/W);
+    coutCBL << setprecision(6) << "Convergence parameter (sqrt(R)-1) = " << RR-1 << endl;
+  }
+  
+  //else { coutCBL << endl << m_name  << ":" << endl << " fixed value = " << m_value << endl ; }
+  
+  return RR;
+}
+
+
+// ============================================================================================
+
+
+vector<double> cosmobl::statistics::Parameter::sample_from_prior (const int sample_size)
+{
+  vector<double> values;
+  
+  if (!isFixed())  
+    values = m_prior->sample_vector(sample_size);
+  else 
+    values.resize(sample_size, m_value);
+
+  return values;
+  
 }

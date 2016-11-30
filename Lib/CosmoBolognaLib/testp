@@ -1,0 +1,12 @@
+#!/bin/bash
+
+./test
+
+make purgepy && 
+make python2 &&
+
+cd Examples/distances && python distances.py && cd ../.. &&
+cd Examples/statistics/codes && python prior.py && cd ../../.. &&
+cd Examples/clustering/codes && python 2pt_monopole.py && python 2pt_model.py && cd ../../.. &&
+
+make doc && emacs Doc/WARNING_LOGFILE 

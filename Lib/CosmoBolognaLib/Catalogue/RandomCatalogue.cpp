@@ -24,7 +24,7 @@
  *  @brief Methods of the class Catalogue to construct random catalogues
  *
  *  This file contains the implementation of the methods of the class
- *  Catalogue, used to create random catalogues
+ *  Catalogue used to create random catalogues
  *
  *  @author Federico Marulli
  *
@@ -34,58 +34,20 @@
 #include "Catalogue.h"
 
 using namespace cosmobl;
-using namespace catalogue;
 
 
 // ============================================================================
 
 
-cosmobl::catalogue::Catalogue::Catalogue (const RandomType type, const Catalogue catalogue, const double N_R)
+cosmobl::catalogue::Catalogue::Catalogue (const RandomType type, const cosmology::Cosmology &real_cosm, const cosmology::Cosmology &test_cosm, const string dir_in, const double Zguess_min, const double Zguess_max)
 {
-  if (type!=_createRandom_box_) ErrorMsg("Error in cosmobl::catalogue::Catalogue::Catalogue : the random catalogue has to be cubic!");
-  
-  cout << "I'm creating a random catalogue with cubic geometry..." << endl;
+  if (type!=_createRandom_box_) ErrorCBL("Error in cosmobl::catalogue::Catalogue::Catalogue : the random catalogue has to be cubic!");
 
-  int nRandom = (int)N_R*catalogue.nObjects();
-
-  vector<double> Lim; 
-  catalogue.MinMax_var(Var::_X_, Lim, 0);
-  catalogue.MinMax_var(Var::_Y_, Lim, 0);
-  catalogue.MinMax_var(Var::_Z_, Lim, 0);
-  
-  double Xmin = Lim[0]; double Xmax = Lim[1];
-  double Ymin = Lim[2]; double Ymax = Lim[3];
-  double Zmin = Lim[4]; double Zmax = Lim[5];
-
-  if (Xmin>Xmax || Ymin>Ymax || Zmin>Zmax) ErrorMsg("Error in Catalogue::Catalogue of Catalogue.cpp!");
-
-  default_random_engine gen;
-  uniform_real_distribution<float> ran(0., 1.);
-
-  double XX, YY, ZZ;
-
-  for (int i=0; i<nRandom; i++) {
-    XX = ran(gen)*(Xmax-Xmin)+Xmin;
-    YY = ran(gen)*(Ymax-Ymin)+Ymin;
-    ZZ = ran(gen)*(Zmax-Zmin)+Zmin;
-    m_sample.push_back(move(Object::Create(_RandomObject_, XX, YY, ZZ)));
-  }
-  
-}
-
-
-// ============================================================================
-
-
-cosmobl::catalogue::Catalogue::Catalogue (const RandomType type, const Cosmology &real_cosm, const Cosmology &test_cosm, const string dir_in, const string dir_out, const double Zguess_min, const double Zguess_max)
-{
-  if (type!=_createRandom_box_) ErrorMsg("Error in cosmobl::catalogue::Catalogue::Catalogue : the random catalogue has to be cubic!");
-
-  cout << "I'm creating a random catalogue with warped cubic geometry, due to geometric distortions..." << endl;
+  coutCBL << "I'm creating a random catalogue with warped cubic geometry, due to geometric distortions: the undistorted random catalogue is read from a file..." << endl;
 
   string file_in = dir_in+"random_catalogue";
-  cout << "file_in = " << file_in << endl;
-  ifstream fin (file_in.c_str()); checkIO (file_in,1);
+  coutCBL << "file_in = " << file_in << endl;
+  ifstream fin(file_in.c_str()); checkIO(fin, file_in);
   
   string line; double NUM;
   vector<double> random_X, random_Y, random_Z;
@@ -115,8 +77,10 @@ cosmobl::catalogue::Catalogue::Catalogue (const RandomType type, const Cosmology
   
   // ------ create the new random catalogue ------
 
-  for (size_t i=0; i<random_X.size(); i++) 
-    m_sample.push_back(move(Object::Create(_RandomObject_, random_X[i], random_Y[i], random_Z[i])));
+  for (size_t i=0; i<random_X.size(); i++) {
+    comovingCoordinates coord = {random_X[i], random_Y[i], random_Z[i]};
+    m_object.push_back(move(Object::Create(_RandomObject_, coord)));
+  }
   
 }
 
@@ -124,119 +88,141 @@ cosmobl::catalogue::Catalogue::Catalogue (const RandomType type, const Cosmology
 // ============================================================================
 
 
-cosmobl::catalogue::Catalogue::Catalogue (const RandomType type, const Catalogue catalogue, const Cosmology &cosm, const int N_R, const int nbin, const bool conv, const double sigma)
+cosmobl::catalogue::Catalogue::Catalogue (const RandomType type, const Catalogue catalogue, const double N_R, const int nbin, const cosmology::Cosmology &cosm, const bool conv, const double sigma, const int seed)
 {
-  if (type!=_createRandom_shuffle_) ErrorMsg("Error in cosmobl::catalogue::Catalogue::Catalogue : the random catalogue has to be cubic!");
-  
-  cout << "I'm creating a random catalogue with the 'shuffle' method..." << endl;
+  if (type==_createRandom_box_) {
+    
+    coutCBL << "I'm creating a random catalogue with cubic geometry..." << endl;
 
+    int nRandom = int(N_R*catalogue.nObjects());
 
-  // the R.A.-Dec coordinates of the random catalogue will be the same as the ones of the real catalogue
-  
-  vector<double> ra = catalogue.var(_RA_), raB = ra;
-  vector<double> dec = catalogue.var(_Dec_), decB = dec;
-  
-  for (int i=0; i<max(0, N_R-1); i++) { // use N_R more random objects
-    ra.insert(ra.end(), raB.begin(), raB.end());
-    dec.insert(dec.end(), decB.begin(), decB.end());
+    double Xmin = catalogue.Min(Var::_X_), Xmax = catalogue.Max(Var::_X_); 
+    double Ymin = catalogue.Min(Var::_Y_), Ymax = catalogue.Max(Var::_Y_);
+    double Zmin = catalogue.Min(Var::_Z_), Zmax = catalogue.Max(Var::_Z_);
+
+    if (Xmin>Xmax || Ymin>Ymax || Zmin>Zmax) ErrorCBL("Error in Catalogue::Catalogue of Catalogue.cpp!");
+
+    default_random_engine gen(seed);
+    uniform_real_distribution<float> ran(0., 1.);
+
+    for (int i=0; i<nRandom; i++) {
+      comovingCoordinates coord;
+      coord.xx = ran(gen)*(Xmax-Xmin)+Xmin;
+      coord.yy = ran(gen)*(Ymax-Ymin)+Ymin;
+      coord.zz = ran(gen)*(Zmax-Zmin)+Zmin;
+      m_object.push_back(move(Object::Create(_RandomObject_, coord)));
+    }
+
   }
 
+  else {
+    
+    vector<double> ra = catalogue.var(_RA_), raB = ra;
+    vector<double> dec = catalogue.var(_Dec_), decB = dec;
+
+    if (type==_createRandom_shuffle_) {
+
+      coutCBL << "I'm creating a random catalogue with the 'shuffle' method..." << endl;
+    
+      // the R.A.-Dec coordinates of the random catalogue will be the same as the ones of the real catalogue
+      for (int i=0; i<max(0, int(N_R)-1); i++) { // use N_R more random objects
+	ra.insert(ra.end(), raB.begin(), raB.end());
+	dec.insert(dec.end(), decB.begin(), decB.end());
+      }
+
+    }
   
-  // smoothing the redshift distribution by Gaussian kernel with 0 mean and sigma standard deviation 
-  
-  vector<double> redshift = catalogue.var(_Redshift_), redshiftB = redshift;
-  vector<double> xx, yy, err;
-  distribution(xx, yy, err, redshift, {}, nbin, 1, par::defaultString, 1, Min(redshift), Max(redshift), 1, conv, sigma);
+    else if (type==_createRandom_square_) {
+      coutCBL << "I'm creating a random catalogue in a RA-Dec square..." << endl;
+
+      int nRandom = int(catalogue.nObjects()*N_R);
+
+      ra.erase(ra.begin(), ra.end());
+      dec.erase(dec.begin(), dec.end());
+        
+      default_random_engine generator(seed);
+      uniform_real_distribution<double> distribution;
+      auto ran = bind(distribution, generator);
+
+      double ra_min = catalogue.Min(Var::_RA_),
+	ra_max = catalogue.Max(Var::_RA_),
+	sin_dec_min = sin(catalogue.Min(Var::_Dec_)),
+	sin_dec_max = sin(catalogue.Max(Var::_Dec_));
+
+      for (int i=0; i<nRandom; i++) {
+	ra.push_back((ra_max-ra_min)*ran()+ra_min);
+	dec.push_back(asin((sin_dec_max-sin_dec_min)*ran()+sin_dec_min));
+      }
+
+    }
+
+    else
+      ErrorCBL("Error in cosmobl::catalogue::Catalogue::Catalogue : the random catalogue has to be cubic!");
 
   
-  // extracting the redshifts from the smoothed distribution
+    // compute the redshifts of the random objects
   
-  vector<double> random_redshift;
-  random_numbers (ra.size(), 13, xx, yy, random_redshift);
+    vector<double> random_redshift = catalogue.var(_Redshift_);
   
+    if (cosmobl::Max(random_redshift)-cosmobl::Min(random_redshift)>1.e-30) {
+    
+      // extract the redshift distribution of the input catalogue  
+      vector<double> xx, yy, err;
+      distribution(xx, yy, err, random_redshift, {}, nbin, true, par::defaultString, 1., cosmobl::Min(random_redshift), cosmobl::Max(random_redshift), true, conv, sigma);
+    
+      // extract the random redshifts from the distribution
+      fill_distr(ra.size(), xx, yy, random_redshift, catalogue.Min(Var::_Redshift_), catalogue.Max(Var::_Redshift_), 13);
+
+    }
+
   
-  // constructing the random sample
+    // constructing the random sample
   
-  for (size_t i=0; i<random_redshift.size(); i++) 
-    m_sample.push_back(move(Object::Create(_RandomObject_, ra[i], dec[i], random_redshift[i], cosm)));
+    for (size_t i=0; i<random_redshift.size(); i++) {
+      observedCoordinates coord = {ra[i], dec[i], random_redshift[i]};
+      m_object.push_back(move(Object::Create(_RandomObject_, coord, cosm)));
+    }
+
+  }
+  
 }
 
 
 // ============================================================================
 
 
-cosmobl::catalogue::Catalogue::Catalogue (const RandomType type, const Catalogue catalogue, const int nRandom, const Cosmology &cosm, const double Angle, const int step_redshift, const vector<double> redshift, vector<double> &dc, vector<double> &convol, const int idum)
+cosmobl::catalogue::Catalogue::Catalogue (const RandomType type, const Catalogue catalogue, const double N_R, const int nbin, const double Angle, const vector<double> redshift, const cosmology::Cosmology &cosm, const bool conv, const double sigma, const int seed)
 {
-  if (type!=_createRandom_cone_) ErrorMsg("Error in cosmobl::catalogue::Catalogue::Catalogue : the random catalogue has to be conic!");
+  if (type!=_createRandom_cone_) ErrorCBL("Error in cosmobl::catalogue::Catalogue::Catalogue : the random catalogue has to be conic!");
   
-  cout << "I'm creating a random catalogue in a cone..." << endl;
-  
-  double redshift_min = MinMax_var(Var::_Redshift_)[0];
-  double redshift_max = MinMax_var(Var::_Redshift_)[1];
+  coutCBL << "I'm creating a random catalogue in a cone..." << endl;
 
-  double D_min = cosm.D_C(redshift_min);
-  double D_max = cosm.D_C(redshift_max);
+  int nRandom = int(catalogue.nObjects()*N_R);
 
-  
   vector<double> DD;
  
-  default_random_engine gen;
+  default_random_engine gen(seed);
   uniform_real_distribution<float> ran(0., 1.);
 
   
-  if (step_redshift>0) {
-    
-    // distribution along the line of sight
-
-    redshift_min *= 0.9999;
-    redshift_max *= 1.0001;
-    double delta_redshift = (redshift_max-redshift_min)/step_redshift;
-    double redshift1 = redshift_min;
-    double redshift2 = redshift1+delta_redshift;
-    vector<int> nObj(step_redshift,0);
-    for (int i=0; i<step_redshift; i++) {
-      for (size_t oo=0; oo<redshift.size(); oo++) 
-	if (redshift1<redshift[oo] && redshift[oo]<redshift2) 
-	  nObj[i] ++;
-      redshift1 = redshift2;
-      redshift2 += delta_redshift;
-    }
+  // extract the redshift distribution  
   
-    int N_R = int(double(nRandom)/double(redshift.size()));
-    int nTOT = 0;
-    for (int i=0; i<step_redshift; i++) {
-      nObj[i] *= N_R;
-      nTOT += nObj[i];
-    }
-    nObj[step_redshift-1] -= (nTOT-nRandom);
+  vector<double> xx, yy, err;
+  distribution(xx, yy, err, redshift, {}, nbin, true, par::defaultString, 1., cosmobl::Min(redshift), cosmobl::Max(redshift), true, conv, sigma);
 
-    redshift1 = redshift_min;
-    redshift2 = redshift1+delta_redshift;
-    for (int i=0; i<step_redshift; i++) {
-      for (int j=0; j<nObj[i]; j++) {
-	double REDSHIFT = redshift1+(redshift2-redshift1)*ran(gen);
-	DD.push_back(cosm.D_C(REDSHIFT));
-      }
-      redshift1 = redshift2;
-      redshift2 += delta_redshift;
-    }
   
-  }
-
-  // from the convolvolution of N(D_C)
-
-  else if (step_redshift==0) 
-    random_numbers(nRandom, idum, dc, convol, DD, D_min, D_max);
-
-  else ErrorMsg("Error in random_catalogue_cone of RandomCatalogue.cpp!");
-
-
-  double XX, ZZ;
-
-  double rMax = cosm.D_C(redshift_max)*tan(Angle);
+  // extract the random redshifts from the distribution
   
-  double Dm = Min(DD)*0.999;
-  double DM = Max(DD)*1.001;
+  vector<double> random_redshift;
+  fill_distr(nRandom, xx, yy, random_redshift, catalogue.Min(Var::_Redshift_), catalogue.Max(Var::_Redshift_), 13);
+
+
+  // constructing the random sample
+  
+  double rMax = cosm.D_C(catalogue.Max(Var::_Redshift_))*tan(Angle);
+  
+  double Dm = cosmobl::Min(DD)*0.999;
+  double DM = cosmobl::Max(DD)*1.001;
 
   double fact = 1./DM;
 
@@ -244,19 +230,22 @@ cosmobl::catalogue::Catalogue::Catalogue (const RandomType type, const Catalogue
   
   for (size_t i=0; i<DD.size(); i++) {
 
+    comovingCoordinates coord;
+    
     bool OK = 0;
     while (!OK) {
 
-      XX = fact*DD[i]*rMax*2.*(ran(gen)-0.5);
-      ZZ = fact*DD[i]*rMax*2.*(ran(gen)-0.5);
+      coord.xx = fact*DD[i]*rMax*2.*(ran(gen)-0.5);
+      coord.yy = DD[i];
+      coord.zz = fact*DD[i]*rMax*2.*(ran(gen)-0.5);
 
-      r1 = sqrt(XX*XX+ZZ*ZZ);
-      r2 = sqrt(XX*XX+ZZ*ZZ+DD[i]*DD[i]);
-
+      r1 = sqrt(coord.xx*coord.xx+coord.zz*coord.zz);
+      r2 = sqrt(coord.xx*coord.xx+coord.zz*coord.zz+DD[i]*DD[i]);
+      
       if (r1<fact*DD[i]*rMax && Dm<r2 && r2<DM) OK = 1;
     }
 
-    m_sample.push_back(move(Object::Create(_RandomObject_, XX, DD[i], ZZ)));
+    m_object.push_back(move(Object::Create(_RandomObject_, coord)));
   }
   
 }
@@ -265,139 +254,62 @@ cosmobl::catalogue::Catalogue::Catalogue (const RandomType type, const Catalogue
 // ============================================================================
 
 
-cosmobl::catalogue::Catalogue::Catalogue (const RandomType type, const Catalogue catalogue, const int nRandom, const Cosmology &cosm, const string dir, const int step_redshift, const vector<double> redshift, vector<double> &dc, vector<double> &convol, const int idum)
+cosmobl::catalogue::Catalogue::Catalogue (const RandomType type, const vector<string> mangle_mask, const Catalogue catalogue, const double N_R, const int nbin, const cosmology::Cosmology cosm, const bool conv, const double sigma, const int seed)
 {
-  if (type!=_createRandom_mock_) ErrorMsg("Error in cosmobl::catalogue::Catalogue::Catalogue : the random catalogue has to be of type _RandomMock_ !");
+  if (type!=_createRandom_MANGLE_) ErrorCBL("Error in cosmobl::catalogue::Catalogue::Catalogue : the random catalogue has to be of type _MANGLE_!");
+
+  string mangle_dir = par::DirCosmo+"External/mangle/";
+
+  string mangle_working_dir = mangle_dir+"output/";
+  string mkdir = "mkdir -p "+mangle_working_dir;
+  if (system(mkdir.c_str())) {}
+
+  string mangle_mask_list;
+  for (size_t i=0; i<mangle_mask.size(); i++)
+    mangle_mask_list += mangle_mask[i]+" ";
+
+  string random_output = mangle_working_dir+"temporary_random_output.dat";
+
+
+  // generate the angular random distribution with mangle
+
+  double nrandom = N_R*catalogue.nObjects();
+  string nrandom_str = cosmobl::conv(nrandom, par::fDP1);
+
+  string ransack = mangle_dir+"/bin/ransack -r"+nrandom_str+" "+mangle_mask_list+" "+random_output;
+  if (system(ransack.c_str())) {}
+
+  vector<double> random_ra, random_dec, random_redshift;
   
-  cout << "I'm creating a random catalogue in a cone (for a simulated catalogue)..." << endl;
-
-  vector<double> Lim; 
-  MinMax_var(Var::_RA_, Lim, 0);
-  MinMax_var(Var::_Dec_, Lim, 0);
-  MinMax_var(Var::_Redshift_, Lim, 0);
-  
-  double ra_min = Lim[0]; double ra_max = Lim[1];
-  double dec_min = Lim[2]; double dec_max = Lim[3];
-  double redshift_min = Lim[4]; double redshift_max = Lim[5];
-
-  cout << ra_min << " < ra < " << ra_max << "   " << dec_min << " < dec < " << dec_max << "   " << redshift_min << " < z < " << redshift_max << endl;
-
-  vector<double> DD;
- 
-  default_random_engine gen;
-  uniform_real_distribution<float> ran(0., 1.);
-
-  if (step_redshift>0) {
-    
-    // distribution along the line of sight
-
-    redshift_min *= 0.9999;
-    redshift_max *= 1.0001;
-    double delta_redshift = (redshift_max-redshift_min)/step_redshift;
-    double redshift1 = redshift_min;
-    double redshift2 = redshift1+delta_redshift;
-    vector<int> nObj(step_redshift, 0);
-    for (int i=0; i<step_redshift; i++) {
-      for (size_t oo=0; oo<redshift.size(); oo++) 
-	if (redshift1<redshift[oo] && redshift[oo]<redshift2) 
-	  nObj[i] ++;
-      redshift1 = redshift2;
-      redshift2 += delta_redshift;
-    }
-
-    int N_R = int(double(nRandom)/double(redshift.size()));
-    int nTOT = 0;
-    for (int i=0; i<step_redshift; i++) {
-      nObj[i] *= N_R;
-      nTOT += nObj[i];
-    }
-    nObj[step_redshift-1] -= (nTOT-nRandom);
-
-    redshift1 = redshift_min;
-    redshift2 = redshift1+delta_redshift;
-    for (int i=0; i<step_redshift; i++) {
-      for (int j=0; j<nObj[i]; j++) {
-	double REDSHIFT = redshift1+(redshift2-redshift1)*ran(gen);
-	DD.push_back(cosm.D_C(REDSHIFT));
-      }
-      redshift1 = redshift2;
-      redshift2 += delta_redshift;
-    }
-
-  }
-
-  // from the convolvolution of N(D_C)
-
-  else if (step_redshift==0) {
-    double D_min = cosm.D_C(redshift_min);
-    double D_max = cosm.D_C(redshift_max);
-    random_numbers(nObjects(), idum, dc, convol, DD, D_min, D_max);
-  }
-
-  else ErrorMsg("Error in random_catalogue_mock of RandomCatalogue.cpp!");
-  if (DD.size()==0) ErrorMsg("Error in random_catalogue_mock of RandomCatalogue.cpp: DD.size()=0!");
-
-  double XX, YY, ZZ, RA, DEC;
-
-  for (size_t i=0; i<DD.size(); i++) {
-    RA = ra_min+(ra_max-ra_min)*ran(gen);
-    DEC = dec_min+(dec_max-dec_min)*ran(gen);
-
-    XX = DD[i]*cos(DEC)*sin(RA);
-    YY = DD[i]*cos(DEC)*cos(RA);
-    ZZ = DD[i]*sin(DEC);
-
-    m_sample.push_back(move(Object::Create(_RandomObject_, XX, YY, ZZ)));
-  }
-  
-}
-
-
-// ============================================================================
-
-/// @cond extrandom
-
-cosmobl::catalogue::Catalogue::Catalogue (const RandomType type, const int nRandom, const Cosmology &cosm, const string dir_out, const int step_redshift, const vector<double> dc, const vector<double> convol, const vector<double> lim, const vector<double> redshift, const bool venice, string file_random, const string mask, const string dir_venice, const int idum) 
-{
-  if (type!=_createRandom_VIPERS_) ErrorMsg("Error in cosmobl::catalogue::Catalogue::Catalogue : the random catalogue has to be of type _VIPERS_ !");
-  
-  cout << par::col_green << "I'm creating the random catalogue..." << par::col_default << endl;
-
-  vector<double> random_redshift, random_DD;
-
-
-  // compute the redshift distribution and store
-
-  vector<double> xx, fx, err;
-  double redshift_min = Min(redshift)*0.9999;
-  double redshift_max = Max(redshift)*1.0001;
-  string file_nz = "file_nz";
-  distribution(xx, fx, err, redshift, {}, step_redshift, 1, file_nz, 1., redshift_min, redshift_max, 1, 1, 0.05);
-  
-    
-  // construct the random catalogue using venice
-  
-  if (venice) {
-    file_random = "temp";
-    string DO = par::DirCosmo+"External/VIPERS/"+dir_venice+"/venice -m "+mask+" -r -f inside -npart "+conv(nRandom, par::fINT)+" -o "+file_random+" -nz "+file_nz;
-    cout << endl << "--> " << DO << endl << endl;
-    if (system(DO.c_str())) {}
-  }
-
-  ifstream fin(file_random.c_str()); checkIO(file_random, 1);
+  ifstream fin(random_output.c_str()); checkIO(fin, random_output);
   string line;
+
   getline(fin, line);
 
-  double RA, DEC, REDSHIFT;
-  
-  while (fin >> RA >> DEC >> REDSHIFT) 
-    if (redshift_min<REDSHIFT && REDSHIFT<redshift_max && lim[0]<RA && RA<lim[1] && lim[2]<DEC && DEC<lim[3]) 
-      m_sample.push_back(move(Object::Create(_RandomObject_, radians(RA), radians(DEC), REDSHIFT, cosm)));
+  while (getline(fin, line)) {
+    stringstream ss(line);
+    double ra, dec;
+    ss >> ra; ss >> dec;
+    random_ra.push_back(ra);
+    random_dec.push_back(dec);
+  }
+  fin.clear(); fin.close();
 
-  computeComovingCoordinates(cosm);
   
-  if (system ("rm -f file_nz temp")) {};
+  // generate the redshift distribution from the input catalogue
+    
+  vector<double> redshift = catalogue.var(_Redshift_);
+  vector<double> xx, yy, err;
+  distribution(xx, yy, err, redshift, {}, nbin, true, par::defaultString, 1., cosmobl::Min(redshift), cosmobl::Max(redshift), true, conv, sigma);
+
+  
+  // extract the random redshifts from the distribution
+  
+  fill_distr(random_ra.size(), xx, yy, random_redshift, catalogue.Min(Var::_Redshift_), catalogue.Max(Var::_Redshift_), seed);
+
+  for (size_t i =0; i<random_ra.size(); i++) {
+    observedCoordinates coord = {radians(random_ra[i]), radians(random_dec[i]), random_redshift[i]};
+    m_object.push_back(move(Object::Create(_RandomObject_, coord, cosm)));
+  }
   
 }
-
-/// @endcond

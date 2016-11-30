@@ -60,60 +60,206 @@ namespace cosmobl {
        *  @brief default constructor
        *  @return object of class RandomObject
        */
-      RandomObject () {}
-    
+      RandomObject ()
+	: Object () {}
+      
       /**
        *  @brief constructor that uses comoving coordinates
-       *  @param xx comoving coordinate
-       *  @param yy comoving coordinate
-       *  @param zz comoving coordinate
-       *  @param weight weight
+       *
+       *  @param coord structure containing the comoving coordinates
+       *  {x, y, z}
+       *
+       *  @param weight the weight
+       * 
+       *  @param region region, used e.g. for jackknife and bootstrap
+       * 
+       *  @param field the field where the object has been observed
+       *
+       *  @param x_displacement the displacement along the x-axis
+       *
+       *  @param y_displacement the displacement along the y-axis
+       *
+       *  @param z_displacement the displacement along the z-axis
+       *
        *  @return object of class RandomObject
        */
-      RandomObject (const double xx, const double yy, const double zz, const double weight=1.) 
-	: Object(xx, yy, zz, weight) {}
+      RandomObject (const comovingCoordinates coord, const double weight=1., const long region=par::defaultLong, const string field=par::defaultString, const double x_displacement=par::defaultDouble, const double y_displacement=par::defaultDouble, const double z_displacement=par::defaultDouble) 
+	: Object(coord, weight, region, field, x_displacement, y_displacement, z_displacement) {}
 
       /**
-       *  @brief constructor that uses comoving coordinates
-       *  @param xx comoving coordinate
-       *  @param yy comoving coordinate
-       *  @param zz comoving coordinate
+       *  @brief constructor that uses comoving coordinates and a
+       *  cosmological model to estimate the redshift
+       *
+       *  @param coord structure containing the comoving coordinates
+       *  {x, y, z}
+       *
        *  @param cosm object of class Cosmology, used to estimate
        *  comoving distances
-       *  @param z1_guess minimum redshift used to search the redshift
-       *  @param z2_guess maximum redshift used to search the redshift
+       *
+       *  @param z1_guess minimum prior on the redshift
+       *
+       *  @param z2_guess maximum prior on the redshift 
+       *
        *  @param weight weight
+       *
+       *  @param region region, used e.g. for jackknife and bootstrap
+       *
+       *  @param field the field where the object has been observed
+       *
+       *  @param x_displacement the displacement along the x-axis
+       *
+       *  @param y_displacement the displacement along the y-axis
+       *
+       *  @param z_displacement the displacement along the z-axis
+       *
        *  @return object of class RandomObject
        */
-      RandomObject (const double xx, const double yy, const double zz, const Cosmology &cosm, const double z1_guess, const double z2_guess, const double weight=1.) 
-	: Object(xx, yy, zz, cosm, z1_guess, z2_guess, weight) {}
-    
-      /**
-       *  @brief constructor that uses both comoving and observed coordinates
-       *  @param xx comoving coordinate
-       *  @param yy comoving coordinate
-       *  @param zz comoving coordinate
-       *  @param ra Right Ascension
-       *  @param dec Declination
-       *  @param redshift redshift
-       *  @param weight weight
-       *  @return object of class RandomObject
-       */
-      RandomObject (const double xx, const double yy, const double zz, const double ra, const double dec, const double redshift, const double weight=1.) 
-	: Object(xx, yy, zz, ra, dec, redshift, weight) {}
+      RandomObject (const comovingCoordinates coord, const cosmology::Cosmology &cosm, const double z1_guess=0., const double z2_guess=10., const double weight=1., const long region=par::defaultLong, const string field=par::defaultString, const double x_displacement=par::defaultDouble, const double y_displacement=par::defaultDouble, const double z_displacement=par::defaultDouble) 
+	: Object(coord, cosm, z1_guess, z2_guess, weight, region, field, x_displacement, y_displacement, z_displacement) {}
 
       /**
-       *  @brief constructor that uses observed coordinates
-       *  @param ra Right Ascension
-       *  @param dec Declination
-       *  @param redshift redshift
-       *  @param cosm object of class Cosmology, used to estimate comoving distances
+       *  @brief constructor that uses observed coordinates in radians
+       *
+       *  @param coord structure containing the observed coordinates
+       *  {R.A., Dec, redshift}
+       *
        *  @param weight weight
+       *
+       *  @param region region, used e.g. for jackknife and bootstrap
+       *
+       *  @param field the field where the object has been observed
+       *
+       *  @param x_displacement the displacement along the x-axis
+       *
+       *  @param y_displacement the displacement along the y-axis
+       *
+       *  @param z_displacement the displacement along the z-axis
+       *
        *  @return object of class RandomObject
        */
-      RandomObject (const double ra, const double dec, const double redshift, const Cosmology &cosm, const double weight=1.) 
-	: Object(ra, dec, redshift, cosm, weight) {} 
-    
+      RandomObject (const observedCoordinates coord, const double weight=1., const long region=par::defaultLong, const string field=par::defaultString, const double x_displacement=par::defaultDouble, const double y_displacement=par::defaultDouble, const double z_displacement=par::defaultDouble) 
+	: Object(coord, weight, region, field, x_displacement, y_displacement, z_displacement) {}
+      
+      /**
+       *  @brief constructor that uses observed coordinates in any
+       *  angular units
+       *
+       *  @param coord structure containing the observed coordinates
+       *  {R.A., Dec, redshift}
+       *
+       *  @param inputUnits the units of the input coordinates
+       *
+       *  @param weight weight
+       *
+       *  @param region region, used e.g. for jackknife and bootstrap
+       *
+       *  @param field the field where the object has been observed
+       *
+       *  @param x_displacement the displacement along the x-axis
+       *
+       *  @param y_displacement the displacement along the y-axis
+       *
+       *  @param z_displacement the displacement along the z-axis
+       *
+       *  @return object of class RandomObject
+       */
+      RandomObject (const observedCoordinates coord, const CoordUnits inputUnits, const double weight=1., const long region=par::defaultLong, const string field=par::defaultString, const double x_displacement=par::defaultDouble, const double y_displacement=par::defaultDouble, const double z_displacement=par::defaultDouble) 
+	: Object(coord, inputUnits, weight, region, field, x_displacement, y_displacement, z_displacement) {}
+      
+      /**
+       *  @brief constructor that uses observed coordinates in radians
+       *  and a cosmological model to estimate the comoving
+       *  coordinates
+       *
+       *  @param coord structure containing the observed coordinates
+       *  {R.A., Dec, redshitf}
+       *
+       *  @param cosm object of class Cosmology, used to estimate
+       *  comoving distances
+       *
+       *  @param weight weight
+       *
+       *  @param region region, used e.g. for jackknife and bootstrap
+       *
+       *  @param field the field where the object has been observed
+       *
+       *  @param x_displacement the displacement along the x-axis
+       *
+       *  @param y_displacement the displacement along the y-axis
+       *
+       *  @param z_displacement the displacement along the z-axis
+       *
+       *  @return object of class RandomObject
+       */
+      RandomObject (const observedCoordinates coord, const cosmology::Cosmology &cosm, const double weight=1., const long region=par::defaultLong, const string field=par::defaultString, const double x_displacement=par::defaultDouble, const double y_displacement=par::defaultDouble, const double z_displacement=par::defaultDouble) 
+	: Object(coord, cosm, weight, region, field, x_displacement, y_displacement, z_displacement) {}
+
+      /**
+       *  @brief constructor that uses observed coordinates and a
+       *  cosmological model to estimate the comoving coordinates
+       *
+       *  @param coord structure containing the observed coordinates
+       *  {R.A., Dec, redshift}
+       *
+       *  @param inputUnits the units of the input coordinates
+       *
+       *  @param cosm object of class Cosmology, used to estimate comoving distances
+       *
+       *  @param weight weight
+       *
+       *  @param region region, used e.g. for jackknife and bootstrap
+       *
+       *  @param field the field where the object has been observed
+       *
+       *  @param x_displacement the displacement along the x-axis
+       *
+       *  @param y_displacement the displacement along the y-axis
+       *
+       *  @param z_displacement the displacement along the z-axis
+       *
+       *  @return object of class RandomObject
+       */
+      RandomObject (const observedCoordinates coord, const CoordUnits inputUnits, const cosmology::Cosmology &cosm, const double weight=1., const long region=par::defaultLong, const string field=par::defaultString, const double x_displacement=par::defaultDouble, const double y_displacement=par::defaultDouble, const double z_displacement=par::defaultDouble) 
+	: Object(coord, inputUnits, cosm, weight, region, field, x_displacement, y_displacement, z_displacement) {}
+
+      /**
+       *  @brief constructor that uses both comoving and observed coordinates
+       *
+       *  @param xx comoving coordinate
+       *
+       *  @param yy comoving coordinate
+       *
+       *  @param zz comoving coordinate 
+       *
+       *  @param ra Right Ascension
+       *
+       *  @param dec Declination
+       *
+       *  @param redshift redshift
+       *
+       *  @param weight weight   
+       *
+       *  @param region region, used e.g. for jackknife and bootstrap
+       *
+       *  @param field the field where the object has been observed
+       *
+       *  @param x_displacement the displacement along the x-axis
+       *
+       *  @param y_displacement the displacement along the y-axis
+       *
+       *  @param z_displacement the displacement along the z-axis
+       *
+       *  @return object of class RandomObject
+       */
+      RandomObject (const double xx, const double yy, const double zz, const double ra, const double dec, const double redshift, const double weight=1., const long region=par::defaultLong, const string field=par::defaultString, const double x_displacement=par::defaultDouble, const double y_displacement=par::defaultDouble, const double z_displacement=par::defaultDouble) 
+	: Object(xx, yy, zz, ra, dec, redshift, weight, region, field, x_displacement, y_displacement, z_displacement) {}
+      
+      /**
+       *  @brief default destructor
+       *  @return none
+       */
+      ~RandomObject () = default;
+
     };  
   }
 }

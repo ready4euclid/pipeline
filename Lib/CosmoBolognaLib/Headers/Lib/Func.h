@@ -35,6 +35,8 @@
 #define __FUNC__
 
 #include <iostream>
+#include <sstream>
+#include <unordered_map>
 #include <fstream>
 #include <cmath>
 #include <complex>
@@ -49,6 +51,11 @@
 #include <random>
 #include <map>
 #include <omp.h>
+#include <stdio.h>
+#include <time.h>
+#include <fcntl.h>
+#include <string.h>
+#include <ctype.h>
 
 #ifdef LINUX
 #include "sys/types.h"
@@ -79,37 +86,20 @@
 #include <gsl/gsl_sf_bessel.h>
 #include <gsl/gsl_sf_legendre.h>
 #include <gsl/gsl_sf_expint.h>
+#include <gsl/gsl_statistics_double.h>
+#include <gsl/gsl_roots.h>
 /// @endcond
 
-/// @cond NRinc
-#include <nr3.h>
-#include <ran.h>
-#include <interp_1d.h>
-#include <interp_linear.h>
-#include <interp_2d.h>
-#include <quadrature.h>
-#include <romberg.h>
-#include <roots.h>
-#include <sort.h>
-#include <gamma.h>
-#include <deviates.h>
-#include <mins.h>
-#include <mins_ndim.h>
-#include <fitmed.h>
-#include <moment.h>
-#include <gaussj.h>
-#include <ludcmp.h>
-#include <dfridr.h>
-#include <fitlin.h>
-/// @endcond
+
 
 /// @cond FFTWinc
 #include <fftw3.h>
 /// @endcond
 
-#include "Constants.h"
-
 using namespace std;
+
+#include "Constants.h"
+#include "Exception.h"
 
 
 // ============================================================================================
@@ -122,105 +112,149 @@ using namespace std;
  *  remove elements
  */
 /**
+ *  @example randomNumbers.cpp 
+ *
+ *  This example shows how to to generate random numbers extracted
+ *  from a normal distribution
+ */
+/**
  *  @example distances.cpp  
  *
  *  This example shows how to convert redshifts into comoving
- *  distances using the class cosmobl::Cosmology
+ *  distances
  */
 /**
  *  @example covsample.cpp  
  *
- *  This example shows how to generate correlated samples using the
- *  function cosmobl::generate_correlated_data
+ *  This example shows how to generate correlated samples 
  */
 /**
  *  @example fsigma8.cpp
  *
- *  This example shows how to estimate f*sigma8(z=1) using the class
- *  cosmobl::Cosmology
+ *  This example shows how to estimate f*sigma8(z=1)
  */
 /**
  *  @example prior.cpp
  *
- *  This example shows how to construct a prior using the class
- *  cosmobl::Prior
+ *  This example shows how to menage priors
  */
 /**
- *  @example prior.py
+ *  @example fit.cpp
  *
- *  This example shows how to construct a prior using the class
- *  cosmobl::Prior. The CosmoBolognaLib are included as Python modules
+ *  This example shows how to fit a data set with a generic model
+ */
+/**
+ *  @example catalogue.cpp
+ *
+ *  This example shows how to construct a catalogue of extragalactic
+ *  objects
  */
 /**
  * @example 2pt_monopole.cpp 
  *
  * This example shows how to measure the monopole of the two-point
- * correlation function, estimating the errors analytically, using the
- * class cosmobl::TwoPointCorrelation
+ * correlation function
+ */
+/**
+ * @example 2pt_monopole_errors.cpp 
+ *
+ * This example shows how to measure the monopole of the two-point
+ * correlation function and estimate the errors with different methods
  */
 /**
  * @example 2pt_2D.cpp 
  *
  * This example shows how to measure the 2D two-point correlation
- * function, estimating the errors analytically, using the class
- * cosmobl::TwoPointCorrelation
+ * function
  */
 /**
- * @example 2pt_jackknife.cpp 
- *
- * This example shows how to measure the two-point correlation
- * function, estimating the errors with the jackknife method, using the
- * class cosmobl::TwoPointCorrelation
- */
-/**
- * @example 2pt_projected_jackknife.cpp 
+ * @example 2pt_projected.cpp 
  *
  * This example shows how to measure the projected two-point
- * correlation function, estimating the errors with the jackknife
- * method, using the class cosmobl::TwoPointCorrelation
+ * correlation function
  */
 /**
- * @example modelBias_2pt_projected.cpp
+ * @example 2pt_angular.cpp 
  *
- * This example shows how to how to model the bias from the projected
- * two-point correlation function, using the class
- * cosmobl::Modelling
+ * This example shows how to measure the angular two-point correlation
+ * function
  */
 /**
  * @example 3pt.cpp 
  *
  * This example shows how to measure the three-point correlation
- * function using the class cosmobl::ThreePointCorrelation
+ * function
+ */
+/**
+ * @example model_2pt_monopole_BAO.cpp
+ *
+ * This example shows how to model baryon acoustic oscillations in the
+ * monopole of the two-point correlation function
+ */
+/**
+ * @example model_2pt_monopole_RSD.cpp
+ *
+ * This example shows how to model redshift-space distortions in the
+ * monopole of the two-point correlation function
+ */
+/**
+ * @example model_2pt_projected.cpp
+ *
+ * This example shows how to model the projected two-point correlation
+ * function to constrain the linear bias
+ */
+/**
+ * @example model_2pt_2D.cpp
+ *
+ * This example shows how to model the 2D two-point correlation
+ * function in redshift space
+ */
+/**
+ * @example readParameterFile.cpp
+ *
+ * This example shows how to read parameters from a standard *.ini
+ * file
  */
 /**
  *  @example distances.py 
  *
  *  This example shows how to convert redshifts into comoving
- *  distances using the class cosmobl::Cosmology. The CosmoBolognaLib
- *  are included as Python modules
+ *  distances 
+ */
+/**
+ *  @example prior.py
+ *
+ *  This example shows how to menage priors
  */
 /**
  *  @example 2pt_model.py
  *
  *  This example shows how to compute power spectrum and two-point
- *  correlation function models using the class
- *  cosmobl::Cosmology. The CosmoBolognaLib are included as Python
- *  modules
+ *  correlation function models
  */
 /**
  *  @example 2pt_monopole.py
  *
  *  This example shows how to compute the monopole of the two-point
- *  correlation function, estimating the errors analytically, using
- *  the class cosmobl::TwoPointCorrelation. The CosmoBolognaLib are
- *  included as Python modules
+ *  correlation function
+ */
+/**
+ *  @example 2pt_monopole.ipynb 
+ *  
+ *  This \b notebook explains how to compute the monopole of the
+ *  two-point correlation function
+ *
+ *  To see the notebook, click here:
+ *  <a
+ *  href="https://nbviewer.jupyter.org/url/apps.difa.unibo.it/files/people/federico.marulli3/2pt_monopole.ipynb">
+ *  notebook</a>
  */
 
 /**
- *  @brief The namespace of the CosmoBolognaLib 
+ *  @brief The global namespace of the <B> \e CosmoBolognaLib </B>
  *  
- * The \e cosmobl namespace contains all the main functions and
- * classes of the CosmoBolognaLib
+ *  The \e cosmobl namespace contains all the main functions and
+ *  classes of the CosmoBolognaLib
  */
 namespace cosmobl {
 
@@ -254,10 +288,10 @@ namespace cosmobl {
   };
     
   /**
-   *  @enum CoordUnit
+   *  @enum CoordUnits
    *  @brief the coordinate units
    */
-  enum CoordUnit {
+  enum CoordUnits {
 
     /// angle in radians
     _radians_,
@@ -273,6 +307,24 @@ namespace cosmobl {
     
   };
 
+  
+  /**
+   *  @enum CoordType
+   *  @brief the coordinate type
+   */
+  enum CoordType {
+
+    /// comoving coordinates (x, y, z)
+    _comovingCoordinates_,
+    
+    /// observed coordinates (R.A., Dec, redshift)
+    _observedCoordinates_
+    
+  };
+
+  struct comovingCoordinates { double xx; double yy; double zz; };
+  struct observedCoordinates { double ra; double dec; double redshift; };
+
 
   /**
    *  @name Functions of generic use  
@@ -280,19 +332,47 @@ namespace cosmobl {
   ///@{
 
   /**
+   *  @brief provide the header for all internal messages
+   *  @param stream an ostream object
+   *  @return the header for internal messages
+   */
+  inline ostream &headerCBL (ostream &stream)
+    {
+      stream << par::col_blue << "CBL > " << par::col_default;
+      return stream;
+    }
+  
+#define coutCBL cout << headerCBL
+
+  
+  /**
    *  @brief warning message
    *  @param msg string containing the warning message
    *  @return none
    */
-  inline void WarningMsg (const string msg) { cerr << par::col_blue << msg << cosmobl::par::col_default << endl; }
+  inline void WarningMsg (const string msg)
+  { cerr << par::col_blue << msg << cosmobl::par::col_default << endl; }
 
   /**
-   *  @brief error message
-   *  @param msg string containing the Error message
+   *  @brief throw an exception
+   *  @param msg the message describing the exception
+   *  @param exitCode the exit status
+   *  @param header header of the error message
    *  @return none
-   *  @warning this function terminates the programs
    */
-  inline void ErrorMsg (const string msg) { cerr << par::col_red << msg << cosmobl::par::col_default << endl; exit(1); }
+  inline int Error (const string msg, const cosmobl::glob::ExitCode exitCode=cosmobl::glob::ExitCode::_error_, const string header="\n")
+  { throw cosmobl::glob::Exception(msg, exitCode, header); }
+
+  /**
+   *  @brief throw an exception: it is used for handling exceptions
+   *  inside the CosmoBolognaLib
+   *
+   *  @param msg the message describing the exception
+   *  @param exitCode the exit status
+   *  @return none
+   */
+  inline int ErrorCBL (const string msg, const cosmobl::glob::ExitCode exitCode=cosmobl::glob::ExitCode::_error_)
+  { throw cosmobl::glob::Exception(msg, exitCode, cosmobl::par::ErrorMsg); }
   
   /**
    *  @brief produce a beep using the software totem
@@ -301,17 +381,7 @@ namespace cosmobl {
   inline void Beep ()
   {
     string beep = "totem "+par::DirCosmo+"Func/beep.mp3";
-    if (system (beep.c_str())) {}; 
-  }
-
-  /**
-   *  @brief terminate the process producing a beep with the software
-   *  totem 
-   *  @return none
-   */
-  inline void Exit ()
-  {
-    Beep(); exit(1);
+    if (system(beep.c_str())) {}; 
   }
 
   /**
@@ -350,7 +420,7 @@ namespace cosmobl {
    */
   template <typename T> string conv (const T val, const char *fact)
     {
-      char VAL[20]; sprintf (VAL, fact, val); 
+      char VAL[20]; sprintf(VAL, fact, val); 
       return string(VAL);
     }
   
@@ -470,35 +540,42 @@ namespace cosmobl {
   double interpolated_2D (const double _x1, const double _x2, const vector<double> x1, const vector<double> x2, const vector<vector<double> > yy, const string type);
   
   /**
-   *  @brief check if a file can be opened
+   *  @brief check if an input file can be opened
+   *  @param fin ifstream object
    *  @param file the file name
-   *  @param isInput 1 &rarr; the file is open for input operations; 0
-   *  &rarr; the file is open for output operations
    *  @return none
    */
-  void checkIO (const string, const bool);
+  void checkIO (const ifstream &fin, const string file="NULL");
 
+  /**
+   *  @brief check if an output file can be opened
+   *  @param fout ofstream object
+   *  @param file the file name
+   *  @return none
+   */
+  void checkIO (const ofstream &fout, const string file="NULL");
+  
   /**
    *  @brief convert a map from a gnuplot file to a SM file 
    *  @param file_gnu input gnuplot file
    *  @param file_sm output SM file  
    *  @return none
    */
-  void convert_map_gnuplot_sm (const string, const string);
+  void convert_map_gnuplot_sm (const string file_gnu, const string file_sm);
 
   /**
    *  @brief set evironment variables
    *  @param Var vector containing the evironment variables to be set
    *  @return none
    */
-  void set_EnvVar (const vector<string>);
+  void set_EnvVar (const vector<string> Var);
 
   /**
    *  @brief check if an environment variable exists
    *  @param Var the evironment variable to be checked
    *  @return none
    */
-  void check_EnvVar (const string); 
+  void check_EnvVar (const string Var); 
 
   /**
    *  @brief get the memory used by current process in kB
@@ -511,7 +588,7 @@ namespace cosmobl {
    *  @return the Physical (RAM) or Virtual Memory used by current
    *  process in kB
    */
-  int used_memory (const int);
+  int used_memory (const int type);
 
   /**
    *  @brief check if the memory used by current process is larger
@@ -533,27 +610,10 @@ namespace cosmobl {
    *
    *  @return 0 &rarr; memory problems; 1 &rarr; no memory problems 
    */
-  int check_memory (const double, const bool exit=1, const string func="", const int type=1);
+  int check_memory (const double frac, const bool exit=true, const string func="", const int type=1);
   
 
   // ============================================================================================
-
-  
-  /**
-   *  @brief extract a set of random numbers with a given probability
-   *  distribution
-   *  @param [in] nRan the number of random numbers
-   *  @param [in] idum the random seed
-   *  @param [in] xx vector containing the set of probability
-   *  distribution data, x
-   *  @param [in] fx vector containing the set of probability
-   *  distribution data, f(x)
-   *  @param [out] nRandom vector containing the random numbers
-   *  @param [in] n_min the minimum number of the output set
-   *  @param [in] n_max the maximum number of the output set
-   *  @return none
-   */
-  void random_numbers (const int nRan, const int idum, const vector<double> xx, const vector<double> fx, vector<double> &nRandom, const double n_min=par::defaultDouble, const double n_max=-par::defaultDouble);
 
   
   /* ======== Alfonso Veropalumbo ======== */
@@ -568,7 +628,7 @@ namespace cosmobl {
   template <typename T>
     T closest(T x, T a, T b)
     { 
-      if (a > b) ErrorMsg("Error in closest, a>b");
+      if (a>b) ErrorCBL("Error in closest() of Func.h: a>b");
       else if (a==b) return a;
       else return (fabs(x-a) < fabs(x-b)) ? a : b;
       return 1;
@@ -583,7 +643,7 @@ namespace cosmobl {
   template <typename T>
     T index_closest (T x, vector<T> vv)
     { 
-      if (vv.size()==0) ErrorMsg("Error in index_closest, vv is an empty vector");
+      if (vv.size()==0) ErrorCBL("Error in index_closest() of Func.cpp, vv is an empty vector");
       vector<double>::iterator low, up;
       low = lower_bound(vv.begin(), vv.end(), x);
       up = upper_bound(vv.begin(), vv.end(), x);
@@ -609,7 +669,7 @@ namespace cosmobl {
    *  @param isDir 1--> directory path, 0->otherwise
    *  @return string containing the full path
    */
-  string fullpath (const string path, const bool isDir=1);
+  string fullpath (string path, const bool isDir=1);
 
   /**
    *  @brief filter W(r/r<SUB>c</SUB>), used e.g. for filtering the
@@ -645,14 +705,14 @@ namespace cosmobl {
    *  @return the average of the Legendre polynomial
    *  of the l-th order over the mu range
    */
-   double Legendre_polynomial_mu_average (const int ll, const double mu, const double delta_mu);
+  double Legendre_polynomial_mu_average (const int ll, const double mu, const double delta_mu);
 
-   /**
-    *  @brief the l=0 spherical Bessel function 
-    *  @param xx the variable x
-    *  @return the l=0 spherical Bessel function
-    */
-   double j0 (const double xx);
+  /**
+   *  @brief the l=0 spherical Bessel function 
+   *  @param xx the variable x
+   *  @return the l=0 spherical Bessel function
+   */
+  double j0 (const double xx);
 
   /**
    *  @brief the l=2 spherical Bessel function 
@@ -714,7 +774,7 @@ namespace cosmobl {
    *  @param r_up the upper limit of the twopcf bin
    *  @return the distance average l spherical Bessel function
    */
-   double jl_distance_average (const double kk, const int order, const double r_down, const double r_up);
+  double jl_distance_average (const double kk, const int order, const double r_down, const double r_up);
 
   /**
    *  @brief function to integrate ordered data via trapezoid rule 
@@ -722,7 +782,7 @@ namespace cosmobl {
    *  @param yy values of the function 
    *  @return the definite integral of the function
    */
-   double trapezoid_integration(const vector<double> xx, const vector<double> yy);
+  double trapezoid_integration(const vector<double> xx, const vector<double> yy);
 
   /**
    *  @brief function to integrate using GSL qag method 
@@ -734,8 +794,106 @@ namespace cosmobl {
    *  @param rule the rule of integration
    *  @return the definite integral of the function
    */
-   double GSL_integrate_qag(gsl_function Func, const double a, const double b, const double prec=1.e-2, const int limit_size=1000, const int rule=6);
+  double GSL_integrate_qag(gsl_function Func, const double a, const double b, const double prec=1.e-2, const int limit_size=1000, const int rule=6);
 
+
+  /**
+   *  @brief function to integrate using GSL qag method 
+   *  @param Func the GSL function to be integrated
+   *  @param a the lower limit of the integral
+   *  @param b the upper limit of the integral
+   *  @param alpha &alpha;
+   *  @param beta &beta;
+   *  @param mu &mu;
+   *  @param nu &nu;
+   *  @param prec the relative error tolerance
+   *  @param limit_size the maximum size of workspace
+   *  @return the definite integral of the function
+   */
+  double GSL_integrate_qaws (gsl_function Func, const double a, const double b, const double alpha=0, const double beta=0, const int mu=1, const int nu =0, const double prec=1.e-2, const int limit_size=1000);
+
+  /**
+   *  @brief function to integrate using GSL qagiu method 
+   *  @param Func the GSL function to be integrated
+   *  @param a the lower limit of the integral
+   *  @param prec the relative error tolerance
+   *  @param limit_size the maximum size of workspace
+   *  @return the integral of the function
+   */
+  double GSL_integrate_qagiu(gsl_function Func, const double a, const double prec=1.e-2, const int limit_size=1000);
+
+  /**
+   *  @brief function to integrate using GSL qag method; only works
+   *  with function defined as function<double(double)> that doesn't use
+   *  fixed parameters (useful for class members, when the external parameters could be attributes of the class)
+   *  @param func the fuction to be integrated
+   *  @param a the lower limit of the integral
+   *  @param b the upper limit of the integral
+   *  @param prec the relative error tolerance
+   *  @param limit_size the maximum size of workspace
+   *  @param rule the rule of integration
+   *  @return the definite integral of the function
+   */
+  double GSL_integrate_qag (function<double(double)> func, const double a, const double b, const double prec=1.e-2, const int limit_size=1000, const int rule=6);
+
+  /**
+   *  @brief function to integrate using GSL qagiu method; only works
+   *  with function defined as function<double(double)> that doesn't use
+   *  fixed parameters (useful for class members, when the external parameters could be attributes of the class)
+   *  @param func the fuction to be integrated
+   *  @param a the lower limit of the integral
+   *  @param prec the relative error tolerance
+   *  @param limit_size the maximum size of workspace
+   *  @return the definite integral of the function
+   */
+  double GSL_integrate_qagiu (function<double(double)> func, const double a, const double prec=1.e-2, const int limit_size=1000);
+
+  /**
+   *  @brief function to integrate using GSL qag method 
+   *  @param func the function to be integrated
+   *  @param a the lower limit of the integral
+   *  @param b the upper limit of the integral
+   *  @param alpha &alpha;
+   *  @param beta &beta;
+   *  @param mu &mu;
+   *  @param nu &nu;
+   *  @param prec the relative error tolerance
+   *  @param limit_size the maximum size of workspace
+   *  @return the definite integral of the function
+   */
+  double GSL_integrate_qaws (function<double(double)> func, const double a, const double b, const double alpha=0, const double beta=0, const int mu=1, const int nu =0, const double prec=1.e-2, const int limit_size=1000);
+
+  /**
+   *  @brief function to integrate interpolated function 
+   *  @param xx the point in which function is defined
+   *  @param params the parameters of the function 
+   *  @return the value of the function at xx
+   */
+  double generic_integrand (const double xx, void *params);
+
+  double generic_roots (double xx, void *params);
+
+  /**
+   *  @brief function to find roots using GSL qag method 
+   *  @param Func the GSL function to be integrated
+   *  @param low_guess the lower limit 
+   *  @param up_guess the upper limit
+   *  @param prec the relative error tolerance
+   *  @return the definite integral of the function
+   */
+  double GSL_brent (gsl_function Func, const double low_guess, const double up_guess, const double prec=1.e-3);
+   
+  /**
+   *  @brief function to find roots using GSL brent method 
+   *  @param func the function to be integrated
+   *  @param xx0 the value of the zero
+   *  @param low_guess the lower limit 
+   *  @param up_guess the upper limit
+   *  @param prec the relative error tolerance
+   *  @return the definite integral of the function
+   */
+  double GSL_brent (function<double(double)> func, double xx0,  const double low_guess, const double up_guess, const double prec=1.e-3);
+   
   ///@}
 
 
@@ -759,40 +917,53 @@ namespace cosmobl {
   /**
    *  @brief print the elements of a vector on the screen
    *  @param vect a vector
+   *  @param prec decimal precision
+   *  @param ww number of characters to be used as field width
    *  @return none
    */
   template <typename T> 
-    void print (const vector<T> vect) 
+    void print (const vector<T> vect, const int prec=4, const int ww=8) 
     {
-      for (auto &&i : vect) cout << i << endl;
+      int bp = cout.precision(); 
+      for (auto &&i : vect) coutCBL << setprecision(prec) << setw(ww) << i << endl;
+      cout.precision(bp); 
     }
 
   /**
    *  @brief print the elements of a two vectors on the screen
    *  @param vect1 a vector
    *  @param vect2 a vector
+   *  @param prec decimal precision
+   *  @param ww number of characters to be used as field width
    *  @return none
    */
   template <typename T> 
-    void print (const vector<T> vect1, const vector<T> vect2) 
+    void print (const vector<T> vect1, const vector<T> vect2, const int prec=4, const int ww=8) 
     {
-      if (vect1.size()!=vect2.size()) ErrorMsg("Error in print of Func.h!");
-      for (unsigned int i=0; i<vect1.size(); i++) cout <<vect1[i]<<"   "<<vect2[i]<<endl;
+      if (vect1.size()!=vect2.size()) ErrorCBL("Error in print of Func.h!");
+      int bp = cout.precision(); 
+      for (size_t i=0; i<vect1.size(); i++) coutCBL << setprecision(prec) << setw(ww) << vect1[i] << "   " << setw(ww) << vect2[i] << endl;
+      cout.precision(bp); 
     }
 
   /**
    *  @brief print the elements of a matrix on the screen
    *  @param mat a matrix (i.e. a vector of vectors)
+   *  @param prec decimal precision
+   *  @param ww number of characters to be used as field width
    *  @return none
    */
   template <typename T> 
-    void print (const vector<vector<T> > mat) 
+    void print (const vector<vector<T> > mat, const int prec=4, const int ww=8) 
     {
-      for (unsigned int i=0; i<mat.size(); i++) {
-	for (unsigned int j=0; j<mat[i].size(); j++) 
-	  cout <<mat[i][j]<<"   ";
-	cout <<endl;
+      int bp = cout.precision(); 
+      for (size_t i=0; i<mat.size(); i++) {
+	for (size_t j=0; j<mat[i].size(); j++) 
+	  if (j==0) coutCBL << setprecision(prec) << setw(ww) << mat[i][j] << "   ";
+	  else cout << setprecision(prec) << setw(ww) << mat[i][j] << "   ";
+	cout << endl;
       }
+      cout.precision(bp); 
     }
 
   /**
@@ -803,7 +974,7 @@ namespace cosmobl {
   template <typename T> 
     T Min (const vector<T> vect) 
     {
-      if (vect.size()==0) ErrorMsg("Error in function Min of Func.h: vect.size=0!");
+      if (vect.size()==0) ErrorCBL("Error in function Min of Func.h: vect.size=0!");
       return *min_element(vect.begin(), vect.end());
     }
 
@@ -815,37 +986,35 @@ namespace cosmobl {
   template <typename T> 
     T Max (const vector<T> vect) 
     {
-      if (vect.size()==0) ErrorMsg("Error in function Max of Func.h: vect.size=0!");
+      if (vect.size()==0) ErrorCBL("Error in function Max of Func.h: vect.size=0!");
       return *max_element(vect.begin(), vect.end());
     }
 
   /**
    *  @brief get the unique elements of a vector
-   *  @param [in] vect_in a vector
+   *  @param [in] vect_input the input vector
    *  @return vector containing the unique elements of the input
-   *  vector vect_in
+   *  vector
    */
   template <typename T> 
-    vector<T> different_elements (const vector<T> vect_in) 
-    { 
-      sort(vect_in.begin(), vect_in.end());
-      typename vector<T>::iterator it = unique (vect_in.begin(), vect_in.end()); 
-      vect_in.resize(it-vect_in.begin());    
-      return vect_in;
+    vector<T> different_elements (const vector<T> vect_input) 
+    {
+      vector<T> vect = vect_input;
+      sort(vect.begin(), vect.end());
+      typename vector<T>::iterator it = unique(vect.begin(), vect.end()); 
+      vect.resize(it-vect.begin());    
+      return vect;
     }
 
   /**
    *  @brief get the number of unique elements of a vector
-   *  @param vect a vector
+   *  @param vect_input the input vector
    *  @return the number of unique elements of the input vector
-   *  vect_in
    */
   template <typename T> 
-    int N_different_elements (const vector<T> vect) 
-    { 
-      sort (vect.begin(),vect.end());
-      typename vector<T>::iterator it = unique (vect.begin(), vect.end()); 
-      vect.resize(it-vect.begin());    
+    int N_different_elements (const vector<T> vect_input) 
+    {
+      vector<T> vect = different_elements<T>(vect_input);
       return vect.size();
     }
 
@@ -881,7 +1050,7 @@ namespace cosmobl {
     void Erase (vector<T> &vv, vector<int> ind) 
     {
       for (auto &&i : ind) 
-	if (i>=int(vv.size())) ErrorMsg("Error in Erase of Func.h!");
+	if (i>=int(vv.size())) ErrorCBL("Error in Erase of Func.h!");
 
       unique_unsorted(ind);
       int tt = 0;
@@ -900,7 +1069,7 @@ namespace cosmobl {
     void Erase_lines (vector<vector<T> > &Mat, vector<int> ll) 
     {
       for (auto &&i : ll)
-	if (i>=int(Mat.size())) ErrorMsg("Error in Erase_lines of Func.h!");
+	if (i>=int(Mat.size())) ErrorCBL("Error in Erase_lines of Func.h!");
 
       unique_unsorted(ll);
       int tt = 0;
@@ -920,7 +1089,7 @@ namespace cosmobl {
     {
       for (auto &&i : col)
 	for (auto &&j : Mat)
-	  if (i>=int(j.size())) ErrorMsg("Error in Erase_columns of Func.h!");
+	  if (i>=int(j.size())) ErrorCBL("Error in Erase_columns of Func.h!");
 
       unique_unsorted(col);
       int tt = 0;
@@ -951,11 +1120,11 @@ namespace cosmobl {
       vector<int> line, column;
 
       for (unsigned int i=0; i<xx.size(); i++) {
-	if (i>=Mat.size()) ErrorMsg("Error in SubMatrix of Func.h!");
+	if (i>=Mat.size()) ErrorCBL("Error in SubMatrix of Func.h!");
 	bool ll = 0;
 
 	for (unsigned int j=0; j<yy.size(); j++) {
-	  if (j>=Mat[i].size()) ErrorMsg("Error in SubMatrix of Func.h!");
+	  if (j>=Mat[i].size()) ErrorCBL("Error in SubMatrix of Func.h!");
 	  if (Mat[i][j]<val) {
 	    if (j<int(yy.size()*0.5)) {line.push_back(i); ll = 1;}
 	    else if (ll==0) {column.push_back(j);}
@@ -1008,24 +1177,20 @@ namespace cosmobl {
    *  @param val the input value
    *  @param vector the name of the vector (used only to write the
    *  error message)
-   *  @param equal 1 &rarr; check if the dimension is equal than val;
-   *  0 &rarr; check if the dimension is lower than val
+   *  @param equal true &rarr; check if the dimension is equal to val;
+   *  false &rarr; check if the dimension is lower than val
    *  @return none
    */
   template <typename T> 
     void checkDim (const vector<T> vect, const int val, const string vector, bool equal=true) 
     {
-      if (equal) { 
-	if ((int)vect.size()!=val) {
-	  string Err = "Error in checkDim of Func.h! The dimension of " + vector + " is: " + conv(vect.size(),par::fINT) + " ( != " + conv(val,par::fINT) + " )";
-	  ErrorMsg(Err);
-	}
+      if (equal) {
+	if ((int)vect.size()!=val) 
+	  ErrorCBL("Error in checkDim of Func.h! The dimension of " + vector + " is: " + conv(vect.size(),par::fINT) + " ( != " + conv(val,par::fINT) + " )");
       }
-      else {
-	if ((int)vect.size()<val) {
-	  string Err = "Error in checkDim of Func.h! The dimension of " + vector + " is: " + conv(vect.size(),par::fINT) + " ( < " + conv(val,par::fINT) + " )";
-	  ErrorMsg(Err);
-	}
+      else { 
+	if ((int)vect.size()<val)
+	  ErrorCBL("Error in checkDim of Func.h! The dimension of " + vector + " is: " + conv(vect.size(),par::fINT) + " ( < " + conv(val,par::fINT) + " )");
       }
     }
   
@@ -1033,27 +1198,35 @@ namespace cosmobl {
    *  @brief check if the dimensions of a matrix are higher than two
    *  input values
    *  @param mat a matrix
-   *  @param i an input value
-   *  @param j an input value
+   *  @param val_i an input value
+   *  @param val_j an input value
    *  @param matrix the name of the matrix (using only to write the
    *  error message)
+   *  @param equal true &rarr; check if the dimension is equal to val;
+   *  false &rarr; check if the dimension is lower than val
    *  @return none
    */
   template <typename T> 
-    void checkDim (const vector<T> mat, const int i, const int j, const string matrix) 
+    void checkDim (const vector<T> mat, const int val_i, const int val_j, const string matrix, const bool equal=true) 
     {
-      if (int(mat.size())<=i) {
-	string Err = "Error in checkDim of Func.h! The dimension of: " + matrix + " is:" + conv(mat.size(),par::fINT) + " <= " + conv(i,par::fINT) + "!";
-	ErrorMsg(Err);
-      } else {
-	for (unsigned int k=0; k<mat.size(); k++)
-	  if (int(mat[k].size())<=j) {
-	    string Err = "Errorin checkDim of Func.h! The dimension of: " + matrix + " is:" + conv(mat[k].size(),par::fINT) + " <= " + conv(j,par::fINT) + "!";
-	    ErrorMsg(Err);
-	  }
+      if (equal) {
+	if (int(mat.size())!=val_i) 
+	  ErrorCBL("Error in checkDim of Func.h! The dimension of: " + matrix + " is:" + conv(mat.size(), par::fINT) + " <= " + conv(val_i, par::fINT) + "!");
+	else 
+	  for (size_t k=0; k<mat.size(); k++)
+	    if (int(mat[k].size())!=val_j) 
+	      ErrorCBL("Errorin checkDim of Func.h! The dimension of: " + matrix + " is:" + conv(mat[k].size(), par::fINT) + " <= " + conv(val_j, par::fINT) + "!");
+      }
+      else {
+	if (int(mat.size())<val_i) 
+	  ErrorCBL("Error in checkDim of Func.h! The dimension of: " + matrix + " is:" + conv(mat.size(), par::fINT) + " <= " + conv(val_i, par::fINT) + "!");
+	else 
+	  for (size_t k=0; k<mat.size(); k++)
+	    if (int(mat[k].size())<val_j) 
+	      ErrorCBL("Errorin checkDim of Func.h! The dimension of: " + matrix + " is:" + conv(mat[k].size(), par::fINT) + " <= " + conv(val_j, par::fINT) + "!");
       }
     }
-
+  
   /**
    *  @brief fill a vector with linearly spaced values
    *  @param [in] nn the number of steps, i.e. the final dimension of
@@ -1191,30 +1364,6 @@ namespace cosmobl {
 
     return MatP;
   }
-  
-  /**
-   *  @brief matrix multiplication
-   *
-   *  overloading of the * operator used to multiplicate two matrices
-   *
-   *  @param Mat1 MatDoub matrix of double values of the Numerical libraries
-   *  @param Mat2 MatDoub matrix of double values of the Numerical libraries
-   *  @return Mat1*Mat2
-   */
-  inline MatDoub operator * (const MatDoub &Mat1, const MatDoub &Mat2)
-    {   
-      MatDoub MatP(Mat1.nrows(), Mat2.ncols());
-  
-      for (int i=0; i<Mat1.nrows(); i++) 
-	for (int j=0; j<Mat2.ncols(); j++) {
-	  double temp = 0.;
-	  for (int k=0; k<Mat1.ncols(); k++) 
-	    temp += Mat1[i][k]*Mat2[k][j];
-	  MatP[i][j] = temp;
-	}
-  
-      return MatP;
-    }
 
   /**
    *  @brief method to invert a matrix using the GSL
@@ -1237,15 +1386,6 @@ namespace cosmobl {
   void invert_matrix (const vector<vector<double> >, vector<vector<double> > &, const int, const int, const double prec=1.e-10); 
 
   /**
-   *  @brief method to invert a 'small' matrix 
-   *  @param [in] mat the matrix to be inverted
-   *  @param [out] mat_inv the inverted matrix
-   *  @param [in] prec the precision required 
-   *  @return none
-   */
-  void invert_small_matrix (const vector<vector<double> >, vector<vector<double> > &, const double prec=1.e-10);
-
-  /**
    *  @brief compute the covariance matrix
    *  @param [in] mat the input matrix
    *  @param [out] cov the output covariance matrix
@@ -1253,7 +1393,7 @@ namespace cosmobl {
    *  to n-1/n (for Jackknife)
    *  @return none
    */
-  void covariance_matrix (const vector<vector<double> >, vector<vector<double> > &, const bool JK = 0);
+  void covariance_matrix (const vector<vector<double> > mat, vector<vector<double> > &cov, const bool JK = 0);
 
   /**
    *  @brief compute the covariance matrix
@@ -1261,9 +1401,22 @@ namespace cosmobl {
    *  @param [out] rad the vector containing the binned radii
    *  @param [out] mean the vector containing the mean values
    *  @param [out] cov the output covariance matrix
+   *  @param [in] JK 0 &rarr; normalize to 1/(n-1); 1 &rarr; normalize
+   *  to n-1/n (for Jackknife) 
    *  @return none
    */
-  void covariance_matrix (const vector<string>, vector<double> &, vector<double> &, vector<vector<double> > &);
+  void covariance_matrix (const vector<string> file, vector<double> &rad, vector<double> &mean, vector<vector<double> > &cov, const bool JK=0);
+
+  /**
+   *  @brief compute the covariance matrix
+   *  @param [in] file the vector containing the input files
+   *  @param [out] covariance_matrix_file the output covariance matrix
+   *  file
+   *  @param [in] JK 0 &rarr; normalize to 1/(n-1); 1 &rarr; normalize
+   *  to n-1/n (for Jackknife)
+   *  @return none
+   */
+  void covariance_matrix (const vector<string> file, const string covariance_matrix_file, const bool JK=0);
 
 
   /* ======== Alfonso Veropalumbo ======== */
@@ -1272,8 +1425,6 @@ namespace cosmobl {
   void read_cov (const string, vector<vector<double> > &, vector<vector<double> > &, const int, const int);
 
   // fill a vector from a given distribution 
-  void fill_distr (const vector<double>, const double, const vector<double>, vector<double> &, const double, vector<double> &);
-  void fill_distr (const vector<double>, const vector<double>, const int, vector<double> &);
   void fill_distr (const int, const vector<double>, const vector<double>, vector<double> &, const double, const double, const int);
 
   // find the vector index
@@ -1287,7 +1438,7 @@ namespace cosmobl {
    *  @param idum seed for random number generator
    *  @return vector containing a correlated sample of given mean and covariance
    */
-  vector<double> generate_correlated_data(const vector<double> mean, const vector<vector<double> > covariance, const int idum =213123);
+  vector<double> generate_correlated_data (const vector<double> mean, const vector<vector<double> > covariance, const int idum =213123);
 
   /**
    *  @brief generate a covariant sample of n points using a 
@@ -1298,7 +1449,7 @@ namespace cosmobl {
    *  @param idum seed for random number generator
    *  @return vector containing a correlated samples of given mean and covariance
    */
-  vector<vector<double>> generate_correlated_data(const int nExtractions, const vector<double> mean, const vector<vector<double> > covariance, const int idum =12312);
+  vector<vector<double>> generate_correlated_data (const int nExtractions, const vector<double> mean, const vector<vector<double> > covariance, const int idum=12312);
 
   ///@}
 
@@ -1335,7 +1486,7 @@ namespace cosmobl {
   template <typename T> 
     T Average (const vector<T> vect, const vector<T> weight) 
     {
-      if (vect.size()!=weight.size()) ErrorMsg("Error in Average of Func.h");
+      if (vect.size()!=weight.size()) ErrorCBL("Error in Average of Func.h");
       T aver = 0;
 
       vector<T> vw; 
@@ -1373,7 +1524,7 @@ namespace cosmobl {
   template <typename T> 
     vector<T> Quartile (vector<T> vect) 
     {
-      sort (vect.begin(),vect.end()); 
+      sort(vect.begin(), vect.end()); 
       vector<T> vect1, vect2;
       
       int start;
@@ -1459,6 +1610,7 @@ namespace cosmobl {
   template <typename T> 
     T Pol2 (T xx, shared_ptr<void> pp, vector<double> par)
     {
+      (void)pp;
       return par[0]*pow(xx,2)+par[1]*xx+par[2];
     }
 
@@ -1483,11 +1635,11 @@ namespace cosmobl {
    *  @return a vector of the Numerical libraries containing
    *  [1,xx]
    */
-  inline VecDoub linearfit (const Doub xx) 
+  inline vector<double> linearfit (const double xx) 
   {
-    VecDoub vect(2);
+    vector<double> vect(2);
     vect[0] = 1.;
-    for (Int i=1; i<2; i++) vect[i] = xx*vect[i-1];
+    for (int i=1; i<2; i++) vect[i] = xx*vect[i-1];
     return vect;
   }
 
@@ -1497,11 +1649,11 @@ namespace cosmobl {
    *  @return a vector of the Numerical libraries containing
    *  [1,xx,xx<SUP>2</SUP>]
    */
-  inline VecDoub quadratic (const Doub xx) 
+  inline vector<double> quadratic (const double xx) 
   {
-    VecDoub vect(3);
+    vector<double> vect(3);
     vect[0] = 1.;
-    for (Int i=1; i<3; i++) vect[i] = xx*vect[i-1];
+    for (int i=1; i<3; i++) vect[i] = xx*vect[i-1];
     return vect;
   }
 
@@ -1511,20 +1663,20 @@ namespace cosmobl {
    *  @return a vector of the Numerical libraries containing
    *  [1,xx,xx<SUP>2</SUP>,xx<SUP>3</SUP>]
    */
-  inline VecDoub cubicfit (const Doub xx) 
+  inline vector<double> cubicfit (const double xx) 
   {
-    VecDoub vect(4);
+    vector<double> vect(4);
     vect[0] = 1.;
-    for (Int i=1; i<4; i++) vect[i] = xx*vect[i-1];
+    for (int i=1; i<4; i++) vect[i] = xx*vect[i-1];
     return vect;
   }
 
   /**
-   *  @brief the Identity function 
+   *  @brief the Identity function  
    *  @param xx the variable x
    *  @param pp a void pointer 
    *  @param par a vector 
-   *  @return 1
+   *  @return 1.
    *
    *  @warning pp and par are not used, but they are necessary in the
    *  function template
@@ -1532,8 +1684,39 @@ namespace cosmobl {
   template <typename T> 
     T identity (T xx, shared_ptr<void> pp, vector<double> par)
     {
-      return 1;
+      (void)xx; (void)pp; (void)par;
+      return 1.;
     }
+
+  /**
+   *  @brief the rectangular distribution 
+   *  @param xx the variable x
+   *  @param pp a void pointer 
+   *  @param par a vector containing the coefficients: par[0]=lower limix,
+   *  par[1]=upper limit;
+   *  @return the probability of x
+   *
+   *  @warning pp is not used, but they are necessary in the
+   *  function template
+   */
+  template <typename T> 
+    T rectangular (T xx, shared_ptr<void> pp, vector<double> par)
+    {
+      if (xx>par[0] && par[1]>xx)
+	return 1./(par[1]-par[0]);
+      else return 0.;
+    }
+
+
+  /**
+   *  @brief probability of the closest element to x from a list with weights 
+   *  @param xx the variable x
+   *  @param pp a void pointer 
+   *  @param par a vector containing the coefficients: 
+   *  @return the weight of closest element from a discrete list to x
+   *  @warning par is not used, it is necessary only for GSL operations
+   */
+   double closest_probability (double xx, shared_ptr<void> pp, vector<double> par);
 
   /**
    *  @brief the Gaussian function 
@@ -1547,6 +1730,7 @@ namespace cosmobl {
   template <typename T> 
     T gaussian (T xx, shared_ptr<void> pp, vector<double> par)
     {
+      (void)pp;
       T gauss = 1./(par[1]*sqrt(2.*par::pi))*exp(-pow(xx-par[0],2)/(2.*par[1]*par[1]));
       return (par.size()==2) ? gauss : gauss*par[2];
     }
@@ -1562,6 +1746,7 @@ namespace cosmobl {
   template <typename T>
     T poisson (T xx, shared_ptr<void> pp, vector<double> par)
     {
+      (void)pp;
       T pois = exp(int(xx) * log(par[0]) - lgamma(int(xx) + 1.0) - par[0]);
       return pois;
     }
@@ -1716,28 +1901,6 @@ namespace cosmobl {
   void measure_var_function (const vector<double>, const int, const double, const double, const double, vector<double> &, vector<double> &, vector<double> &);
 
   /**
-   *  @brief fit a given set of data with a quadratic function 
-   *  @param [in] xx vector containing the set of data, x
-   *  @param [in] fx vector containing the set of data, f(x)
-   *  @param [in] err vector containing the errors, error[f(x)]
-   *  @param [out] AA the best-fit parameter A
-   *  @param [out] BB the best-fit parameter B
-   *  @param [out] CC the best-fit parameter C
-   *  @return none
-   */ 
-  void quad_fit (const vector<double> xx, const vector<double> fx, const vector<double> err, double &AA, double &BB, double &CC);
-
-  /**
-   *  @brief fit a given set of data with a Gaussian function 
-   *  @param [in] xx vector containing the set of data, x
-   *  @param [in] fx vector containing the set of data, f(x)
-   *  @param [out] mean the best-fit value of the mean
-   *  @param [out] sigma the best-fit value of &sigma;
-   *  @return none
-   */
-  void gaussian_fit (const vector<double> xx, const vector<double> fx, double &mean, double &sigma);
-
-  /**
    *  @brief derive and store the number distribution of a given
    *  vector 
    *  @param [out] xx vector containing the binned values of the
@@ -1748,14 +1911,16 @@ namespace cosmobl {
    *  @param [in] FF vector containing the given set of data
    *  @param [in] WW vector containing the weights
    *  @param [in] nbin the number of bins
-   *  @param [in] linear 1 &rarr; linear binning; 0 &rarr; logarithmic binning 
+   *  @param [in] linear 1 &rarr; linear binning; 0 &rarr; logarithmic
+   *  binning
    *  @param [in] file_out the output file where the distribution is
    *  stored
    *  @param [in] fact factor used to normalized the distribution
    *  @param [in] V1 the minimum limit of the distribution
    *  @param [in] V2 the maximum limit of the distribution
    *  @param [in] bin_type 1 &rarr; dn/dvar; 0 &rarr; dn/dlogvar
-   *  @param [in] conv 1 &rarr; compute the Gaussian convolvolution of the distribution; 0 &rarr; do not convolve
+   *  @param [in] conv 1 &rarr; compute the Gaussian convolvolution of
+   *  the distribution; 0 &rarr; do not convolve
    *  @param [in] sigma &sigma; of the Gaussian kernel
    *  @return none
    */
@@ -1795,112 +1960,6 @@ namespace cosmobl {
   double MC_Int (double func(const double, const double AA, const double BB, const double CC, const double DD, const double EE), const double AA, const double BB, const double CC, const double DD, const double EE, const double x1, const double x2); 
 
   // ============================================================================================
- 
-  /**
-   *  @brief compute the first derivative of a given function
-   *  @param XX the point where to compute the derivative
-   *  @param xx vector containing the set of data, x
-   *  @param yy vector containing the function, y(x)
-   *
-   *  @param interpType type the method used to interpolate or
-   *  extrapolate: "Linear" &rarr; linear interpolation; "Poly" &rarr;
-   *  polynomial interpolation; "Spline" &rarr; cubic spline
-   *  interpolation; "Rat" &rarr; diagonal rational function
-   *  interpolation; "BaryRat" &rarr; barycentric rational
-   *  interpolation
-   *
-   *  @param stepsize the binning size
-   *  @return the first derivative of the function y(x)
-   */
-  double D1 (const double, const vector<double>, const vector<double>, const string, const double);
-
-  /**
-   *  @brief compute the second derivative of a given function
-   *  @param XX the point where to compute the derivative
-   *  @param xx vector containing the set of data, x
-   *  @param yy vector containing the function, y(x)
-   *
-   *  @param interpType type the method used to interpolate or
-   *  extrapolate: "Linear" &rarr; linear interpolation; "Poly" &rarr;
-   *  polynomial interpolation; "Spline" &rarr; cubic spline
-   *  interpolation; "Rat" &rarr; diagonal rational function
-   *  interpolation; "BaryRat" &rarr; barycentric rational
-   *  interpolation
-   *
-   *  @param stepsize the binning size
-   *  @return the second derivative of the function y(x)
-   */
-  double D2 (const double, const vector<double>, const vector<double>, const string, const double);
-
-  /**
-   *  @brief compute the n-th order derivative of a given function
-   *  @param nd the order of the derivative
-   *  @param XX the point where to compute the derivative
-   *  @param xx vector containing the set of data, x
-   *  @param yy vector containing the function, y(x)
-   *
-   *  @param interpType type the method used to interpolate or
-   *  extrapolate: "Linear" &rarr; linear interpolation; "Poly" &rarr;
-   *  polynomial interpolation; "Spline" &rarr; cubic spline
-   *  interpolation; "Rat" &rarr; diagonal rational function
-   *  interpolation; "BaryRat" &rarr; barycentric rational
-   *  interpolation
-   *
-   *  @param stepsize the binning size
-   *  @return the nd derivative of the function y(x)
-   */
-  double Deriv (const int, const double, const vector<double>, const vector<double>, const string, const double stepsize=1.);
-
-  /**
-   *  @brief compute the n-th order derivative of a given function
-   *  @param nd the order of the derivative
-   *  @param XX the point where to compute the derivative
-   *  @param Func the function to be derived
-   *
-   *  @param interpType type the method used to interpolate or
-   *  extrapolate: "Linear" &rarr; linear interpolation; "Poly" &rarr;
-   *  polynomial interpolation; "Spline" &rarr; cubic spline
-   *  interpolation; "Rat" &rarr; diagonal rational function
-   *  interpolation; "BaryRat" &rarr; barycentric rational
-   *  interpolation
-   *
-   *  @param Num number of points used in the polynomial, diagonal
-   *  rational and barycentric rational interpolations
-   *
-   *  @param stepsize the binning size
-   *  @return the nd derivative of the function y(x)
-   */
-  template<typename T> double Deriv (const int nd, const double XX, const T &Func, const string interpType, const int Num=-1, const double stepsize=1.) {
-    double err = -1.;
-    double DD = dfridr(Func, XX, stepsize, err);
-      
-    if (nd==1) DD = dfridr(Func, XX, stepsize, err);
-
-    else {
-    
-      double xmin = XX*0.1; // check!!!
-      double xmax = XX*10.; // check!!!
-      int step = 100; // check!!!
-      vector<double> xg, yg;
-    
-      for (int i=0; i<step; i++)
-	xg.push_back(xmin+(xmax-xmin)*double(i)/double(step-1));
-
-      for (unsigned int i=0; i<xg.size(); i++) 
-	yg.push_back(Func(xg[i]));
-
-      DD = Deriv(nd, XX, xg, yg, interpType, stepsize);
-    
-    } 
-  
-    if (err>fabs(DD)*1.e-1) { 
-      double errR = err/fabs(DD)*100.;
-      string Warn = "Attention: the error in the derivative is = " + conv(errR, par::fDP3) + " % !"; 
-      WarningMsg(Warn);
-    }
-
-    return DD;
-  }
 
   /**
    *  @brief create a 1D grid given an input function
@@ -1988,7 +2047,7 @@ namespace cosmobl {
    *  @param inputUnits the units of the input angle
    *  @return the angle in degrees 
    */
-  double degrees (const double angle, const CoordUnit inputUnits=_radians_);
+  double degrees (const double angle, const CoordUnits inputUnits=_radians_);
   
   /**
    *  @brief conversion to radians
@@ -1996,7 +2055,7 @@ namespace cosmobl {
    *  @param inputUnits the units of the input angle
    *  @return the angle in radians
    */
-  double radians (const double angle, const CoordUnit inputUnits=_degrees_);
+  double radians (const double angle, const CoordUnits inputUnits=_degrees_);
   
   /**
    *  @brief conversion to arcseconds
@@ -2004,7 +2063,7 @@ namespace cosmobl {
    *  @param inputUnits the units of the input angle
    *  @return the angle in arcseconds
    */
-  double arcseconds (const double angle, const CoordUnit inputUnits=_radians_);
+  double arcseconds (const double angle, const CoordUnits inputUnits=_radians_);
   
   /**
    *  @brief conversion to arcminutes
@@ -2012,8 +2071,17 @@ namespace cosmobl {
    *  @param inputUnits the units of the input angle
    *  @return the angle in arcminutes
    */
-  double arcminutes (const double angle, const CoordUnit inputUnits=_radians_);
+  double arcminutes (const double angle, const CoordUnits inputUnits=_radians_);
 
+  /**
+   *  @brief conversion to angle units
+   *  @param angle the input angle
+   *  @param inputUnits the units of the input angle
+   *  @param outputUnits the units of the output angle
+   *  @return the angle in the converted units
+   */
+  double converted_angle (const double angle, const CoordUnits inputUnits=_radians_, const CoordUnits outputUnits=_degrees_);
+    
   /**
    *  @brief conversion from Cartesian coordinates to polar
    *  coordinates
@@ -2108,7 +2176,7 @@ namespace cosmobl {
    *  @param y2 y coordinate of the second object
    *  @param z1 z coordinate of the first object
    *  @param z2 z coordinate of the second object
-   *  @return the angular separation
+   *  @return the angular separation [in radians]
    */
   double angular_distance (const double x1, const double x2, const double y1, const double y2, const double z1, const double z2);
 
@@ -2121,7 +2189,7 @@ namespace cosmobl {
    *  @param ra2 the Right Ascension of the second object [in radians]
    *  @param dec1 the Declination of the first object [in radians]
    *  @param dec2 the Declination of the second object [in radians]
-   *  @return the haversine angular separation
+   *  @return the haversine angular separation [in radians]
    */
   double haversine_distance (const double ra1, const double ra2, const double dec1, const double dec2);
   
@@ -2167,14 +2235,11 @@ namespace cosmobl {
    *  @param aa parameter used to smooth the integrand, given by the
    *  eq. 24 of Anderson et al. 2012
    *
-   *  @param GSL 0 &rarr; the Numerical libraries are used; 1 &rarr;
-   *  the GSL libraries are used
-   *
    *  @param prec accuracy of the GSL integration 
    *
    *  @return the two-point correlation function, &xi;(r)
    */
-  double xi_from_Pk (const double, const vector<double>, const vector<double>, const double k_min=0., const double k_max=100., const double aa=0., const bool GSL=1, const double prec=1.e-2);
+  double xi_from_Pk (const double, const vector<double>, const vector<double>, const double k_min=0., const double k_max=100., const double aa=0., const double prec=1.e-2);
 
   /**
    *  @brief the two-point correlation function computed from the
@@ -2199,14 +2264,11 @@ namespace cosmobl {
    *  @param aa parameter used to smooth the integrand, given by the
    *  eq. 24 of Anderson et al. 2012
    *
-   *  @param GSL 0 &rarr; the Numerical libraries are used; 1 &rarr;
-   *  the GSL libraries are used
-   *
    *  @param prec accuracy of the GSL integration 
    *
    *  @return the two-point correlation function, &xi;(r)
    */
-  double xi_from_Pk (const double, const string, const int c1=1, const int c2=2, const double k_min=0., const double k_max=100., const double aa=0., const bool GSL=1, const double prec=1.e-2);
+  double xi_from_Pk (const double, const string, const int c1=1, const int c2=2, const double k_min=0., const double k_max=100., const double aa=0., const double prec=1.e-2);
 
   /**
    *  @brief the power spectrum computed from the Fourier transform of
@@ -2887,7 +2949,7 @@ namespace cosmobl {
 
   /// @cond glob
   // dispersion model for xi(rp,pi)
-  double xi2D_model (double, double, shared_ptr<void> , vector<double>);
+  double xi2D_model (double, double, shared_ptr<void>, vector<double>);
   /// @endcond
 
   /**
@@ -2941,6 +3003,83 @@ namespace cosmobl {
    */
   double xi2D_model (const double, const double, const double, const double, const double, const vector<double>, const vector<double>, const vector<double>, const vector<double>, const double, const int, int index=-1, const bool bias_nl=0, const double bA=0., const double v_min=-3000., const double v_max=3000., const int step_v=500);
 
+  /**
+   *  @brief the linear dispersion model for
+   *  &xi;(r<SUB>p</SUB>,&pi;)
+   *
+   *  @param rp r<SUB>p</SUB>: comoving separation perpendicular to
+   *  the line-of-sight
+   *
+   *  @param pi &pi;: comoving separation parallel to the
+   *  line-of-sight
+   *
+   *  @param beta &beta;=f/b, where f is the linear growth rate and b
+   *  is the bias
+   *
+   *  @param bias the bias  
+   *
+   *  @param funcXiR pointer to an object of type func_grid_GSL, to interpolate
+   *  on  \f$ \xi(r) \f$
+   *
+   *  @param funcXiR_  pointer to an object of type func_grid_GSL, to interpolate
+   *  on \f$ \overline{\xi}(r) \f$
+   *
+   *  @param funcXiR__ pointer to an object of type func_grid_GSL, to interpolate
+   *  on \f$ \overline{\overline{\xi}} (r) \f$
+   *
+   *  @param bias_nl 0 &rArr; linear bias; &rArr; 1 non-linear bias 
+   *
+   *  @param bA the parameter b<SUB>A</SUB> used to model the bias
+   *
+   *  @return &xi;(r<SUB>p</SUB>,&pi;)
+   */
+  double xi2D_lin_model (const double, const double, const double, const double,  const shared_ptr<void>, const shared_ptr<void> , const shared_ptr<void>, const bool bias_nl=0, const double bA=0.);
+
+  /**
+   *  @brief the non-linear dispersion model for
+   *  &xi;(r<SUB>p</SUB>,&pi;)
+   *
+   *  @param rp r<SUB>p</SUB>: comoving separation perpendicular to
+   *  the line-of-sight
+   *
+   *  @param pi &pi;: comoving separation parallel to the
+   *  line-of-sight
+   *
+   *  @param beta &beta;=f/b, where f is the linear growth rate and b
+   *  is the bias
+   *
+   *  @param bias the bias
+   *
+   *  @param sigma12 &sigma;<SUB>12</SUB>
+   *
+   *  @param funcXiR pointer to an object of type func_grid_GSL, to interpolate
+   *  on  \f$ \xi(r) \f$
+   *
+   *  @param funcXiR_  pointer to an object of type func_grid_GSL, to interpolate
+   *  on \f$ \overline{\xi}(r) \f$
+   *
+   *  @param funcXiR__ pointer to an object of type func_grid_GSL, to interpolate
+   *  on \f$ \overline{\overline{\xi}} (r) \f$
+   *
+   *  @param var 1/[H(z)a(z)]
+   *
+   *  @param FV 0 &rArr; exponential; &rArr; 1 gaussian 
+   *
+   *  @param bias_nl 0 &rArr; linear bias; &rArr; 1 non-linear bias 
+   *
+   *  @param bA the parameter b<SUB>A</SUB> used to model the bias
+   *
+   *  @param v_min the minimum value of the velocity used in the
+   *  convolution
+   *
+   *  @param v_max the maximum value of the velocity used in the
+   *  convolution
+   *
+   *  @param step_v the step of the convolution integral
+   *
+   *  @return &xi;(r<SUB>p</SUB>,&pi;)
+   */
+  double xi2D_model (const double, const double, const double, const double, const double,  const shared_ptr<void>, const shared_ptr<void>, const shared_ptr<void>, const double, const int, const bool bias_nl=0, const double bA=0., const double v_min=-3000., const double v_max=3000., const int step_v=500);
 
   /**
    *  @brief pairwise velocity distribution
@@ -3031,7 +3170,7 @@ namespace cosmobl {
    * @param parameters the parameters for the integration
    * @return the power spectrum multipoles integrand
    */
-  double Pl_integrand(const double mu, void *parameters);
+  double Pkl_Kaiser_integrand(const double mu, void *parameters);
 
   /**
    * @brief integrand of the 2d power spectrum to obtain sigma^2(k)
@@ -3039,7 +3178,7 @@ namespace cosmobl {
    * @param parameters the parameters for the integration
    * @return the sigma2 integrand
    */
-  double sigma2_integrand(const double mu, void *parameters);
+  double sigma2_integrand (const double mu, void *parameters);
 
   /**
    * @brief integrand to obtain the 2PCF multipoles
@@ -3047,7 +3186,7 @@ namespace cosmobl {
    * @param parameters the parameters for the integration
    * @return the 2pcf multipoles integrand
    */
-  double covariance_XiMultipoles_integrand(const double kk, void *parameters);
+  double covariance_XiMultipoles_integrand (const double kk, void *parameters);
 
   /**
    * @brief integrand to obtain covariance for the 2PCF multipoles
@@ -3055,7 +3194,58 @@ namespace cosmobl {
    * @param parameters the parameters for the integration
    * @return the covariance of 2pcf multipoles integrand
    */
-  double XiMultipoles_integrand(const double kk, void *parameters);
+  double XiMultipoles_integrand (const double kk, void *parameters);
+
+  /**
+   * @brief integrand to obtain the 2PCF multipoles from 2D 2pcf
+   * in polar coordinates
+   * @param mu the value mu
+   * @param parameters the parameters for the integration
+   * @return the 2pcf multipoles integrand
+   */
+  double XiMultipoles_from_Xi2D_integrand (const double mu, void *parameters);
+
+  /**
+   * @brief function to obtain the Kaiser factor 
+   * @param order the expansion order
+   * @param bias the bias factor
+   * @param f the linear growth factor
+   * @return the Kaiser integral
+   */
+  double Pkl_Kaiser_integral(const int order, const double bias, const double f);
+
+  /**
+   * @brief function to obtain the linear RSD power spectrum
+   * monopole
+   * @param kk the scales k
+   * @param Pk the power spectrum
+   * @param bias the bias factor
+   * @param f the linear growth factor
+   * @return the linear RSD power spectrum monopole
+   */
+  vector<double> Pk0_Kaiser(const vector<double> kk, const vector<double> Pk, const double bias, const double f);
+
+  /**
+   * @brief function to obtain the linear RSD 
+   * power spectrum quadrupole
+   * @param kk the scales k
+   * @param Pk the power spectrum
+   * @param bias the bias factor
+   * @param f the linear growth factor
+   * @return the linear RSD power spectrum quadrupole
+   */
+  vector<double> Pk2_Kaiser(const vector<double> kk, const vector<double> Pk, const double bias, const double f);
+
+  /**
+   * @brief function to obtain the linear RSD 
+   * power spectrum hexadecapole
+   * @param kk the scales k
+   * @param Pk the power spectrum
+   * @param bias the bias factor
+   * @param f the linear growth factor
+   * @return the linear RSD power spectrum hexadecapole
+   */
+  vector<double> Pk4_Kaiser(const vector<double> kk, const vector<double> Pk, const double bias, const double f);
 
   /**
    * @brief function to obtain Pk multipoles from linear RSD (Kaiser)
@@ -3066,7 +3256,99 @@ namespace cosmobl {
    * @param f the linear growth factor
    * @return the power spectrum multipoles
    */
-  vector<vector<double> > Pk_multipole_Kaiser(const vector<int> orders, const vector<double> kk, const vector<double> Pk, const double bias, const double f);
+  vector<vector<double> > Pkl_Kaiser(const vector<int> orders, const vector<double> kk, const vector<double> Pk, const double bias, const double f);
+
+  /**
+   * @brief function to obtain the two point correlation
+   * funciton monopole
+   * @param r the scales r
+   * @param kk the scales k
+   * @param Pk0 the power spectrum monopole
+   * @param k_cut the k scale to cut the integrand
+   * @param cut_pow the power of the integrand cut
+   * @param IntegrationMethod method for integration
+   *
+   * @return the linear RSD power spectrum monopole
+   */
+  vector<double> Xi0(const vector<double> r, const vector<double> kk, const vector<double> Pk0, const double k_cut=0.7, const double cut_pow=2, const int IntegrationMethod = 1);
+
+  /**
+   * @brief function to obtain the two point correlation
+   * function quadrupole
+   * @param rr the scales r
+   * @param kk the scales k
+   * @param Pk2 the power spectrum quadrupole
+   * @param k_cut the k scale to cut the integrand
+   * @param cut_pow the power of the integrand cut
+   * @param IntegrationMethod method for integration
+   *
+   * @return the linear RSD power spectrum quadrupole
+   */
+  vector<double> Xi2 (const vector<double> rr, const vector<double> kk, const vector<double> Pk2, const double k_cut=0.58, const double cut_pow=4, const int IntegrationMethod = 1);
+
+  /**
+   * @brief function to obtain the two point correlation 
+   * function hexadecapole
+   * @param rr the scales r
+   * @param kk the scales k
+   * @param Pk4 the power spectrum hexadecapole
+   * @param k_cut the k scale to cut the integrand
+   * @param cut_pow the power of the integrand cut
+   * @param IntegrationMethod method for integration
+   *
+   * @return the linear RSD power spectrum hexadecapole
+   */
+  vector<double> Xi4 (const vector<double> rr, const vector<double> kk, const vector<double> Pk4, const double k_cut=0.6, const double cut_pow=2, const int IntegrationMethod = 1);
+
+  /**
+   * @brief function to obtain the monopole and
+   * quadrupole of the two point correlation function 
+   *
+   * @param alpha_perpendicular the shift along the line of sight
+   * @param alpha_parallel the shift parallel to the line of sight
+   * @param rr the scales r
+   * @param rl the scales at which the multipoles are defined
+   * @param Xi0 the 2pfc monopole
+   * @param Xi2 the 2pfc quadrupole
+   *
+   * @return the monopole and quadrupole 
+   * of the two point correlation function 
+   */
+  vector<vector<double>> Xi02_AP (const double alpha_perpendicular, const double alpha_parallel, const vector<double> rr, const vector<double> rl, const vector<double> Xi0, const vector<double> Xi2);
+
+  /**
+   * @brief function to obtain the monopole, quadrupole
+   * and hexadecapole of the two-point correlation function 
+   * 
+   * @param alpha_perpendicular the shift along the line of sight
+   * @param alpha_parallel the shift parallel to the line of sight
+   * @param rr the scales r
+   * @param rl the scales at which the multipoles are defined
+   * @param Xi0 the 2pfc monopole
+   * @param Xi2 the 2pfc quadrupole
+   * @param Xi4 the 2pfc hecadecapole
+   *
+   * @return the monopole, quadrupole and hexadecapole of the two
+   * point correlation function
+   */
+  vector< vector<double> > Xi024_AP (const double alpha_perpendicular, const double alpha_parallel, const vector<double> rr, const vector<double> rl, const vector<double> Xi0, const vector<double> Xi2, const vector<double> Xi4);
+
+  /**
+   * @brief function to obtain the 2pcf wedges
+   *
+   * @param mu_min the lower limit of integration for wedges
+   * @param delta_mu the mu width for wedges
+   * @param alpha_perpendicular the shift along the line of sight
+   * @param alpha_parallel the shift parallel to the line of sight
+   * @param rr the scales r
+   * @param rl the scales at which the multipoles are defined
+   * @param Xi0 the 2pfc monopole
+   * @param Xi2 the 2pfc quadrupole
+   * @param Xi4 the 2pfc hecadecapole
+   *
+   * @return the 2pcf wedges 
+   */
+  vector<vector<double>> XiWedges_AP (const vector<double> mu_min, const vector<double> delta_mu, const double alpha_perpendicular, const double alpha_parallel, const vector<double> rr, const vector<double> rl, const vector<double> Xi0, const vector<double> Xi2, const vector<double> Xi4);
 
   /**
    * @brief multipole expansion of the per-mode covariance sigma2_k
@@ -3078,11 +3360,13 @@ namespace cosmobl {
    * @param orders the power spectrum multipoles orders
    * @return the sigma2_k (see i.e. Grieb et al. 2016, eq. 15)
    */
-  vector< vector<double> > sigma2_k(const double nObjects, const double Volume, const vector<double> kk, const vector<vector<double> > Pk_multipoles, const vector<int> orders);
+  vector< vector<double> > sigma2_k (const double nObjects, const double Volume, const vector<double> kk, const vector<vector<double> > Pk_multipoles, const vector<int> orders);
 
   /**
    * @brief Covariance matrix for 2pcf multipoles
-   * @param nbin number of configuration space bins
+   * @param rr output scales
+   * @param covariance analytic covariance matrix
+   * @param nbins number of configuration space bins
    * @param rMin minimum configuration space scale
    * @param rMax maximum configuration space scale
    * @param nObjects number of objects in the sample
@@ -3090,15 +3374,17 @@ namespace cosmobl {
    * @param kk the scales kk
    * @param Pk_multipoles the power spectrum multipoles 
    * @param orders the power spectrum multipoles orders
-   * @return the 2pcf multipoles covariance matrix
+   * @return none
    */
-  vector<vector<double> > Covariance_XiMultipoles (const int nbin, const double rMin, const double rMax, const double nObjects, const double Volume, const vector<double> kk, const vector<vector<double> > Pk_multipoles, const vector<int> orders);
+  void Covariance_XiMultipoles (vector<double> &rr, vector<vector<double>> &covariance, const int nbins, const double rMin, const double rMax, const double nObjects, const double Volume, const vector<double> kk, const vector<vector<double>> Pk_multipoles, const vector<int> orders);
 
   /**
    * @brief Covariance matrix for 2pcf wedges
+   * @param rr output scales
+   * @param covariance analytic covariance matrix
    * @param mu the lower wedge integratin limit
    * @param delta_mu the wedge mu bin size
-   * @param nbin number of configuration space bins
+   * @param nbins number of configuration space bins
    * @param rMin minimum configuration space scale
    * @param rMax maximum configuration space scale
    * @param nObjects number of objects in the sample
@@ -3106,9 +3392,9 @@ namespace cosmobl {
    * @param kk the scales kk
    * @param Pk_multipoles the power spectrum multipoles 
    * @param orders the power spectrum multipoles orders
-   * @return the 2pcf multipoles covariance matrix
+   * @return none
    */
-  vector<vector<double> > Covariance_XiWedges (const vector<double> mu, const vector<double> delta_mu, const int nbin, const double rMin, const double rMax, const double nObjects, const double Volume, const vector<double> kk, const vector<vector<double> > Pk_multipoles, const vector<int> orders);
+  void Covariance_XiWedges (vector<double> &rr, vector<vector<double>> &covariance, const vector<double> mu, const vector<double> delta_mu, const int nbins, const double rMin, const double rMax, const double nObjects, const double Volume, const vector<double> kk, const vector<vector<double> > Pk_multipoles, const vector<int> orders);
 
   ///@}
 
@@ -3117,14 +3403,22 @@ namespace cosmobl {
 
 
   /**
-   *  @brief The namespace of the global classes, structures and
-   *  functions of the CosmoBolognaLib of internal auxiliary use
+   *  @brief The namespace of the functions and classes of <B>
+   *  internal auxiliary use </B>
    *  
-   *  The \e glob namespace contains all the global classes,
-   *  structures and functions structures of the CosmoBolognaLib of
-   *  internal auxiliary use
+   *  The \e glob namespace contains all classes, structures and
+   *  functions of internal auxiliary use
    */
   namespace glob {
+
+    struct STR_generic_integrand{
+      function<double(double)> f;
+    };
+
+    struct STR_generic_roots{
+      function<double(double)> f;
+      double xx0;
+    };
 
     struct STR_grid
     {
@@ -3177,16 +3471,21 @@ namespace cosmobl {
       int order;
     };
 
-    struct STR_Pl_integrand
+    struct STR_Pkl_Kaiser_integrand
     {
       int l;
       double Pk,bias,f;
+    };
+
+    struct STR_closest_probability{
+      vector<double> values;
+      vector<double> weights;
     };
   }
 }
 
 
 #include "FuncClassFunc.h"
-#include "Chi2ClassFunc.h"
+#include "RandomNumbers.h"
 
 #endif

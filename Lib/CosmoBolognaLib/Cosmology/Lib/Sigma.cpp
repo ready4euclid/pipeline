@@ -40,17 +40,16 @@ using namespace cosmobl;
 // =====================================================================================
 
 
-double cosmobl::Cosmology::SSR (const double RR, const string method_Pk, const double redshift, const string output_root, const double kmax, const string file_par) const 
+double cosmobl::cosmology::Cosmology::SSR (const double RR, const string method_Pk, const double redshift, const string output_root, const double kmax, const string file_par) const 
 {
   double SS = -1;
 
+  function<double(double)> ff;
+
   if (method_Pk=="EisensteinHu") {
     cosmobl::classfunc::func_SSR func (m_Omega_matter, m_Omega_baryon, m_Omega_neutrinos, m_massless_neutrinos, m_massive_neutrinos, m_Omega_DE, m_Omega_radiation, m_hh, m_scalar_amp, m_n_spec, m_w0, m_wa, m_fNL, m_type_NG, m_model, m_unit, method_Pk, RR, redshift); 
-    Midpnt<cosmobl::classfunc::func_SSR> q1(func,0.,1.); 
-    Midinf<cosmobl::classfunc::func_SSR> q2(func,1.,1.e99);
-    double Int = qromo(q1)+qromo(q2);
 
-    SS = 1./(2.*pow(par::pi,2))*Int;
+    ff = bind(&cosmobl::classfunc::func_SSR::operator(), func, std::placeholders::_1);
   }
 
   if (method_Pk=="CAMB" || method_Pk=="CLASS") {
@@ -62,13 +61,13 @@ double cosmobl::Cosmology::SSR (const double RR, const string method_Pk, const d
         
     cosmobl::classfunc::func_SSR_Table func (m_hh, m_n_spec, RHO, m_unit, lgkk, lgPk, RR); 
 
-    Midpnt<cosmobl::classfunc::func_SSR_Table> q1(func,0.,1.); 
-    Midinf<cosmobl::classfunc::func_SSR_Table> q2(func,1.,1.e99);
-    double Int = qromo(q1)+qromo(q2);
-
-    SS = 1./(2.*pow(par::pi,2))*Int;
+    ff = bind(&cosmobl::classfunc::func_SSR_Table::operator(), func, std::placeholders::_1);
   }
+  double Int1 = GSL_integrate_qag(ff, 0., 1., 1.e-3);
+  double Int2 = GSL_integrate_qag(ff, 1., 1.e99, 1.e-3);
+  double Int = Int1+Int2;
 
+  SS = 1./(2.*pow(par::pi,2))*Int;
   return SS;
 }
 
@@ -76,7 +75,7 @@ double cosmobl::Cosmology::SSR (const double RR, const string method_Pk, const d
 // =====================================================================================
 
 
-double cosmobl::Cosmology::SSR_norm (const double RR, const string method_Pk, const double redshift, const string output_root, const double kmax, const string file_par) const 
+double cosmobl::cosmology::Cosmology::SSR_norm (const double RR, const string method_Pk, const double redshift, const string output_root, const double kmax, const string file_par) const 
 {
   double fact = 1.;
 
@@ -84,7 +83,7 @@ double cosmobl::Cosmology::SSR_norm (const double RR, const string method_Pk, co
     double RRR = 8.; // sigma_8 = sigma(8Mpc/h)
     fact = (m_sigma8*m_sigma8)/SSR(RRR, method_Pk, redshift, output_root, kmax, file_par); // normalization factor
   }
-  else if (method_Pk=="EisensteinHu") ErrorMsg("Error in cosmobl::Cosmology::SSR_norm of Sigma.cpp!");
+  else if (method_Pk=="EisensteinHu") ErrorCBL("Error in cosmobl::cosmology::Cosmology::SSR_norm of Sigma.cpp!");
   
   return SSR(RR, method_Pk, redshift, output_root, kmax, file_par)*fact;
 }
@@ -93,8 +92,10 @@ double cosmobl::Cosmology::SSR_norm (const double RR, const string method_Pk, co
 // =====================================================================================
 
 
-double cosmobl::Cosmology::dnSR (const int nd, const double RR, const string method_Pk, const double redshift, const string output_root, const string interpType, const int Num, const double stepsize, const double kmax, const string file_par) const 
+double cosmobl::cosmology::Cosmology::dnSR (const int nd, const double RR, const string method_Pk, const double redshift, const string output_root, const string interpType, const int Num, const double stepsize, const double kmax, const string file_par) const 
 {
+  (void)nd; (void)interpType; (void)Num; (void)stepsize; 
+
   double dR = RR*1.e-7;
   double RRR = RR+dR;
   return (SSR_norm(RRR, method_Pk, redshift, output_root, kmax, file_par)-SSR_norm(RR, method_Pk, redshift, output_root, kmax, file_par))/dR;
@@ -109,40 +110,42 @@ double cosmobl::Cosmology::dnSR (const int nd, const double RR, const string met
 // =====================================================================================
 
 
-double cosmobl::Cosmology::SSM (const double MM, const string method_Pk, const double redshift, const string output_root, const double kmax, const string file_par) const 
+double cosmobl::cosmology::Cosmology::SSM (const double MM, const string method_Pk, const double redshift, const string output_root, const double kmax, const string file_par) const 
 {
   double SS = -1;
 
+  function<double(double)> ff;
+
   if (method_Pk=="EisensteinHu") {
     cosmobl::classfunc::func_SSM func (m_Omega_matter, m_Omega_baryon, m_Omega_neutrinos, m_massless_neutrinos, m_massive_neutrinos, m_Omega_DE, m_Omega_radiation, m_hh, m_scalar_amp, m_n_spec, m_w0, m_wa, m_fNL, m_type_NG, m_model, m_unit, method_Pk, MM, redshift); 
-    Midpnt<cosmobl::classfunc::func_SSM> q1(func,0.,1.); 
-    Midinf<cosmobl::classfunc::func_SSM> q2(func,1.,1.e99);
-    double Int = qromo(q1)+qromo(q2);
 
-    SS = 1./(2.*pow(par::pi,2))*Int;
+    ff = bind(&cosmobl::classfunc::func_SSM::operator(), func, std::placeholders::_1);
   }
 
   else if (method_Pk=="CAMB" || method_Pk=="CLASS") {
     vector<double> lgkk, lgPk;
     bool do_nonlinear = 0;
     double RHO = Rho(m_Omega_matter,m_Omega_neutrinos); 
-    
+
     if (file_par!=par::defaultString) {
       string Warn = "Check that in the parameter file Omega_matter = " + conv(m_Omega_matter,par::fDP3) + " and Omega_neutrinos = " + conv(m_Omega_neutrinos,par::fDP3) + "!";
       WarningMsg(Warn);
     }
 
     Table_PkCodes (method_Pk, do_nonlinear, lgkk, lgPk, redshift, output_root, kmax, file_par);
-    
-    cosmobl::classfunc::func_SSM_Table func (m_hh, m_n_spec, RHO, m_unit, lgkk, lgPk, MM); 
-    Midpnt<cosmobl::classfunc::func_SSM_Table> q1(func,0.,1.); 
-    Midinf<cosmobl::classfunc::func_SSM_Table> q2(func,1.,1.e99);
-    double Int = qromo(q1)+qromo(q2);
 
-    SS = 1./(2.*pow(par::pi,2))*Int;
+    cosmobl::classfunc::func_SSM_Table func (m_hh, m_n_spec, RHO, m_unit, lgkk, lgPk, MM); 
+
+    ff = bind(&cosmobl::classfunc::func_SSM_Table::operator(), func, std::placeholders::_1);
   }
 
-  else ErrorMsg("Error in cosmobl::Cosmology::SSM of Sigma.cpp: method_Pk is wrong!");
+  else ErrorCBL("Error in cosmobl::cosmology::Cosmology::SSM of Sigma.cpp: method_Pk is wrong!");
+
+  double Int1 = GSL_integrate_qag(ff, 0., 1.,1.e-3);
+  double Int2 = GSL_integrate_qag(ff, 1., 1.e99, 1.e-3);
+  double Int = Int1+Int2;
+
+  SS = 1./(2.*pow(par::pi,2))*Int;
 
   return SS;
 }
@@ -151,7 +154,7 @@ double cosmobl::Cosmology::SSM (const double MM, const string method_Pk, const d
 // =====================================================================================
 
 
-double cosmobl::Cosmology::SSM_norm (const double MM, const string method_Pk, const double redshift, const string output_root, const double kmax, const string file_par) const 
+double cosmobl::cosmology::Cosmology::SSM_norm (const double MM, const string method_Pk, const double redshift, const string output_root, const double kmax, const string file_par) const 
 {
   double fact = 1.;
 
@@ -161,7 +164,7 @@ double cosmobl::Cosmology::SSM_norm (const double MM, const string method_Pk, co
     double Mss = Mass(RR, RHO);
     fact = (m_sigma8*m_sigma8)/SSM(Mss, method_Pk, redshift, output_root, kmax, file_par); // normalization factor
   }
-  else if (method_Pk=="EisensteinHu") ErrorMsg("Error in cosmobl::Cosmology::SSM_norm of Sigma.cpp!");
+  else if (method_Pk=="EisensteinHu") ErrorCBL("Error in cosmobl::cosmology::Cosmology::SSM_norm of Sigma.cpp!");
 
   return SSM(MM, method_Pk, redshift, output_root, kmax, file_par)*fact;
 }
@@ -170,9 +173,10 @@ double cosmobl::Cosmology::SSM_norm (const double MM, const string method_Pk, co
 // =====================================================================================
 
 
-double cosmobl::Cosmology::dnSM (const int nd, const double MM, const string method_Pk, const double redshift, const string output_root, const string interpType, const int Num, const double stepsize, const double kmax, const string file_par) const 
+double cosmobl::cosmology::Cosmology::dnSM (const int nd, const double MM, const string method_Pk, const double redshift, const string output_root, const string interpType, const int Num, const double stepsize, const double kmax, const string file_par) const 
 {
- 
+  (void)nd; (void)interpType; (void)Num; (void)stepsize;
+  
   double dM = MM*1.e-7;
   double MMM = MM+dM;
   return (SSM_norm(MMM, method_Pk, redshift, output_root, kmax, file_par)-SSM_norm(MM, method_Pk, redshift, output_root, kmax, file_par))/dM;
@@ -197,7 +201,7 @@ double cosmobl::Cosmology::dnSM (const int nd, const double MM, const string met
 // =====================================================================================
 
 
-string cosmobl::Cosmology::create_grid_sigmaM (const string method_SS, const double redshift, const string output_root, const string interpType, const int Num, const double stepsize, const double kmax, const string file_par) const 
+string cosmobl::cosmology::Cosmology::create_grid_sigmaM (const string method_SS, const double redshift, const string output_root, const string interpType, const int Num, const double stepsize, const double kmax, const string file_par) const 
 { 
   string norm = (m_sigma8>0) ? "_sigma8"+conv(m_sigma8,par::fDP3) : "_scalar_amp"+conv(m_scalar_amp,par::ee3);
   string dir_cosmo=fullpath(par::DirCosmo);
@@ -210,9 +214,9 @@ string cosmobl::Cosmology::create_grid_sigmaM (const string method_SS, const dou
 
   if (!fin) {
 
-    cout << endl << "I'm creating the grid file with sigma(M): " << file_grid.c_str() << "..." << endl;
+    coutCBL << endl << "I'm creating the grid file with sigma(M): " << file_grid.c_str() << "..." << endl;
     
-    ofstream fout (file_grid.c_str()); checkIO (file_grid, 0); 
+    ofstream fout(file_grid.c_str()); checkIO(fout, file_grid); 
 
     vector<double> MM = logarithmic_bin_vector(1000, 1.e6, 3.e16);
     
@@ -220,7 +224,7 @@ string cosmobl::Cosmology::create_grid_sigmaM (const string method_SS, const dou
     
     for (size_t k=0; k<MM.size(); k++) {
       cout.setf(ios::fixed); cout.setf(ios::showpoint); cout.precision(1);
-      cout << "\r..." << double(k)/double(MM.size())*100. << "% completed \r"; cout.flush(); 
+      coutCBL << "\r..." << double(k)/double(MM.size())*100. << "% completed \r"; cout.flush(); 
 
       SSS = SSM_norm(MM[k], method_SS, redshift, output_root, kmax, file_par);
       Sigma = sqrt(SSS);
@@ -228,7 +232,7 @@ string cosmobl::Cosmology::create_grid_sigmaM (const string method_SS, const dou
       fout << MM[k] << "   " << Sigma << "   " << Dln_Sigma << endl;
     }
 
-    fout.clear(); fout.close(); cout << endl << "I wrote the file: " << file_grid << endl;
+    fout.clear(); fout.close(); coutCBL << endl << "I wrote the file: " << file_grid << endl;
   }
   
   fin.clear(); fin.close();

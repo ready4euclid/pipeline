@@ -1,0 +1,25 @@
+#!/bin/bash
+
+make purgeALL &&
+make &&
+make CAMB && 
+make allExamples &&
+
+cd Examples/vectors && ./vectors && cd ../.. &&
+cd Examples/randomNumbers && ./randomNumbers && cd ../.. &&
+cd Examples/distances && ./distances && cd ../.. &&
+cd Examples/covsample && ./covsample && cd ../.. &&
+cd Examples/fsigma8 && ./fsigma8 && cd ../.. &&
+cd Examples/statistics/codes && ./prior && ./fit && cd ../../.. &&
+cd Examples/catalogue && ./catalogue && cd ../.. &&
+cd Examples/clustering/codes && ./2pt_monopole && ./2pt_monopole_errors && ./2pt_2D && ./2pt_projected && ./2pt_angular && ./3pt && ./model_2pt_monopole_BAO && ./model_2pt_monopole_RSD && ./model_2pt_projected && ./model_2pt_2D && cd ../../.. &&
+cd Examples/readParameterFile && ./readParameterFile && cd ../.. &&
+
+make purgepy &&
+make python &&
+
+cd Examples/distances && python distances.py && cd ../.. &&
+cd Examples/statistics/codes && python prior.py && cd ../../.. &&
+cd Examples/clustering/codes && python 2pt_monopole.py && python 2pt_model.py && cd ../../.. &&
+
+make doc && emacs Doc/WARNING_LOGFILE 

@@ -53,9 +53,9 @@ namespace cosmobl {
      *  This class is used to handle objects of type <EM> Pair2D
      *  </EM>.
      */
-    class Pair2D : public Pair {
+    class Pair2D : public virtual Pair {
 
-    private:
+    protected:
       
       /**
        *  @name Member functions used to set the binning parameters (customized in all the derived classes) 
@@ -66,13 +66,13 @@ namespace cosmobl {
        *  @brief set the binning parameters given the number of bins
        *  @return none
        */
-      virtual void set_parameters_nbins () = 0;
+      virtual void m_set_parameters_nbins () = 0;
   
       /**
        *  @brief set the binning parameters given the bin size
        *  @return none
        */
-      virtual void set_parameters_binSize () = 0;
+      virtual void m_set_parameters_binSize () = 0;
   
       ///@}
 
@@ -86,10 +86,10 @@ namespace cosmobl {
       vector<double> m_scale_D2;
       
       /// the number of binned pairs 
-      vector<vector<double> > m_PP2D;
+      vector<vector<double>> m_PP2D;
 
       /**
-       *  @name Binning parameters
+       *  @name binning parameters
        */
       ///@{
   
@@ -121,26 +121,36 @@ namespace cosmobl {
       ///@{
   
       /**
-       *  @brief default constuctor
+       *  @brief default constructor
        *  @return object of class Pair2D
        */
       Pair2D ()
 	: m_binSize_inv_D1(1.), m_nbins_D1(50), m_shift_D1(0.5), m_binSize_inv_D2(1.), m_nbins_D2(50), m_shift_D2(0.5)
-	{ m_pairDim = _2D_; }
+	{ m_pairDim = _2D_; m_angularUnits = _radians_; m_angularWeight = nullptr; }
 
       /**
-       *  @brief default constuctor
+       *  @brief constructor
+       *  @param binSize_D1 the bin size in the first dimension
+       *  @param nbins_D1 number of bins in the first dimension
+       *  @param shift_D1 radial shift used to centre the output bins
+       *  in the first dimension
+       *  @param binSize_D2 the bin size in the second dimension
+       *  @param nbins_D2 number of bins in the second dimension
+       *  @param shift_D2 radial shift used to centre the output bins
+       *  in the second dimension
+       *  @param angularUnits angular units
+       *  @param angularWeight angular weight function
        *  @return object of class Pair2D
        */
-      Pair2D (const double binSize_D1, const int nbins_D1, const double shift_D1, const double binSize_D2, const int nbins_D2, const double shift_D2)
+      Pair2D (const double binSize_D1, const int nbins_D1, const double shift_D1, const double binSize_D2, const int nbins_D2, const double shift_D2, const CoordUnits angularUnits=_radians_, function<double(double)> angularWeight=nullptr)
 	: m_binSize_inv_D1(1./binSize_D1), m_nbins_D1(nbins_D1), m_shift_D1(shift_D1), m_binSize_inv_D2(1./binSize_D2), m_nbins_D2(nbins_D2), m_shift_D2(shift_D2)
-      { m_pairDim = _2D_; }
+      { m_pairDim = _2D_; m_angularUnits = angularUnits; m_angularWeight = angularWeight; }
   
       /**
        *  @brief default destructor
        *  @return none
        */
-      virtual ~Pair2D () {}
+      virtual ~Pair2D () = default;
   
       ///@}
   
@@ -188,7 +198,7 @@ namespace cosmobl {
        *  @brief get the protected member \e m_PP2D
        *  @return the vector containing the binned number of pairs
        */
-      vector<vector<double> > PP2D () const override { return m_PP2D; }
+      vector<vector<double>> PP2D () const override { return m_PP2D; }
     
       /**
        *  @brief get the protected member Pair2D::m_binSize_inv_D1
@@ -239,15 +249,15 @@ namespace cosmobl {
       /**
        *  @brief set the protected member Pair2D::m_scale_D1[i]
        *  @param i the bin index in the first dimension
-       *  @param pp the binned scales
+       *  @param pp the binned scale in the first dimension
        *  @return none
        */
       void set_scale_D1 (const int i, const double pp) { checkDim(m_scale_D1, i, "m_scale_D1"); m_scale_D1[i] = pp; }
 
       /**
        *  @brief set the protected member Pair2D::m_scale_D2[i]
-       *  @param i the bin index in the first dimension
-       *  @param pp the binned scales
+       *  @param i the bin index in the second dimension
+       *  @param pp the binned scale in the second dimension
        *  @return none
        */
       void set_scale_D2 (const int i, const double pp) { checkDim(m_scale_D2, i, "m_scale_D2"); m_scale_D2[i] = pp; }
@@ -262,14 +272,23 @@ namespace cosmobl {
       void set_PP2D (const int i, const int j, const double pp) { checkDim(m_PP2D, i, j, "m_PP2D"); m_PP2D[i][j] = pp; }
 
       /**
-       *  @brief set the protected member PairD1::m_PP2D[i][j] adding
-       *  the number of pairs
+       *  @brief set the protected members by adding new data
        *  @param i the bin index in the first dimension
        *  @param j the bin index in the second dimension
-       *  @param pp the number of pairs in the bin
+       *  @param data the number of pairs in the bin
        *  @return none
        */
-      void add_PP2D (const int i, const int j, const double pp) { checkDim(m_PP2D, i, j, "m_PP2D"); m_PP2D[i][j] += pp; }
+      void add_data2D (const int i, const int j, const vector<double> data) override;
+      
+      /**
+       *  @brief set the protected members by adding new data
+       *  @param i the bin index in the first dimension
+       *  @param j the bin index in the second dimension
+       *  @param pair pair pointer to an object of class Pair
+       *  @param ww a multiplicative factor used for bootstrap
+       *  @return none
+       */
+      void add_data2D (const int i, const int j, const shared_ptr<pairs::Pair> pair, const double ww=1.) override;
 
       ///@}
 
@@ -305,9 +324,9 @@ namespace cosmobl {
      *  This class is used to handle objects of type <EM>
      *  Pair2D_comovingCartesian </EM>.
      */
-    class Pair2D_comovingCartesian : public Pair2D {
+    class Pair2D_comovingCartesian : public virtual Pair2D {
       
-    private:
+    protected:
       
       /**
        *  @name Member functions used to set the binning parameters (customized in all the derived classes) 
@@ -318,13 +337,13 @@ namespace cosmobl {
        *  @brief set the binning parameters given the number of bins
        *  @return none
        */
-      virtual void set_parameters_nbins () = 0;
+      virtual void m_set_parameters_nbins () = 0;
   
       /**
        *  @brief set the binning parameters given the bin size
        *  @return none
        */
-      virtual void set_parameters_binSize () = 0;
+      virtual void m_set_parameters_binSize () = 0;
   
       ///@}
       
@@ -332,7 +351,7 @@ namespace cosmobl {
     protected:
   
       /**
-       *  @name Binning parameters
+       *  @name binning parameters
        */
       ///@{
 
@@ -359,13 +378,13 @@ namespace cosmobl {
       ///@{
 
       /**
-       *  @brief default constuctor
+       *  @brief default constructor
        *  @return object of class Pair2D_comovingCartesian
        */
       Pair2D_comovingCartesian () : m_rpMin(0.1), m_rpMax(50.), m_piMin(0.1), m_piMax(50.) {}
 
       /**
-       *  @brief constuctor   
+       *  @brief constructor   
        *  @param rpMin minimum perpendicular separation used to count
        *  the pairs
        *  @param rpMax maximum perpendicular separation used to count
@@ -378,13 +397,15 @@ namespace cosmobl {
        *  @param nbins_pi number of bins in the parallel separation
        *  @param shift_pi shift parameter in the parallel separation,
        *  i.e. the shift is binSize*shift
+       *  @param angularUnits angular units
+       *  @param angularWeight angular weight function
        *  @return object of class Pair2D_comovingCartesian
        */
-      Pair2D_comovingCartesian (const double rpMin, const double rpMax, const int nbins_rp, const double shift_rp, const double piMin, const double piMax, const int nbins_pi, const double shift_pi)
-	: Pair2D(1., nbins_rp, shift_rp, 1., nbins_pi, shift_pi), m_rpMin(rpMin), m_rpMax(rpMax), m_piMin(piMin), m_piMax(piMax) {}
+      Pair2D_comovingCartesian (const double rpMin, const double rpMax, const int nbins_rp, const double shift_rp, const double piMin, const double piMax, const int nbins_pi, const double shift_pi, const CoordUnits angularUnits=_radians_, function<double(double)> angularWeight=nullptr)
+	: Pair2D(1., nbins_rp, shift_rp, 1., nbins_pi, shift_pi, angularUnits, angularWeight), m_rpMin(rpMin), m_rpMax(rpMax), m_piMin(piMin), m_piMax(piMax) {}
   
       /**
-       *  @brief constuctor
+       *  @brief constructor
        *  @param rpMin minimum perpendicular separation used to count
        *  the pairs
        *  @param rpMax maximum perpendicular separation used to count
@@ -398,16 +419,18 @@ namespace cosmobl {
        *  @param binSize_pi size of the bins in the parallel separation
        *  @param shift_pi shift parameter in the parallel separation,
        *  i.e. the shift is binSize*shift
+       *  @param angularUnits angular units
+       *  @param angularWeight angular weight function
        *  @return object of class Pair2D_comovingCartesian
        */
-      Pair2D_comovingCartesian (const double rpMin, const double rpMax, const double binSize_rp, const double shift_rp, const double piMin, const double piMax, const double binSize_pi, const double shift_pi)
-	: Pair2D(binSize_rp, 50, shift_rp, binSize_pi, 50, shift_pi), m_rpMin(rpMin), m_rpMax(rpMax), m_piMin(piMin), m_piMax(piMax) {}
+      Pair2D_comovingCartesian (const double rpMin, const double rpMax, const double binSize_rp, const double shift_rp, const double piMin, const double piMax, const double binSize_pi, const double shift_pi, const CoordUnits angularUnits=_radians_, function<double(double)> angularWeight=nullptr)
+	: Pair2D(binSize_rp, 50, shift_rp, binSize_pi, 50, shift_pi, angularUnits, angularWeight), m_rpMin(rpMin), m_rpMax(rpMax), m_piMin(piMin), m_piMax(piMax) {}
   
       /**
        *  @brief default destructor
        *  @return none
        */
-      virtual ~Pair2D_comovingCartesian () {}
+      virtual ~Pair2D_comovingCartesian () = default;
 
       ///@}
 
@@ -463,9 +486,9 @@ namespace cosmobl {
      *  This class is used to handle objects of type <EM>
      *  Pair2D_comovingCartesian_linlin </EM>.
      */
-    class Pair2D_comovingCartesian_linlin : public Pair2D_comovingCartesian {
+    class Pair2D_comovingCartesian_linlin : public virtual Pair2D_comovingCartesian {
 
-    private:
+    protected:
     
       /**
        *  @name Member functions used to set the binning parameters
@@ -476,13 +499,13 @@ namespace cosmobl {
        *  @brief set the binning parameters given the number of bins
        *  @return none
        */
-      void set_parameters_nbins () override;
+      void m_set_parameters_nbins () override;
     
       /**
        *  @brief set the binning parameters given the bin size
        *  @return none
        */
-      void set_parameters_binSize () override;
+      void m_set_parameters_binSize () override;
 
       ///@}
   
@@ -494,13 +517,17 @@ namespace cosmobl {
       ///@{
 
       /**
-       *  @brief default constuctor
+       *  @brief default constructor
        *  @return object of class Pair2D_comovingCartesian_linlin
        */
-      Pair2D_comovingCartesian_linlin () { m_pairType = _comovingCartesian_linlin_; } 
+      Pair2D_comovingCartesian_linlin ()
+	{
+	  m_pairType = _comovingCartesian_linlin_;
+	  m_pairInfo = _standard_;
+	} 
 
       /**
-       *  @brief constuctor   
+       *  @brief constructor   
        *  @param rpMin minimum perpendicular separation used to count the
        *  pairs
        *  @param rpMax maximum perpendicular separation used to count the
@@ -513,14 +540,21 @@ namespace cosmobl {
        *  @param nbins_pi number of bins in the parallel separation
        *  @param shift_pi shift parameter in the parallel separation,
        *  i.e. the shift is binSize*shift
-       *  @return object of class Pair2D_comovingCartesian
+       *  @param angularUnits angular units
+       *  @param angularWeight angular weight function
+       *  @return object of class Pair2D_comovingCartesian_linlin
        */
-      Pair2D_comovingCartesian_linlin (const double rpMin, const double rpMax, const int nbins_rp, const double shift_rp, const double piMin, const double piMax, const int nbins_pi, const double shift_pi)
-	: Pair2D_comovingCartesian(rpMin, rpMax, nbins_rp, shift_rp, piMin, piMax, nbins_pi, shift_pi)
-	{ m_pairType = _comovingCartesian_linlin_; set_parameters_nbins(); m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.)); }
+      Pair2D_comovingCartesian_linlin (const double rpMin, const double rpMax, const int nbins_rp, const double shift_rp, const double piMin, const double piMax, const int nbins_pi, const double shift_pi, const CoordUnits angularUnits=_radians_, function<double(double)> angularWeight=nullptr)
+	: Pair2D(1., nbins_rp, shift_rp, 1., nbins_pi, shift_pi, angularUnits, angularWeight), Pair2D_comovingCartesian(rpMin, rpMax, nbins_rp, shift_rp, piMin, piMax, nbins_pi, shift_pi, angularUnits, angularWeight)
+	{
+	  m_pairType = _comovingCartesian_linlin_;
+	  m_pairInfo = _standard_;
+	  m_set_parameters_nbins();
+	  m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.));
+	}
   
       /**
-       *  @brief constuctor
+       *  @brief constructor
        *  @param rpMin minimum perpendicular separation used to count the
        *  pairs
        *  @param rpMax maximum perpendicular separation used to count the
@@ -533,17 +567,24 @@ namespace cosmobl {
        *  @param binSize_pi size of the bins in the parallel separation
        *  @param shift_pi shift parameter in the parallel separation,
        *  i.e. the shift is binSize*shift
-       *  @return object of class Pair2D_comovingCartesian
+       *  @param angularUnits angular units
+       *  @param angularWeight angular weight function
+       *  @return object of class Pair2D_comovingCartesian_linlin
        */
-      Pair2D_comovingCartesian_linlin (const double rpMin, const double rpMax, const double binSize_rp, const double shift_rp, const double piMin, const double piMax, const double binSize_pi, const double shift_pi)
-	: Pair2D_comovingCartesian(rpMin, rpMax, binSize_rp, shift_rp, piMin, piMax, binSize_pi, shift_pi)
-	{ m_pairType = _comovingCartesian_linlin_; set_parameters_binSize(); m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.)); } 
+      Pair2D_comovingCartesian_linlin (const double rpMin, const double rpMax, const double binSize_rp, const double shift_rp, const double piMin, const double piMax, const double binSize_pi, const double shift_pi, const CoordUnits angularUnits=_radians_, function<double(double)> angularWeight=nullptr)
+	: Pair2D(binSize_rp, 50, shift_rp, binSize_pi, 50, shift_pi, angularUnits, angularWeight), Pair2D_comovingCartesian(rpMin, rpMax, binSize_rp, shift_rp, piMin, piMax, binSize_pi, shift_pi, angularUnits, angularWeight)
+	{
+	  m_pairType = _comovingCartesian_linlin_;
+	  m_pairInfo = _standard_;
+	  m_set_parameters_binSize();
+	  m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.));
+	} 
   
       /**
        *  @brief default destructor
        *  @return none
        */
-      ~Pair2D_comovingCartesian_linlin () {}
+      ~Pair2D_comovingCartesian_linlin () = default;
 
       ///@}
   
@@ -580,9 +621,9 @@ namespace cosmobl {
      *  This class is used to handle objects of type <EM>
      *  Pair2D_comovingCartesian_loglin </EM>.
      */
-    class Pair2D_comovingCartesian_loglin : public Pair2D_comovingCartesian {
+    class Pair2D_comovingCartesian_loglin : public virtual Pair2D_comovingCartesian {
 
-    private:
+    protected:
     
       /**
        *  @name Member functions used to set the binning parameters
@@ -593,13 +634,13 @@ namespace cosmobl {
        *  @brief set the binning parameters given the number of bins
        *  @return none
        */
-      void set_parameters_nbins () override;
+      void m_set_parameters_nbins () override;
     
       /**
        *  @brief set the binning parameters given the bin size
        *  @return none
        */
-      void set_parameters_binSize () override;
+      void m_set_parameters_binSize () override;
 
       ///@}
   
@@ -611,13 +652,17 @@ namespace cosmobl {
       ///@{
 
       /**
-       *  @brief default constuctor
+       *  @brief default constructor
        *  @return object of class Pair2D_comovingCartesian_loglin
        */
-      Pair2D_comovingCartesian_loglin () { m_pairType = _comovingCartesian_loglin_; m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.)); } 
+      Pair2D_comovingCartesian_loglin ()
+	{
+	  m_pairType = _comovingCartesian_loglin_;
+	  m_pairInfo = _standard_;
+	}
 
       /**
-       *  @brief constuctor   
+       *  @brief constructor   
        *  @param rpMin minimum perpendicular separation used to count the
        *  pairs
        *  @param rpMax maximum perpendicular separation used to count the
@@ -630,14 +675,21 @@ namespace cosmobl {
        *  @param nbins_pi number of bins in the parallel separation
        *  @param shift_pi shift parameter in the parallel separation,
        *  i.e. the shift is binSize*shift
-       *  @return object of class Pair2D_comovingCartesian
+       *  @param angularUnits angular units
+       *  @param angularWeight angular weight function
+       *  @return object of class Pair2D_comovingCartesian_loglin
        */
-      Pair2D_comovingCartesian_loglin (const double rpMin, const double rpMax, const int nbins_rp, const double shift_rp, const double piMin, const double piMax, const int nbins_pi, const double shift_pi)
-	: Pair2D_comovingCartesian(rpMin, rpMax, nbins_rp, shift_rp, piMin, piMax, nbins_pi, shift_pi)
-	{ m_pairType = _comovingCartesian_loglin_; set_parameters_nbins(); m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.)); }
+      Pair2D_comovingCartesian_loglin (const double rpMin, const double rpMax, const int nbins_rp, const double shift_rp, const double piMin, const double piMax, const int nbins_pi, const double shift_pi, const CoordUnits angularUnits=_radians_, function<double(double)> angularWeight=nullptr)
+	: Pair2D(1., nbins_rp, shift_rp, 1., nbins_pi, shift_pi, angularUnits, angularWeight), Pair2D_comovingCartesian(rpMin, rpMax, nbins_rp, shift_rp, piMin, piMax, nbins_pi, shift_pi, angularUnits, angularWeight)
+	{
+	  m_pairType = _comovingCartesian_loglin_;
+	  m_pairInfo = _standard_;
+	  m_set_parameters_nbins();
+	  m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.));
+	}
   
       /**
-       *  @brief constuctor
+       *  @brief constructor
        *  @param rpMin minimum perpendicular separation used to count the
        *  pairs
        *  @param rpMax maximum perpendicular separation used to count the
@@ -650,17 +702,24 @@ namespace cosmobl {
        *  @param binSize_pi size of the bins in the parallel separation
        *  @param shift_pi shift parameter in the parallel separation,
        *  i.e. the shift is binSize*shift
-       *  @return object of class Pair2D_comovingCartesian
+       *  @param angularUnits angular units
+       *  @param angularWeight angular weight function
+       *  @return object of class Pair2D_comovingCartesian_loglin
        */
-      Pair2D_comovingCartesian_loglin (const double rpMin, const double rpMax, const double binSize_rp, const double shift_rp, const double piMin, const double piMax, const double binSize_pi, const double shift_pi)
-	: Pair2D_comovingCartesian(rpMin, rpMax, binSize_rp, shift_rp, piMin, piMax, binSize_pi, shift_pi)
-	{ m_pairType = _comovingCartesian_loglin_; set_parameters_binSize(); m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.)); } 
+      Pair2D_comovingCartesian_loglin (const double rpMin, const double rpMax, const double binSize_rp, const double shift_rp, const double piMin, const double piMax, const double binSize_pi, const double shift_pi, const CoordUnits angularUnits=_radians_, function<double(double)> angularWeight=nullptr)
+	: Pair2D(binSize_rp, 50, shift_rp, binSize_pi, 50, shift_pi, angularUnits, angularWeight), Pair2D_comovingCartesian(rpMin, rpMax, binSize_rp, shift_rp, piMin, piMax, binSize_pi, shift_pi, angularUnits, angularWeight)
+	{
+	  m_pairType = _comovingCartesian_loglin_;
+	  m_pairInfo = _standard_;
+	  m_set_parameters_binSize();
+	  m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.));
+	} 
   
       /**
        *  @brief default destructor
        *  @return none
        */
-      ~Pair2D_comovingCartesian_loglin () {}
+      ~Pair2D_comovingCartesian_loglin () = default;
 
       ///@}
   
@@ -696,9 +755,9 @@ namespace cosmobl {
      *  This class is used to handle objects of type <EM>
      *  Pair2D_comovingCartesian_linlog </EM>.
      */
-    class Pair2D_comovingCartesian_linlog : public Pair2D_comovingCartesian {
+    class Pair2D_comovingCartesian_linlog : public virtual Pair2D_comovingCartesian {
 
-    private:
+    protected:
     
       /**
        *  @name Member functions used to set the binning parameters
@@ -709,13 +768,13 @@ namespace cosmobl {
        *  @brief set the binning parameters given the number of bins
        *  @return none
        */
-      void set_parameters_nbins () override;
+      void m_set_parameters_nbins () override;
     
       /**
        *  @brief set the binning parameters given the bin size
        *  @return none
        */
-      void set_parameters_binSize () override;
+      void m_set_parameters_binSize () override;
 
       ///@}
   
@@ -727,13 +786,17 @@ namespace cosmobl {
       ///@{
 
       /**
-       *  @brief default constuctor
+       *  @brief default constructor
        *  @return object of class Pair2D_comovingCartesian_linlog
        */
-      Pair2D_comovingCartesian_linlog () { m_pairType = _comovingCartesian_linlog_; m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.)); } 
+      Pair2D_comovingCartesian_linlog ()
+	{
+	  m_pairType = _comovingCartesian_linlog_;
+	  m_pairInfo = _standard_;
+	}
 
       /**
-       *  @brief constuctor   
+       *  @brief constructor   
        *  @param rpMin minimum perpendicular separation used to count the
        *  pairs
        *  @param rpMax maximum perpendicular separation used to count the
@@ -746,14 +809,21 @@ namespace cosmobl {
        *  @param nbins_pi number of bins in the parallel separation
        *  @param shift_pi shift parameter in the parallel separation,
        *  i.e. the shift is binSize*shift
-       *  @return object of class Pair2D_comovingCartesian
+       *  @param angularUnits angular units
+       *  @param angularWeight angular weight function
+       *  @return object of class Pair2D_comovingCartesian_linlog
        */
-      Pair2D_comovingCartesian_linlog (const double rpMin, const double rpMax, const int nbins_rp, const double shift_rp, const double piMin, const double piMax, const int nbins_pi, const double shift_pi)
-	: Pair2D_comovingCartesian(rpMin, rpMax, nbins_rp, shift_rp, piMin, piMax, nbins_pi, shift_pi)
-	{ m_pairType = _comovingCartesian_linlog_; set_parameters_nbins(); m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.)); }
+      Pair2D_comovingCartesian_linlog (const double rpMin, const double rpMax, const int nbins_rp, const double shift_rp, const double piMin, const double piMax, const int nbins_pi, const double shift_pi, const CoordUnits angularUnits=_radians_, function<double(double)> angularWeight=nullptr)
+	: Pair2D(1., nbins_rp, shift_rp, 1., nbins_pi, shift_pi, angularUnits, angularWeight), Pair2D_comovingCartesian(rpMin, rpMax, nbins_rp, shift_rp, piMin, piMax, nbins_pi, shift_pi, angularUnits, angularWeight)
+	{
+	  m_pairType = _comovingCartesian_linlog_;
+	  m_pairInfo = _standard_;
+	  m_set_parameters_nbins();
+	  m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.));
+	}
   
       /**
-       *  @brief constuctor
+       *  @brief constructor
        *  @param rpMin minimum perpendicular separation used to count the
        *  pairs
        *  @param rpMax maximum perpendicular separation used to count the
@@ -766,17 +836,24 @@ namespace cosmobl {
        *  @param binSize_pi size of the bins in the parallel separation
        *  @param shift_pi shift parameter in the parallel separation,
        *  i.e. the shift is binSize*shift
-       *  @return object of class Pair2D_comovingCartesian
+       *  @param angularUnits angular units
+       *  @param angularWeight angular weight function
+       *  @return object of class Pair2D_comovingCartesian_linlog
        */
-      Pair2D_comovingCartesian_linlog (const double rpMin, const double rpMax, const double binSize_rp, const double shift_rp, const double piMin, const double piMax, const double binSize_pi, const double shift_pi)
-	: Pair2D_comovingCartesian(rpMin, rpMax, binSize_rp, shift_rp, piMin, piMax, binSize_pi, shift_pi)
-	{ m_pairType = _comovingCartesian_linlog_; set_parameters_binSize(); m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.)); } 
+      Pair2D_comovingCartesian_linlog (const double rpMin, const double rpMax, const double binSize_rp, const double shift_rp, const double piMin, const double piMax, const double binSize_pi, const double shift_pi, const CoordUnits angularUnits=_radians_, function<double(double)> angularWeight=nullptr)
+	: Pair2D(binSize_rp, 50, shift_rp, binSize_pi, 50, shift_pi, angularUnits, angularWeight), Pair2D_comovingCartesian(rpMin, rpMax, binSize_rp, shift_rp, piMin, piMax, binSize_pi, shift_pi, angularUnits, angularWeight)
+	{
+	  m_pairType = _comovingCartesian_linlog_;
+	  m_pairInfo = _standard_;
+	  m_set_parameters_binSize();
+	  m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.));
+	} 
   
       /**
        *  @brief default destructor
        *  @return none
        */
-      ~Pair2D_comovingCartesian_linlog () {}
+      ~Pair2D_comovingCartesian_linlog () = default;
 
       ///@}
   
@@ -812,9 +889,9 @@ namespace cosmobl {
      *  This class is used to handle objects of type <EM>
      *  Pair2D_comovingCartesian_loglog </EM>.
      */
-    class Pair2D_comovingCartesian_loglog : public Pair2D_comovingCartesian {
+    class Pair2D_comovingCartesian_loglog : public virtual Pair2D_comovingCartesian {
 
-    private:
+    protected:
     
       /**
        *  @name Member functions used to set the binning parameters
@@ -825,13 +902,13 @@ namespace cosmobl {
        *  @brief set the binning parameters given the number of bins
        *  @return none
        */
-      void set_parameters_nbins () override;
+      void m_set_parameters_nbins () override;
     
       /**
        *  @brief set the binning parameters given the bin size
        *  @return none
        */
-      void set_parameters_binSize () override;
+      void m_set_parameters_binSize () override;
 
       ///@}
   
@@ -843,13 +920,17 @@ namespace cosmobl {
       ///@{
 
       /**
-       *  @brief default constuctor
+       *  @brief default constructor
        *  @return object of class Pair2D_comovingCartesian_loglog
        */
-      Pair2D_comovingCartesian_loglog () { m_pairType = _comovingCartesian_loglog_; m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.)); } 
+      Pair2D_comovingCartesian_loglog ()
+	{
+	  m_pairType = _comovingCartesian_loglog_;
+	  m_pairInfo = _standard_;
+	}
 
       /**
-       *  @brief constuctor   
+       *  @brief constructor   
        *  @param rpMin minimum perpendicular separation used to count the
        *  pairs
        *  @param rpMax maximum perpendicular separation used to count the
@@ -862,14 +943,21 @@ namespace cosmobl {
        *  @param nbins_pi number of bins in the parallel separation
        *  @param shift_pi shift parameter in the parallel separation,
        *  i.e. the shift is binSize*shift
-       *  @return object of class Pair2D_comovingCartesian
+       *  @param angularUnits angular units
+       *  @param angularWeight angular weight function
+       *  @return object of class Pair2D_comovingCartesian_loglog
        */
-      Pair2D_comovingCartesian_loglog (const double rpMin, const double rpMax, const int nbins_rp, const double shift_rp, const double piMin, const double piMax, const int nbins_pi, const double shift_pi)
-	: Pair2D_comovingCartesian(rpMin, rpMax, nbins_rp, shift_rp, piMin, piMax, nbins_pi, shift_pi)
-	{ m_pairType = _comovingCartesian_loglog_; set_parameters_nbins(); m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.)); }
+      Pair2D_comovingCartesian_loglog (const double rpMin, const double rpMax, const int nbins_rp, const double shift_rp, const double piMin, const double piMax, const int nbins_pi, const double shift_pi, const CoordUnits angularUnits=_radians_, function<double(double)> angularWeight=nullptr)
+	: Pair2D(1., nbins_rp, shift_rp, 1., nbins_pi, shift_pi, angularUnits, angularWeight), Pair2D_comovingCartesian(rpMin, rpMax, nbins_rp, shift_rp, piMin, piMax, nbins_pi, shift_pi, angularUnits, angularWeight)
+	{
+	  m_pairType = _comovingCartesian_loglog_;
+	  m_pairInfo = _standard_;
+	  m_set_parameters_nbins();
+	  m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.));
+	}
   
       /**
-       *  @brief constuctor
+       *  @brief constructor
        *  @param rpMin minimum perpendicular separation used to count the
        *  pairs
        *  @param rpMax maximum perpendicular separation used to count the
@@ -882,17 +970,24 @@ namespace cosmobl {
        *  @param binSize_pi size of the bins in the parallel separation
        *  @param shift_pi shift parameter in the parallel separation,
        *  i.e. the shift is binSize*shift
-       *  @return object of class Pair2D_comovingCartesian
+       *  @param angularUnits angular units
+       *  @param angularWeight angular weight function
+       *  @return object of class Pair2D_comovingCartesian_loglog
        */
-      Pair2D_comovingCartesian_loglog (const double rpMin, const double rpMax, const double binSize_rp, const double shift_rp, const double piMin, const double piMax, const double binSize_pi, const double shift_pi)
-	: Pair2D_comovingCartesian(rpMin, rpMax, binSize_rp, shift_rp, piMin, piMax, binSize_pi, shift_pi)
-	{ m_pairType = _comovingCartesian_loglog_; set_parameters_binSize(); m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.)); } 
+      Pair2D_comovingCartesian_loglog (const double rpMin, const double rpMax, const double binSize_rp, const double shift_rp, const double piMin, const double piMax, const double binSize_pi, const double shift_pi, const CoordUnits angularUnits=_radians_, function<double(double)> angularWeight=nullptr)
+	: Pair2D(binSize_rp, 50, shift_rp, binSize_pi, 50, shift_pi, angularUnits, angularWeight), Pair2D_comovingCartesian(rpMin, rpMax, binSize_rp, shift_rp, piMin, piMax, binSize_pi, shift_pi, angularUnits, angularWeight)
+	{
+	  m_pairType = _comovingCartesian_loglog_;
+	  m_pairInfo = _standard_;
+	  m_set_parameters_binSize();
+	  m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.));
+	} 
   
       /**
        *  @brief default destructor
        *  @return none
        */
-      ~Pair2D_comovingCartesian_loglog () {}
+      ~Pair2D_comovingCartesian_loglog () = default;
 
       ///@}
   
@@ -928,9 +1023,9 @@ namespace cosmobl {
      *  This class is used to handle objects of type <EM>
      *  Pair2D_comovingPolar </EM>.
      */
-    class Pair2D_comovingPolar : public Pair2D {
+    class Pair2D_comovingPolar : public virtual Pair2D {
 
-    private:
+    protected:
       
       /**
        *  @name Member functions used to set the binning parameters (customized in all the derived classes) 
@@ -941,13 +1036,13 @@ namespace cosmobl {
        *  @brief set the binning parameters given the number of bins
        *  @return none
        */
-      virtual void set_parameters_nbins () = 0;
+      virtual void m_set_parameters_nbins () = 0;
   
       /**
        *  @brief set the binning parameters given the bin size
        *  @return none
        */
-      virtual void set_parameters_binSize () = 0;
+      virtual void m_set_parameters_binSize () = 0;
   
       ///@}
 
@@ -955,7 +1050,7 @@ namespace cosmobl {
     protected:
   
       /**
-       *  @name Binning parameters
+       *  @name binning parameters
        */
       ///@{
 
@@ -982,13 +1077,13 @@ namespace cosmobl {
       ///@{
 
       /**
-       *  @brief default constuctor
+       *  @brief default constructor
        *  @return object of class Pair2D_comovingPolar
        */
-      Pair2D_comovingPolar () : m_rMin(0.1), m_rMax(50.), m_muMin(0.1), m_muMax(50.) {}
+      Pair2D_comovingPolar () = default;
 
       /**
-       *  @brief constuctor   
+       *  @brief constructor   
        *  @param rMin minimum separation used to count the pairs
        *  @param rMax maximum separation used to count the pairs
        *  @param nbins_D1 number of bins in the first dimension
@@ -999,13 +1094,15 @@ namespace cosmobl {
        *  @param nbins_D2 number of bins in the second dimension
        *  @param shift_D2 shift parameter in the second dimension,
        *  i.e. the radial shift is binSize*shift
+       *  @param angularUnits angular units
+       *  @param angularWeight angular weight function
        *  @return object of class Pair2D_comovingPolar
        */
-      Pair2D_comovingPolar (const double rMin, const double rMax, const int nbins_D1, const double shift_D1, const double muMin, const double muMax, const int nbins_D2, const double shift_D2)
-	: Pair2D(1., nbins_D1, shift_D1, 1., nbins_D2, shift_D2), m_rMin(rMin), m_rMax(rMax), m_muMin(muMin), m_muMax(muMax) {}
+      Pair2D_comovingPolar (const double rMin, const double rMax, const int nbins_D1, const double shift_D1, const double muMin, const double muMax, const int nbins_D2, const double shift_D2, const CoordUnits angularUnits=_radians_, function<double(double)> angularWeight=nullptr)
+	: Pair2D(1., nbins_D1, shift_D1, 1., nbins_D2, shift_D2, angularUnits, angularWeight), m_rMin(rMin), m_rMax(rMax), m_muMin(muMin), m_muMax(muMax) {}
   
       /**
-       *  @brief constuctor
+       *  @brief constructor
        *  @param rMin minimum separation used to count the pairs
        *  @param rMax maximum separation used to count the pairs
        *  @param binSize_D1 size of the bins in the first dimension
@@ -1016,16 +1113,18 @@ namespace cosmobl {
        *  @param binSize_D2 size of the bins in the second dimension
        *  @param shift_D2 shift parameter in the second dimension,
        *  i.e. the radial shift is binSize*shift
+       *  @param angularUnits angular units
+       *  @param angularWeight angular weight function
        *  @return object of class Pair2D_comovingPolar
        */
-      Pair2D_comovingPolar (const double rMin, const double rMax, const double binSize_D1, const double shift_D1, const double muMin, const double muMax, const double binSize_D2, const double shift_D2)
-	: Pair2D(binSize_D1, 50, shift_D1, binSize_D2, 50, shift_D2), m_rMin(rMin), m_rMax(rMax), m_muMin(muMin), m_muMax(muMax) {}
+      Pair2D_comovingPolar (const double rMin, const double rMax, const double binSize_D1, const double shift_D1, const double muMin, const double muMax, const double binSize_D2, const double shift_D2, const CoordUnits angularUnits=_radians_, function<double(double)> angularWeight=nullptr)
+	: Pair2D(binSize_D1, 50, shift_D1, binSize_D2, 50, shift_D2, angularUnits, angularWeight), m_rMin(rMin), m_rMax(rMax), m_muMin(muMin), m_muMax(muMax) {}
   
       /**
        *  @brief default destructor
        *  @return none
        */
-      virtual ~Pair2D_comovingPolar () {}
+      virtual ~Pair2D_comovingPolar () = default;
 
       ///@}
 
@@ -1077,9 +1176,9 @@ namespace cosmobl {
      *  This class is used to handle objects of type <EM>
      *  Pair2D_comovingPolar_linlin </EM>.
      */
-    class Pair2D_comovingPolar_linlin : public Pair2D_comovingPolar {
+    class Pair2D_comovingPolar_linlin : public virtual Pair2D_comovingPolar {
 
-    private:
+    protected:
     
       /**
        *  @name Member functions used to set the binning parameters
@@ -1090,13 +1189,13 @@ namespace cosmobl {
        *  @brief set the binning parameters given the number of bins
        *  @return none
        */
-      void set_parameters_nbins () override;
+      void m_set_parameters_nbins () override;
     
       /**
        *  @brief set the binning parameters given the bin size
        *  @return none
        */
-      void set_parameters_binSize () override;
+      void m_set_parameters_binSize () override;
 
       ///@}
   
@@ -1108,13 +1207,17 @@ namespace cosmobl {
       ///@{
 
       /**
-       *  @brief default constuctor
+       *  @brief default constructor
        *  @return object of class Pair2D_comovingPolar_linlin
        */
-      Pair2D_comovingPolar_linlin () { m_pairType = _comovingPolar_linlin_; } 
+      Pair2D_comovingPolar_linlin ()
+	{
+	  m_pairType = _comovingPolar_linlin_;
+	  m_pairInfo = _standard_;
+	} 
 
       /**
-       *  @brief constuctor   
+       *  @brief constructor   
        *  @param rMin minimum separation used to count the pairs
        *  @param rMax maximum separation used to count the pairs
        *  @param nbins_D1 number of bins in the first dimension
@@ -1125,14 +1228,21 @@ namespace cosmobl {
        *  @param nbins_D2 number of bins in the second dimension
        *  @param shift_D2 shift parameter in the second dimension,
        *  i.e. the radial shift is binSize*shift
-       *  @return object of class Pair2D_comovingPolar
+       *  @param angularUnits angular units
+       *  @param angularWeight angular weight function
+       *  @return object of class Pair2D_comovingPolar_linlin
        */
-      Pair2D_comovingPolar_linlin (const double rMin, const double rMax, const int nbins_D1, const double shift_D1, const double muMin, const double muMax, const int nbins_D2, const double shift_D2)
-	: Pair2D_comovingPolar(rMin, rMax, nbins_D1, shift_D1, muMin, muMax, nbins_D2, shift_D2)
-	{ m_pairType = _comovingPolar_linlin_; set_parameters_nbins(); m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.)); }
+      Pair2D_comovingPolar_linlin (const double rMin, const double rMax, const int nbins_D1, const double shift_D1, const double muMin, const double muMax, const int nbins_D2, const double shift_D2, const CoordUnits angularUnits=_radians_, function<double(double)> angularWeight=nullptr)
+	: Pair2D(1., nbins_D1, shift_D1, 1., nbins_D2, shift_D2, angularUnits, angularWeight), Pair2D_comovingPolar(rMin, rMax, nbins_D1, shift_D1, muMin, muMax, nbins_D2, shift_D2, angularUnits, angularWeight)
+	{
+	  m_pairType = _comovingPolar_linlin_;
+	  m_pairInfo = _standard_;
+	  m_set_parameters_nbins();
+	  m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.));
+	}
   
       /**
-       *  @brief constuctor
+       *  @brief constructor
        *  @param rMin minimum separation used to count the pairs
        *  @param rMax maximum separation used to count the pairs
        *  @param binSize_D1 size of the bins in the first dimension
@@ -1143,17 +1253,24 @@ namespace cosmobl {
        *  @param binSize_D2 size of the bins in the second dimension
        *  @param shift_D2 shift parameter in the second dimension,
        *  i.e. the radial shift is binSize*shift
-       *  @return object of class Pair2D_comovingPolar
+       *  @param angularUnits angular units
+       *  @param angularWeight angular weight function
+       *  @return object of class Pair2D_comovingPolar_linlin
        */
-      Pair2D_comovingPolar_linlin (const double rMin, const double rMax, const double binSize_D1, const double shift_D1, const double muMin, const double muMax, const double binSize_D2, const double shift_D2)
-	: Pair2D_comovingPolar(rMin, rMax, binSize_D1, shift_D1, muMin, muMax, binSize_D2, shift_D2)
-	{ m_pairType = _comovingPolar_linlin_; set_parameters_binSize(); m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.)); } 
+      Pair2D_comovingPolar_linlin (const double rMin, const double rMax, const double binSize_D1, const double shift_D1, const double muMin, const double muMax, const double binSize_D2, const double shift_D2, const CoordUnits angularUnits=_radians_, function<double(double)> angularWeight=nullptr)
+	: Pair2D(binSize_D1, 50, shift_D1, binSize_D2, 50, shift_D2, angularUnits, angularWeight), Pair2D_comovingPolar(rMin, rMax, binSize_D1, shift_D1, muMin, muMax, binSize_D2, shift_D2, angularUnits, angularWeight)
+	{
+	  m_pairType = _comovingPolar_linlin_;
+	  m_pairInfo = _standard_;
+	  m_set_parameters_binSize();
+	  m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.));
+	} 
   
       /**
        *  @brief default destructor
        *  @return none
        */
-      ~Pair2D_comovingPolar_linlin () {}
+      ~Pair2D_comovingPolar_linlin () = default;
 
       ///@}
   
@@ -1190,9 +1307,9 @@ namespace cosmobl {
      *  This class is used to handle objects of type <EM>
      *  Pair2D_comovingPolar_loglin </EM>.
      */
-    class Pair2D_comovingPolar_loglin : public Pair2D_comovingPolar {
+    class Pair2D_comovingPolar_loglin : public virtual Pair2D_comovingPolar {
 
-    private:
+    protected:
     
       /**
        *  @name Member functions used to set the binning parameters
@@ -1203,13 +1320,13 @@ namespace cosmobl {
        *  @brief set the binning parameters given the number of bins
        *  @return none
        */
-      void set_parameters_nbins () override;
+      void m_set_parameters_nbins () override;
     
       /**
        *  @brief set the binning parameters given the bin size
        *  @return none
        */
-      void set_parameters_binSize () override;
+      void m_set_parameters_binSize () override;
 
       ///@}
   
@@ -1221,13 +1338,17 @@ namespace cosmobl {
       ///@{
 
       /**
-       *  @brief default constuctor
+       *  @brief default constructor
        *  @return object of class Pair2D_comovingPolar_loglin
        */
-      Pair2D_comovingPolar_loglin () { m_pairType = _comovingPolar_loglin_; m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.)); } 
+      Pair2D_comovingPolar_loglin ()
+	{
+	  m_pairType = _comovingPolar_loglin_;
+	  m_pairInfo = _standard_;
+	} 
 
       /**
-       *  @brief constuctor   
+       *  @brief constructor   
        *  @param rMin minimum separation used to count the pairs
        *  @param rMax maximum separation used to count the pairs
        *  @param nbins_D1 number of bins in the first dimension
@@ -1238,14 +1359,21 @@ namespace cosmobl {
        *  @param nbins_D2 number of bins in the second dimension
        *  @param shift_D2 shift parameter in the second dimension,
        *  i.e. the radial shift is binSize*shift
-       *  @return object of class Pair2D_comovingPolar
+       *  @param angularUnits angular units
+       *  @param angularWeight angular weight function
+       *  @return object of class Pair2D_comovingPolar_loglin
        */
-      Pair2D_comovingPolar_loglin (const double rMin, const double rMax, const int nbins_D1, const double shift_D1, const double muMin, const double muMax, const int nbins_D2, const double shift_D2)
-	: Pair2D_comovingPolar(rMin, rMax, nbins_D1, shift_D1, muMin, muMax, nbins_D2, shift_D2)
-	{ m_pairType = _comovingPolar_loglin_; set_parameters_nbins(); m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.)); }
+      Pair2D_comovingPolar_loglin (const double rMin, const double rMax, const int nbins_D1, const double shift_D1, const double muMin, const double muMax, const int nbins_D2, const double shift_D2, const CoordUnits angularUnits=_radians_, function<double(double)> angularWeight=nullptr)
+	: Pair2D(1., nbins_D1, shift_D1, 1., nbins_D2, shift_D2, angularUnits, angularWeight), Pair2D_comovingPolar(rMin, rMax, nbins_D1, shift_D1, muMin, muMax, nbins_D2, shift_D2, angularUnits, angularWeight)
+	{
+	  m_pairType = _comovingPolar_loglin_;
+	  m_pairInfo = _standard_;
+	  m_set_parameters_nbins();
+	  m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.));
+	}
   
       /**
-       *  @brief constuctor
+       *  @brief constructor
        *  @param rMin minimum separation used to count the pairs
        *  @param rMax maximum separation used to count the pairs
        *  @param binSize_D1 size of the bins in the first dimension
@@ -1256,17 +1384,24 @@ namespace cosmobl {
        *  @param binSize_D2 size of the bins in the second dimension
        *  @param shift_D2 shift parameter in the second dimension,
        *  i.e. the radial shift is binSize*shift
-       *  @return object of class Pair2D_comovingPolar
+       *  @param angularUnits angular units
+       *  @param angularWeight angular weight function
+       *  @return object of class Pair2D_comovingPolar_loglin
        */
-      Pair2D_comovingPolar_loglin (const double rMin, const double rMax, const double binSize_D1, const double shift_D1, const double muMin, const double muMax, const double binSize_D2, const double shift_D2)
-	: Pair2D_comovingPolar(rMin, rMax, binSize_D1, shift_D1, muMin, muMax, binSize_D2, shift_D2)
-	{ m_pairType = _comovingPolar_loglin_; set_parameters_binSize(); m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.)); } 
+      Pair2D_comovingPolar_loglin (const double rMin, const double rMax, const double binSize_D1, const double shift_D1, const double muMin, const double muMax, const double binSize_D2, const double shift_D2, const CoordUnits angularUnits=_radians_, function<double(double)> angularWeight=nullptr)
+	: Pair2D(binSize_D1, 50, shift_D1, binSize_D2, 50, shift_D2, angularUnits, angularWeight), Pair2D_comovingPolar(rMin, rMax, binSize_D1, shift_D1, muMin, muMax, binSize_D2, shift_D2, angularUnits, angularWeight)
+	{
+	  m_pairType = _comovingPolar_loglin_;
+	  m_pairInfo = _standard_;
+	  m_set_parameters_binSize();
+	  m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.));
+	} 
   
       /**
        *  @brief default destructor
        *  @return none
        */
-      ~Pair2D_comovingPolar_loglin () {}
+      ~Pair2D_comovingPolar_loglin () = default;
 
       ///@}
   
@@ -1303,9 +1438,9 @@ namespace cosmobl {
      *  This class is used to handle objects of type <EM>
      *  Pair2D_comovingPolar_linlog </EM>.
      */
-    class Pair2D_comovingPolar_linlog : public Pair2D_comovingPolar {
+    class Pair2D_comovingPolar_linlog : public virtual Pair2D_comovingPolar {
 
-    private:
+    protected:
     
       /**
        *  @name Member functions used to set the binning parameters
@@ -1316,13 +1451,13 @@ namespace cosmobl {
        *  @brief set the binning parameters given the number of bins
        *  @return none
        */
-      void set_parameters_nbins () override;
+      void m_set_parameters_nbins () override;
     
       /**
        *  @brief set the binning parameters given the bin size
        *  @return none
        */
-      void set_parameters_binSize () override;
+      void m_set_parameters_binSize () override;
 
       ///@}
   
@@ -1334,13 +1469,17 @@ namespace cosmobl {
       ///@{
 
       /**
-       *  @brief default constuctor
+       *  @brief default constructor
        *  @return object of class Pair2D_comovingPolar_linlog
        */
-      Pair2D_comovingPolar_linlog () { m_pairType = _comovingPolar_linlog_; m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.)); } 
+      Pair2D_comovingPolar_linlog ()
+	{
+	  m_pairType = _comovingPolar_linlog_;
+	  m_pairInfo = _standard_;
+	} 
 
       /**
-       *  @brief constuctor   
+       *  @brief constructor   
        *  @param rMin minimum separation used to count the pairs
        *  @param rMax maximum separation used to count the pairs
        *  @param nbins_D1 number of bins in the first dimension
@@ -1351,14 +1490,21 @@ namespace cosmobl {
        *  @param nbins_D2 number of bins in the second dimension
        *  @param shift_D2 shift parameter in the second dimension,
        *  i.e. the radial shift is binSize*shift
-       *  @return object of class Pair2D_comovingPolar
+       *  @param angularUnits angular units
+       *  @param angularWeight angular weight function
+       *  @return object of class Pair2D_comovingPolar_linlog
        */
-      Pair2D_comovingPolar_linlog (const double rMin, const double rMax, const int nbins_D1, const double shift_D1, const double muMin, const double muMax, const int nbins_D2, const double shift_D2)
-	: Pair2D_comovingPolar(rMin, rMax, nbins_D1, shift_D1, muMin, muMax, nbins_D2, shift_D2)
-	{ m_pairType = _comovingPolar_linlog_; set_parameters_nbins(); m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.)); }
+      Pair2D_comovingPolar_linlog (const double rMin, const double rMax, const int nbins_D1, const double shift_D1, const double muMin, const double muMax, const int nbins_D2, const double shift_D2, const CoordUnits angularUnits=_radians_, function<double(double)> angularWeight=nullptr)
+	: Pair2D(1., nbins_D1, shift_D1, 1., nbins_D2, shift_D2, angularUnits, angularWeight), Pair2D_comovingPolar(rMin, rMax, nbins_D1, shift_D1, muMin, muMax, nbins_D2, shift_D2, angularUnits, angularWeight)
+	{
+	  m_pairType = _comovingPolar_linlog_;
+	  m_pairInfo = _standard_;
+	  m_set_parameters_nbins();
+	  m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.));
+	}
   
       /**
-       *  @brief constuctor
+       *  @brief constructor
        *  @param rMin minimum separation used to count the pairs
        *  @param rMax maximum separation used to count the pairs
        *  @param binSize_D1 size of the bins in the first dimension
@@ -1369,17 +1515,24 @@ namespace cosmobl {
        *  @param binSize_D2 size of the bins in the second dimension
        *  @param shift_D2 shift parameter in the second dimension,
        *  i.e. the radial shift is binSize*shift
-       *  @return object of class Pair2D_comovingPolar
+       *  @param angularUnits angular units
+       *  @param angularWeight angular weight function
+       *  @return object of class Pair2D_comovingPolar_linlog
        */
-      Pair2D_comovingPolar_linlog (const double rMin, const double rMax, const double binSize_D1, const double shift_D1, const double muMin, const double muMax, const double binSize_D2, const double shift_D2)
-	: Pair2D_comovingPolar(rMin, rMax, binSize_D1, shift_D1, muMin, muMax, binSize_D2, shift_D2)
-	{ m_pairType = _comovingPolar_linlog_; set_parameters_binSize(); m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.)); } 
+      Pair2D_comovingPolar_linlog (const double rMin, const double rMax, const double binSize_D1, const double shift_D1, const double muMin, const double muMax, const double binSize_D2, const double shift_D2, const CoordUnits angularUnits=_radians_, function<double(double)> angularWeight=nullptr)
+	: Pair2D(binSize_D1, 50, shift_D1, binSize_D2, 50, shift_D2, angularUnits, angularWeight), Pair2D_comovingPolar(rMin, rMax, binSize_D1, shift_D1, muMin, muMax, binSize_D2, shift_D2, angularUnits, angularWeight)
+	{
+	  m_pairType = _comovingPolar_linlog_;
+	  m_pairInfo = _standard_;
+	  m_set_parameters_binSize();
+	  m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.));
+	} 
   
       /**
        *  @brief default destructor
        *  @return none
        */
-      ~Pair2D_comovingPolar_linlog () {}
+      ~Pair2D_comovingPolar_linlog () = default;
 
       ///@}
   
@@ -1415,9 +1568,9 @@ namespace cosmobl {
      *  This class is used to handle objects of type <EM>
      *  Pair2D_comovingPolar_loglog </EM>.
      */
-    class Pair2D_comovingPolar_loglog : public Pair2D_comovingPolar {
+    class Pair2D_comovingPolar_loglog : public virtual Pair2D_comovingPolar {
 
-    private:
+    protected:
     
       /**
        *  @name Member functions used to set the binning parameters
@@ -1428,13 +1581,13 @@ namespace cosmobl {
        *  @brief set the binning parameters given the number of bins
        *  @return none
        */
-      void set_parameters_nbins () override;
+      void m_set_parameters_nbins () override;
     
       /**
        *  @brief set the binning parameters given the bin size
        *  @return none
        */
-      void set_parameters_binSize () override;
+      void m_set_parameters_binSize () override;
 
       ///@}
   
@@ -1446,13 +1599,17 @@ namespace cosmobl {
       ///@{
 
       /**
-       *  @brief default constuctor
+       *  @brief default constructor
        *  @return object of class Pair2D_comovingPolar_loglog
        */
-      Pair2D_comovingPolar_loglog () { m_pairType = _comovingPolar_loglog_; m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.)); } 
+      Pair2D_comovingPolar_loglog ()
+	{
+	  m_pairType = _comovingPolar_loglog_;
+	  m_pairInfo = _standard_;
+	} 
 
       /**
-       *  @brief constuctor   
+       *  @brief constructor   
        *  @param rMin minimum separation used to count the pairs
        *  @param rMax maximum separation used to count the pairs
        *  @param nbins_D1 number of bins in the first dimension
@@ -1463,14 +1620,21 @@ namespace cosmobl {
        *  @param nbins_D2 number of bins in the second dimension
        *  @param shift_D2 shift parameter in the second dimension,
        *  i.e. the radial shift is binSize*shift
-       *  @return object of class Pair2D_comovingPolar
+       *  @param angularUnits angular units
+       *  @param angularWeight angular weight function
+       *  @return object of class Pair2D_comovingPolar_loglog
        */
-      Pair2D_comovingPolar_loglog (const double rMin, const double rMax, const int nbins_D1, const double shift_D1, const double muMin, const double muMax, const int nbins_D2, const double shift_D2)
-	: Pair2D_comovingPolar(rMin, rMax, nbins_D1, shift_D1, muMin, muMax, nbins_D2, shift_D2)
-	{ m_pairType = _comovingPolar_loglog_; set_parameters_nbins(); m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.)); }
+      Pair2D_comovingPolar_loglog (const double rMin, const double rMax, const int nbins_D1, const double shift_D1, const double muMin, const double muMax, const int nbins_D2, const double shift_D2, const CoordUnits angularUnits=_radians_, function<double(double)> angularWeight=nullptr)
+	: Pair2D(1., nbins_D1, shift_D1, 1., nbins_D2, shift_D2, angularUnits, angularWeight), Pair2D_comovingPolar(rMin, rMax, nbins_D1, shift_D1, muMin, muMax, nbins_D2, shift_D2, angularUnits, angularWeight)
+	{
+	  m_pairType = _comovingPolar_loglog_;
+	  m_pairInfo = _standard_;
+	  m_set_parameters_nbins();
+	  m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.));
+	}
   
       /**
-       *  @brief constuctor
+       *  @brief constructor
        *  @param rMin minimum separation used to count the pairs
        *  @param rMax maximum separation used to count the pairs
        *  @param binSize_D1 size of the bins in the first dimension
@@ -1481,17 +1645,24 @@ namespace cosmobl {
        *  @param binSize_D2 size of the bins in the second dimension
        *  @param shift_D2 shift parameter in the second dimension,
        *  i.e. the radial shift is binSize*shift
-       *  @return object of class Pair2D_comovingPolar
+       *  @param angularUnits angular units
+       *  @param angularWeight angular weight function
+       *  @return object of class Pair2D_comovingPolar_loglog
        */
-      Pair2D_comovingPolar_loglog (const double rMin, const double rMax, const double binSize_D1, const double shift_D1, const double muMin, const double muMax, const double binSize_D2, const double shift_D2)
-	: Pair2D_comovingPolar(rMin, rMax, binSize_D1, shift_D1, muMin, muMax, binSize_D2, shift_D2)
-	{ m_pairType = _comovingPolar_loglog_; set_parameters_binSize(); m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.)); } 
+      Pair2D_comovingPolar_loglog (const double rMin, const double rMax, const double binSize_D1, const double shift_D1, const double muMin, const double muMax, const double binSize_D2, const double shift_D2, const CoordUnits angularUnits=_radians_, function<double(double)> angularWeight=nullptr)
+	: Pair2D(binSize_D1, 50, shift_D1, binSize_D2, 50, shift_D2, angularUnits, angularWeight), Pair2D_comovingPolar(rMin, rMax, binSize_D1, shift_D1, muMin, muMax, binSize_D2, shift_D2, angularUnits, angularWeight)
+	{
+	  m_pairType = _comovingPolar_loglog_;
+	  m_pairInfo = _standard_;
+	  m_set_parameters_binSize();
+	  m_PP2D.resize(m_nbins_D1+1, vector<double>(m_nbins_D2+1, 0.));
+	} 
   
       /**
        *  @brief default destructor
        *  @return none
        */
-      ~Pair2D_comovingPolar_loglog () {}
+      ~Pair2D_comovingPolar_loglog () = default;
 
       ///@}
   

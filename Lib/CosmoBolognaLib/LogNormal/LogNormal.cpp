@@ -34,12 +34,13 @@
 
 using namespace cosmobl;
 using namespace catalogue;
+using namespace lognormal;
 
 
 // ============================================================================
 
 
-void cosmobl::LogNormal::setCatalogues (const shared_ptr<Catalogue> data, const shared_ptr<Catalogue> random)
+void cosmobl::lognormal::LogNormal::setCatalogues (const shared_ptr<Catalogue> data, const shared_ptr<Catalogue> random)
 {
   m_data = data;
   m_random = random;
@@ -49,7 +50,7 @@ void cosmobl::LogNormal::setCatalogues (const shared_ptr<Catalogue> data, const 
 // ============================================================================
 
 
-void cosmobl::LogNormal::setParameters_from_xi (const vector<double> rr, const vector<double> xi) 
+void cosmobl::lognormal::LogNormal::setParameters_from_xi (const vector<double> rr, const vector<double> xi) 
 {
   // TBD: add parameters for extrapolation
   m_rmodel = rr;
@@ -61,7 +62,7 @@ void cosmobl::LogNormal::setParameters_from_xi (const vector<double> rr, const v
 // ============================================================================
 
 
-void cosmobl::LogNormal::setParameters_from_model (const shared_ptr<Cosmology> cosmology, const double bias, const bool Real, const string author, const bool NL, const string model)
+void cosmobl::lognormal::LogNormal::setParameters_from_model (const shared_ptr<cosmology::Cosmology> cosmology, const double bias, const bool Real, const string author, const bool NL, const string model)
 { 
   m_cosmology = cosmology;
   m_bias = bias;
@@ -76,10 +77,10 @@ void cosmobl::LogNormal::setParameters_from_model (const shared_ptr<Cosmology> c
 // ============================================================================
 
 
-void cosmobl::LogNormal::generate_LogNormal_mock (const double rmin, const string dir, const int start, const string filename)
+void cosmobl::lognormal::LogNormal::generate_LogNormal_mock (const double rmin, const string dir, const int start, const string filename)
 { 
   if (m_nLN==0)  
-    ErrorMsg("Error in cosmobl::LogNormal::generate_LogNormal_mock of LogNormal.cpp, set number of LN realization first!");
+    ErrorCBL("Error in cosmobl::lognormal::LogNormal::generate_LogNormal_mock of LogNormal.cpp, set number of LN realization first!");
 
   default_random_engine gen;
   uniform_real_distribution<float> ran(0., 1.);
@@ -88,16 +89,14 @@ void cosmobl::LogNormal::generate_LogNormal_mock (const double rmin, const strin
 
   
   // compute the visibility mask
-  vector<double> Lim, stat;
-  m_random->MinMax_var(Var::_X_,Lim, 0);
-  m_random->MinMax_var(Var::_Y_,Lim, 0);
-  m_random->MinMax_var(Var::_Z_,Lim, 0);
   
-  double DeltaX = (Lim[1]-Lim[0]); 
-  double DeltaY = (Lim[3]-Lim[2]); 
-  double DeltaZ = (Lim[5]-Lim[4]); 
+  double DeltaX = (m_random->Max(Var::_X_)-m_random->Min(Var::_X_)); 
+  double DeltaY = (m_random->Max(Var::_Y_)-m_random->Min(Var::_Y_)); 
+  double DeltaZ = (m_random->Max(Var::_Z_)-m_random->Min(Var::_Z_)); 
 
-  int nTot =m_random->nObjects();
+  int nTot = m_random->nObjects();
+  
+  vector<double> stat;
   m_data->stats_var(Var::_Redshift_, stat);
 
   int nx = DeltaX/m_rmin;
@@ -136,9 +135,9 @@ void cosmobl::LogNormal::generate_LogNormal_mock (const double rmin, const strin
   }
 
   for (int i=0;i<nTot; i++) {
-    int i1 = min(int((m_random->xx(i)-Lim[0])/xmin),nx-1);
-    int j1 = min(int((m_random->yy(i)-Lim[2])/ymin),ny-1);
-    int z1 = min(int((m_random->zz(i)-Lim[4])/zmin),nz-1);
+    int i1 = min(int((m_random->xx(i)-m_random->Min(Var::_X_))/xmin), nx-1);
+    int j1 = min(int((m_random->yy(i)-m_random->Min(Var::_Y_))/ymin), ny-1);
+    int z1 = min(int((m_random->zz(i)-m_random->Min(Var::_Z_))/zmin), nz-1);
     long int index = z1+nz*(j1+ny*i1);
     grid[index] += 1./nTot;
   }
@@ -151,11 +150,11 @@ void cosmobl::LogNormal::generate_LogNormal_mock (const double rmin, const strin
     double beta = ff/m_bias;
     double fact = pow(m_bias,2);
     fact = (m_Real) ? fact : fact*(1+2.*beta/3.+0.2*beta*beta);
-    cout << fact << " " << pow(m_bias,2) << endl;
+    coutCBL << fact << "   " << pow(m_bias,2) << endl;
 
     for (size_t i=0; i<kG.size(); i++) {
       kG[i] = pow(10,kG[i]);
-      PkG.push_back(fact*m_cosmology->Pk(kG[i],m_author,m_NL,stat[0],m_model));
+      PkG.push_back(fact*m_cosmology->Pk(kG[i], m_author, m_NL, stat[0], m_model));
     }
 
     double xfact = 2*par::pi/(nx*xmin);
@@ -188,7 +187,7 @@ void cosmobl::LogNormal::generate_LogNormal_mock (const double rmin, const strin
   }
   
   else 
-    ErrorMsg("Work in progres in cosmobl::LogNormal::generate_LogNormal_mock of LogNormal.cpp");
+    ErrorCBL("Work in progres in cosmobl::lognormal::LogNormal::generate_LogNormal_mock of LogNormal.cpp");
   
 
   fftw_plan xi2pk;
@@ -196,7 +195,7 @@ void cosmobl::LogNormal::generate_LogNormal_mock (const double rmin, const strin
   fftw_execute(xi2pk);
   fftw_destroy_plan(xi2pk);
    
-  cout << "Ready to extract Mocks" << endl;
+  coutCBL << "Ready to extract Mocks" << endl;
 
   for (int nn=0; nn<m_nLN; nn++) {
     double *densX;
@@ -212,8 +211,7 @@ void cosmobl::LogNormal::generate_LogNormal_mock (const double rmin, const strin
       densK[i][1] = 0;
     }
 
-   
-    Erf erf;
+    normal_distribution<double> rang(0., 1.);
 
     for (int i=0; i<nx; i++) {
       for (int j=0; j<ny; j++) {
@@ -222,8 +220,8 @@ void cosmobl::LogNormal::generate_LogNormal_mock (const double rmin, const strin
 	  int kindex = k+nzp*(j+ny*i);
 	  double Pkk = max(0., ppkk[kindex][0]/nRtot);
 	  Pkk = sqrt(Pkk/2);
-	  double v1 = sqrt(2.)*Pkk*erf.inverf(2*ran(gen)-1);
-	  double v2 = sqrt(2.)*Pkk*erf.inverf(2*ran(gen)-1);
+	  double v1 = sqrt(2.)*Pkk*rang(gen);
+	  double v2 = sqrt(2.)*Pkk*rang(gen);
 
 	  if (i==0 && j==0 && k==0) {
 	    densK[kindex][0] = 0;
@@ -257,7 +255,7 @@ void cosmobl::LogNormal::generate_LogNormal_mock (const double rmin, const strin
       }
     }
     double sigma = Sigma(ff); double average = Average(ff);
-    cout << "Step " << nn+1 << " " <<"Sigma = "<< sigma<< " " << "Average = "<<average << endl;
+    coutCBL << "Step " << nn+1 << " " <<"Sigma = "<< sigma<< " " << "Average = "<<average << endl;
    
     for (int i=0;i<nx;i++) {
       for (int j=0;j<ny;j++) {
@@ -282,10 +280,11 @@ void cosmobl::LogNormal::generate_LogNormal_mock (const double rmin, const strin
 	  int no = distribution(generator);
 
 	  for (int nnoo = 0; nnoo<no; nnoo++) {
-	    double XX = xmin*(i+ran(gen))+Lim[0];
-	    double YY = ymin*(j+ran(gen))+Lim[2];
-	    double ZZ = zmin*(k+ran(gen))+Lim[4];
-	    shared_ptr<Galaxy> SMP(new Galaxy(XX, YY, ZZ, 1.));
+	    comovingCoordinates coord;
+	    coord.xx = xmin*(i+ran(gen))+m_random->Min(Var::_X_);
+	    coord.yy = ymin*(j+ran(gen))+m_random->Min(Var::_Y_);
+	    coord.zz = zmin*(k+ran(gen))+m_random->Min(Var::_Z_);
+	    shared_ptr<Galaxy> SMP(new Galaxy(coord));
 	    mock_sample.push_back(SMP);
 	  }
 
@@ -306,7 +305,7 @@ void cosmobl::LogNormal::generate_LogNormal_mock (const double rmin, const strin
 // ============================================================================
 
 
-void cosmobl::LogNormal::set_nLN (const int nLN)
+void cosmobl::lognormal::LogNormal::set_nLN (const int nLN)
 { 
   m_nLN = nLN;
   m_LNCat.erase(m_LNCat.begin(),m_LNCat.end());

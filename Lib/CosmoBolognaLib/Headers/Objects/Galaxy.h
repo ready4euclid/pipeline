@@ -55,11 +55,17 @@ namespace cosmobl {
     
     private :
 
-      /// galaxy mass
+      /// mass
       double m_mass;      
 
-      /// galaxy magnitude
+      /// magnitude
       double m_magnitude; 
+
+      /// star formation rate
+      double m_SFR; 
+
+      /// specific star formation rate
+      double m_sSFR; 
 
 
     public:
@@ -73,41 +79,245 @@ namespace cosmobl {
        *  @brief default constructor
        *  @return object of class Galaxy
        */
-      Galaxy () {}
+      Galaxy ()
+	: Object(), m_mass(par::defaultDouble), m_magnitude(par::defaultDouble), m_SFR(par::defaultDouble), m_sSFR(par::defaultDouble) {}
 
       /**
        *  @brief constructor that uses comoving coordinates
-       *  @param xx comoving coordinate
-       *  @param yy comoving coordinate
-       *  @param zz comoving coordinate
+       *
+       *  @param coord structure containing the comoving coordinates
+       *  {x, y, z}
+       *
        *  @param weight weight
-       *  @param mass mass
-       *  @param magnitude magnitude
+       *
+       *  @param region region, used e.g. for jackknife and bootstrap
+       *
+       *  @param field the field where the object has been observed
+       *
+       *  @param x_displacement the displacement along the x-axis
+       *
+       *  @param y_displacement the displacement along the y-axis
+       *
+       *  @param z_displacement the displacement along the z-axis
+       *
+       *  @param mass the galaxy mass
+       *
+       *  @param magnitude the galaxy magnitude
+       *
+       *  @param SFR the galaxy star formation rate
+       *
+       *  @param sSFR the galaxy specific star formation rate
+       *
        *  @return object of class Galaxy
        */
-      Galaxy (const double xx, const double yy, const double zz, const double weight=1., const double mass=par::defaultDouble, const double magnitude=par::defaultDouble) 
-	: Object(xx, yy, zz, weight), m_mass(mass), m_magnitude(magnitude) {}
+      Galaxy (const comovingCoordinates coord, const double weight=1., const long region=par::defaultLong, const string field=par::defaultString, const double x_displacement=par::defaultDouble, const double y_displacement=par::defaultDouble, const double z_displacement=par::defaultDouble, const double mass=par::defaultDouble, const double magnitude=par::defaultDouble, const double SFR=par::defaultDouble, const double sSFR=par::defaultDouble) 
+	: Object(coord, weight, region, field, x_displacement, y_displacement, z_displacement), m_mass(mass), m_magnitude(magnitude), m_SFR(SFR), m_sSFR(sSFR) {}
 
       /**
-       *  @brief constructor that uses observed coordinates
+       *  @brief constructor that uses comoving coordinates and a
+       *  cosmological model to estimate the redshift
+       *
+       *  @param coord structure containing the comoving coordinates
+       *  {x, y, z}
+       *
+       *  @param cosm object of class Cosmology, used to estimate
+       *  comoving distances
+       *
+       *  @param z1_guess minimum prior on the redshift
+       *
+       *  @param z2_guess maximum prior on the redshift 
+       *
+       *  @param weight weight
+       *
+       *  @param region region, used e.g. for jackknife and bootstrap
+       *
+       *  @param field the field where the object has been observed
+       *
+       *  @param x_displacement the displacement along the x-axis
+       *
+       *  @param y_displacement the displacement along the y-axis
+       *
+       *  @param z_displacement the displacement along the z-axis
+       *   
+       *  @param mass the galaxy mass
+       *
+       *  @param magnitude the galaxy magnitude
+       *
+       *  @param SFR the galaxy star formation rate
+       *
+       *  @param sSFR the galaxy specific star formation rate
+       *
+       *  @return object of class Galaxy
+       */
+      Galaxy (const comovingCoordinates coord, const cosmology::Cosmology &cosm, const double z1_guess=0., const double z2_guess=10., const double weight=1., const long region=par::defaultLong, const string field=par::defaultString, const double x_displacement=par::defaultDouble, const double y_displacement=par::defaultDouble, const double z_displacement=par::defaultDouble, const double mass=par::defaultDouble, const double magnitude=par::defaultDouble, const double SFR=par::defaultDouble, const double sSFR=par::defaultDouble) 
+	: Object(coord, cosm, z1_guess, z2_guess, weight, region, field, x_displacement, y_displacement, z_displacement), m_mass(mass), m_magnitude(magnitude), m_SFR(SFR), m_sSFR(sSFR) {}
+
+      /**
+       *  @brief constructor that uses observed coordinates in radians
+       *
+       *  @param coord structure containing the observed coordinates
+       *  {R.A., Dec, redshift}
+       *
+       *  @param weight weight
+       *
+       *  @param region region, used e.g. for jackknife and bootstrap
+       *
+       *  @param field the field where the object has been observed
+       *
+       *  @param x_displacement the displacement along the x-axis
+       *
+       *  @param y_displacement the displacement along the y-axis
+       *
+       *  @param z_displacement the displacement along the z-axis
+       *
+       *  @param mass the galaxy mass
+       *
+       *  @param magnitude the galaxy magnitude
+       *
+       *  @param SFR the galaxy star formation rate
+       *
+       *  @param sSFR the galaxy specific star formation rate
+       *
+       *  @return object of class Galaxy
+       */
+      Galaxy (const observedCoordinates coord, const double weight=1., const long region=par::defaultLong, const string field=par::defaultString, const double x_displacement=par::defaultDouble, const double y_displacement=par::defaultDouble, const double z_displacement=par::defaultDouble, const double mass=par::defaultDouble, const double magnitude=par::defaultDouble, const double SFR=par::defaultDouble, const double sSFR=par::defaultDouble) 
+	: Object(coord, weight, region, field, x_displacement, y_displacement, z_displacement), m_mass(mass), m_magnitude(magnitude), m_SFR(SFR), m_sSFR(sSFR) {}
+      
+      /**
+       *  @brief constructor that uses observed coordinates in any
+       *  angular units
+       *
+       *  @param coord structure containing the observed coordinates
+       *  {R.A., Dec, redshift}
+       *
+       *  @param inputUnits the units of the input coordinates
+       *
+       *  @param weight weight
+       *
+       *  @param region region, used e.g. for jackknife and bootstrap
+       *
+       *  @param field the field where the object has been observed
+       *
+       *  @param x_displacement the displacement along the x-axis
+       *
+       *  @param y_displacement the displacement along the y-axis
+       *
+       *  @param z_displacement the displacement along the z-axis
+       *
+       *  @param mass the galaxy mass
+       *
+       *  @param magnitude the galaxy magnitude
+       *
+       *  @param SFR the galaxy star formation rate
+       *
+       *  @param sSFR the galaxy specific star formation rate
+       *
+       *  @return object of class Galaxy
+       */
+      Galaxy (const observedCoordinates coord, const CoordUnits inputUnits, const double weight=1., const long region=par::defaultLong, const string field=par::defaultString, const double x_displacement=par::defaultDouble, const double y_displacement=par::defaultDouble, const double z_displacement=par::defaultDouble, const double mass=par::defaultDouble, const double magnitude=par::defaultDouble, const double SFR=par::defaultDouble, const double sSFR=par::defaultDouble) 
+	: Object(coord, inputUnits, weight, region, field, x_displacement, y_displacement, z_displacement), m_mass(mass), m_magnitude(magnitude), m_SFR(SFR), m_sSFR(sSFR) {}
+      
+      /**
+       *  @brief constructor that uses observed coordinates in radians
+       *  and a cosmological model to estimate the comoving
+       *  coordinates
+       *
+       *  @param coord structure containing the observed coordinates
+       *  {R.A., Dec, redshitf}
+       *
+       *  @param cosm object of class Cosmology, used to estimate
+       *  comoving distances
+       *
+       *  @param weight weight
+       *
+       *  @param region region, used e.g. for jackknife and bootstrap
+       *
+       *  @param field the field where the object has been observed
+       *
+       *  @param x_displacement the displacement along the x-axis
+       *
+       *  @param y_displacement the displacement along the y-axis
+       *
+       *  @param z_displacement the displacement along the z-axis
+       *
+       *  @param mass the galaxy mass
+       *
+       *  @param magnitude the galaxy magnitude
+       *
+       *  @param SFR the galaxy star formation rate
+       *
+       *  @param sSFR the galaxy specific star formation rate
+       *
+       *  @return object of class Galaxy
+       */
+      Galaxy (const observedCoordinates coord, const cosmology::Cosmology &cosm, const double weight=1., const long region=par::defaultLong, const string field=par::defaultString, const double x_displacement=par::defaultDouble, const double y_displacement=par::defaultDouble, const double z_displacement=par::defaultDouble, const double mass=par::defaultDouble, const double magnitude=par::defaultDouble, const double SFR=par::defaultDouble, const double sSFR=par::defaultDouble) 
+	: Object(coord, cosm, weight, region, field, x_displacement, y_displacement, z_displacement), m_mass(mass), m_magnitude(magnitude), m_SFR(SFR), m_sSFR(sSFR) {}
+
+      /**
+       *  @brief constructor that uses observed coordinates and a
+       *  cosmological model to estimate the comoving coordinates
+       *
+       *  @param coord structure containing the observed coordinates
+       *  {R.A., Dec, redshift}
+       *
+       *  @param inputUnits the units of the input coordinates
+       *
+       *  @param cosm object of class Cosmology, used to estimate comoving distances
+       *
+       *  @param weight weight
+       *
+       *  @param region region, used e.g. for jackknife and bootstrap
+       *
+       *  @param field the field where the object has been observed
+       *
+       *  @param x_displacement the displacement along the x-axis
+       *
+       *  @param y_displacement the displacement along the y-axis
+       *
+       *  @param z_displacement the displacement along the z-axis
+       *
+       *  @param mass the galaxy mass
+       *
+       *  @param magnitude the galaxy magnitude
+       *
+       *  @param SFR the galaxy star formation rate
+       *
+       *  @param sSFR the galaxy specific star formation rate
+       *
+       *  @return object of class Galaxy
+       */
+      Galaxy (const observedCoordinates coord, const CoordUnits inputUnits, const cosmology::Cosmology &cosm, const double weight=1., const long region=par::defaultLong, const string field=par::defaultString, const double x_displacement=par::defaultDouble, const double y_displacement=par::defaultDouble, const double z_displacement=par::defaultDouble, const double mass=par::defaultDouble, const double magnitude=par::defaultDouble, const double SFR=par::defaultDouble, const double sSFR=par::defaultDouble) 
+	: Object(coord, inputUnits, cosm, weight, region, field, x_displacement, y_displacement, z_displacement), m_mass(mass), m_magnitude(magnitude), m_SFR(SFR), m_sSFR(sSFR) {}
+
+      /**
+       *  @brief constructor that uses both comoving and observed coordinates
+       *  @param xx comoving coordinate
+       *  @param yy comoving coordinate
+       *  @param zz comoving coordinate 
        *  @param ra Right Ascension
        *  @param dec Declination
        *  @param redshift redshift
-       *  @param cosm object of class Cosmology, used to estimate
-       *  comoving distances
-       *  @param weight weight
-       *  @param mass mass
-       *  @param magnitude magnitude
+       *  @param weight weight  
+       *  @param region region, used e.g. for jackknife and boostrap 
+       *  @param field the field where the object has been observed
+       *  @param x_displacement the displacement along the x-axis
+       *  @param y_displacement the displacement along the y-axis
+       *  @param z_displacement the displacement along the z-axis
+       *  @param mass the galaxy mass
+       *  @param magnitude the galaxy magnitude
+       *  @param SFR the galaxy star formation rate
+       *  @param sSFR the galaxy specific star formation rate
+       *
        *  @return object of class Galaxy
        */
-      Galaxy (const double ra, const double dec, const double redshift, const Cosmology &cosm, const double weight=1., const double mass=par::defaultDouble, const double magnitude=par::defaultDouble) 
-	: Object(ra, dec, redshift, cosm, weight), m_mass(mass), m_magnitude(magnitude) {}
-
+      Galaxy (const double xx, const double yy, const double zz, const double ra, const double dec, const double redshift, const double weight=1., const long region=par::defaultLong, const string field=par::defaultString, const double x_displacement=par::defaultDouble, const double y_displacement=par::defaultDouble, const double z_displacement=par::defaultDouble, const double mass=par::defaultDouble, const double magnitude=par::defaultDouble, const double SFR=par::defaultDouble, const double sSFR=par::defaultDouble) 
+	: Object(xx, yy, zz, ra, dec, redshift, weight, region, field, x_displacement, y_displacement, z_displacement), m_mass(mass), m_magnitude(magnitude), m_SFR(SFR), m_sSFR(sSFR) {}
+      
       /**
        *  @brief default destructor
        *  @return none
        */
-      ~Galaxy () {}
+      ~Galaxy () = default;
     
       ///@}
   
@@ -128,6 +338,18 @@ namespace cosmobl {
        *  @return the magnitude of the galaxy
        */
       double magnitude () const override { return m_magnitude; }
+
+      /**
+       *  @brief get the private member Galaxy::m_SFR
+       *  @return the star formation rate of the galaxy
+       */
+      double SFR () const override { return m_SFR; }
+
+      /**
+       *  @brief get the private member Galaxy::m_sSFR
+       *  @return the specific star formation rate of the galaxy
+       */
+      double sSFR () const override { return m_sSFR; }
 
       ///@}
   
@@ -150,6 +372,20 @@ namespace cosmobl {
        *  @return none
        */
       void set_magnitude (const double magnitude=par::defaultDouble) override { m_magnitude = magnitude; }
+
+      /**
+       *  @brief set the private member Galaxy::m_SFR
+       *  @param SFR the star formation rate of the galaxy
+       *  @return none
+       */
+      void set_SFR (const double SFR=par::defaultDouble) override { m_SFR = SFR; }
+    
+      /**
+       *  @brief set the private member Galaxy::m_sSFR
+       *  @param sSFR the specific star formation rate of the galaxy
+       *  @return none
+       */
+      void set_sSFR (const double sSFR=par::defaultDouble) override { m_sSFR = sSFR; }
     
       ///@}
     

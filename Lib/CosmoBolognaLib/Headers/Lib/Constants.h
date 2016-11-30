@@ -35,12 +35,11 @@ namespace cosmobl {
   
   
   /**
-   *  @brief The namespace of the global parameters and constants of
-   *  the CosmoBolognaLib
+   *  @brief The namespace of the <B> global parameters and constants
+   *  </B>
    *
-   *  The \e cosmoblpar namespace contains the global parameters and the
-   *  mathematical, physical and astronomical constants of the
-   *  CosmoBolognaLib
+   *  The \e cosmoblpar namespace contains the global parameters and
+   *  the mathematical, physical and astronomical constants
    */
   namespace par {
 
@@ -142,7 +141,40 @@ namespace cosmobl {
     static const char fDP6[] = "%7.6f"; 
 
     /// conversion symbol for: double -> string
+    static const char fDP7[] = "%8.7f"; 
+    
+    /// conversion symbol for: double -> string
+    static const char fDP8[] = "%9.8f"; 
+    
+    /// conversion symbol for: double -> string
+    static const char fDP9[] = "%10.9f"; 
+    
+    /// conversion symbol for: double -> string
+    static const char fDP10[] = "%11.10f"; 
+    
+    /// conversion symbol for: double -> string
     static const char ee3[] = "%4.3e";
+
+    /// conversion symbol for: double -> string
+    static const char ee4[] = "%5.4e";
+    
+    /// conversion symbol for: double -> string
+    static const char ee5[] = "%6.5e";
+
+    /// conversion symbol for: double -> string
+    static const char ee6[] = "%7.6e";
+    
+    /// conversion symbol for: double -> string
+    static const char ee7[] = "%8.7e";
+    
+    /// conversion symbol for: double -> string
+    static const char ee8[] = "%9.8e";  
+    
+    /// conversion symbol for: double -> string
+    static const char ee9[] = "%10.9e";
+
+    /// conversion symbol for: double -> string
+    static const char ee10[] = "%11.10e";
 
     /**
      *  @} */
@@ -262,13 +294,25 @@ namespace cosmobl {
 
     /// red colour (used when printing something on the screen)
     static const string col_red = "\033[0;31m";
-
+    
+    /// bold high intensty red colour (used when printing something on the screen)
+    static const string col_bred = "\033[1;91m";
+  
+    /// background red colour (used when printing something on the screen)
+    static const string col_onred = "\033[41m";
+    
     /// green colour (used when printing something on the screen)
     static const string col_green = "\033[0;32m";
     
     /// blue colour (used when printing something on the screen)
     static const string col_blue = "\033[0;34m";
 
+    /// yellow colour (used when printing something on the screen)
+    static const string col_yellow = "\033[0;33m";
+
+    /// purple colour (used when printing something on the screen)
+    static const string col_purple = "\033[0;35m";
+    
     /**
      *  @} */
 
@@ -322,7 +366,25 @@ namespace cosmobl {
     
     /**
      *  @} */
-  
+
+    
+    /**
+     *  @defgroup msg internal messages
+     *
+     *  @brief messages for internal usage
+     *
+     *  @{
+     */
+
+    /// header of error messages for internal usage
+    static const string ErrorMsg = col_bred +
+      "\n\n ================================== \n" +
+      " ===== CosmoBolognaLib error! ===== \n" + 
+      " ================================== \n\n" +
+      col_default;
+    
+    /**
+     *  @} */
   }
 
 }

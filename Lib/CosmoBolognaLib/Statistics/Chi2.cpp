@@ -32,30 +32,30 @@
  */
 
 #include "Chi2.h"
+
 using namespace cosmobl;
+using namespace data;
 
 
 // ============================================================================================
 
 
-double cosmobl::statistics::chi2_1D_model_1par (double model_parameters, const shared_ptr<void> fixed_parameters)
+double cosmobl::statistics::chi2_1D_model_1par (double model_parameter, const shared_ptr<void> fixed_parameters)
 {  
   shared_ptr<Data> data = static_pointer_cast<STR_params>(fixed_parameters)->data;
   shared_ptr<Model> model = static_pointer_cast<STR_params>(fixed_parameters)->model;
 
-  model_parameters = model->update_parameters(model_parameters);
-  vector<double> pars = {model_parameters};
+  model->set_parameter_values({model_parameter});
 
   vector<double> computed_model(data->ndata(),0);
-  for (int i=data->x_down(); i< data->x_up(); i++)
-    computed_model[i]=model->operator()(data->xx(i),pars);
+  for (int i=data->x_down(); i<data->x_up(); i++)
+    computed_model[i] = model->operator()(data->xx(i));
 
-  double c2=0;
-  for (int i=data->x_down(); i< data->x_up(); i++)
-    c2+=pow((data->fx(i)-computed_model[i])/computed_model[i],2);
+  double c2 = 0;
+  for (int i=data->x_down(); i<data->x_up(); i++)
+    c2 += pow((data->fx(i)-computed_model[i])/computed_model[i],2);
 
   return c2;
-
 }
 
 
@@ -67,14 +67,14 @@ double cosmobl::statistics::chi2_1D_model_npar (vector<double> model_parameters,
   shared_ptr<Data> data = static_pointer_cast<STR_params>(fixed_parameters)->data;
   shared_ptr<Model> model = static_pointer_cast<STR_params>(fixed_parameters)->model;
 
-  model_parameters = model->update_parameters(model_parameters);
+  model->set_parameter_values(model_parameters);
 
   vector<double> computed_model(data->ndata(),0);
-  for (int i=data->x_down(); i< data->x_up(); i++)
-    computed_model[i]=model->operator()(data->xx(i),model_parameters);
+  for (int i=data->x_down(); i<data->x_up(); i++)
+    computed_model[i]=model->operator()(data->xx(i));
 
   double c2=0;
-  for (int i=data->x_down(); i< data->x_up(); i++)
+  for (int i=data->x_down(); i<data->x_up(); i++)
     c2+=pow((data->fx(i)-computed_model[i])/computed_model[i],2);
 
   return c2;
@@ -83,18 +83,17 @@ double cosmobl::statistics::chi2_1D_model_npar (vector<double> model_parameters,
 // ============================================================================================
 
 
-double cosmobl::statistics::chi2_1D_error_1par (double model_parameters, const shared_ptr<void> fixed_parameters)
+double cosmobl::statistics::chi2_1D_error_1par (double model_parameter, const shared_ptr<void> fixed_parameters)
 {  
   shared_ptr<Data> data = static_pointer_cast<STR_params>(fixed_parameters)->data;
   shared_ptr<Model> model = static_pointer_cast<STR_params>(fixed_parameters)->model;
 
-  model_parameters = model->update_parameters(model_parameters);
-  vector<double> pars = {model_parameters};
+  model->set_parameter_values({model_parameter});
 
   double c2 = 0;
   
   for (int i=data->x_down(); i<data->x_up(); i++)
-    c2 += pow((data->fx(i)-model->operator()(data->xx(i),pars))/data->error_fx(i),2);
+    c2 += pow((data->fx(i)-model->operator()(data->xx(i)))/data->error_fx(i),2);
 
   return c2;
 }
@@ -108,12 +107,13 @@ double cosmobl::statistics::chi2_1D_error_npar (vector<double> model_parameters,
   shared_ptr<Data> data = static_pointer_cast<STR_params>(fixed_parameters)->data;
   shared_ptr<Model> model = static_pointer_cast<STR_params>(fixed_parameters)->model;
 
-  model_parameters = model->update_parameters(model_parameters);
+  model->set_parameter_values(model_parameters);
 
   double c2 = 0;
   
   for (int i=data->x_down(); i<data->x_up(); i++)
-    c2 += pow((data->fx(i)-model->operator()(data->xx(i),model_parameters))/data->error_fx(i),2);
+    c2 += pow((data->fx(i)-model->operator()(data->xx(i)))/data->error_fx(i),2);
+  
 
   return c2;
 }
@@ -122,23 +122,22 @@ double cosmobl::statistics::chi2_1D_error_npar (vector<double> model_parameters,
 // ============================================================================================
 
 
-double cosmobl::statistics::chi2_1D_covariance_1par (double model_parameters, const shared_ptr<void> fixed_parameters)
+double cosmobl::statistics::chi2_1D_covariance_1par (double model_parameter, const shared_ptr<void> fixed_parameters)
 {
   shared_ptr<Data> data = static_pointer_cast<STR_params>(fixed_parameters)->data;
   shared_ptr<Model> model = static_pointer_cast<STR_params>(fixed_parameters)->model;
 
-  model_parameters = model->update_parameters(model_parameters);
-  vector<double> pars = {model_parameters};
+  model->set_parameter_values({model_parameter});
 
   vector<double> computed_model(data->ndata(),0);
   for (int i=data->x_down(); i< data->x_up(); i++)
-    computed_model[i]=model->operator()(data->xx(i),pars);
+    computed_model[i]=model->operator()(data->xx(i));
 
   double c2 = 0;
   
   for (int i=data->x_down(); i<data->x_up(); i++)
     for (int j=data->x_down(); j<data->x_up(); j++)
-      c2 += (data->fx(i)-computed_model[i])*data->inverse_covariance_fx(i,j)*(data->fx(j)-computed_model[j]);    
+      c2 += (data->fx(i)-computed_model[i])*data->inverse_covariance(i,j)*(data->fx(j)-computed_model[j]);    
 
   return c2;
 }
@@ -152,17 +151,17 @@ double cosmobl::statistics::chi2_1D_covariance_npar (vector<double> model_parame
   shared_ptr<Data> data = static_pointer_cast<STR_params>(fixed_parameters)->data;
   shared_ptr<Model> model = static_pointer_cast<STR_params>(fixed_parameters)->model;
 
-  model_parameters = model->update_parameters(model_parameters);
+  model->set_parameter_values(model_parameters);
 
   vector<double> computed_model(data->ndata(),0);
   for (int i=data->x_down(); i< data->x_up(); i++)
-    computed_model[i]=model->operator()(data->xx(i),model_parameters);
+    computed_model[i]=model->operator()(data->xx(i));
 
   double c2 = 0;
   
   for (int i=data->x_down(); i<data->x_up(); i++)
     for (int j=data->x_down(); j<data->x_up(); j++)
-      c2 += (data->fx(i)-computed_model[i])*data->inverse_covariance_fx(i,j)*(data->fx(j)-computed_model[j]);
+      c2 += (data->fx(i)-computed_model[i])*data->inverse_covariance(i,j)*(data->fx(j)-computed_model[j]);
     
   return c2;
 }
@@ -171,19 +170,18 @@ double cosmobl::statistics::chi2_1D_covariance_npar (vector<double> model_parame
 // ============================================================================================
 
 
-double cosmobl::statistics::chi2_2D_error_1par (double model_parameters, const shared_ptr<void> fixed_parameters)
+double cosmobl::statistics::chi2_2D_error_1par (double model_parameter, const shared_ptr<void> fixed_parameters)
 {  
   shared_ptr<Data> data = static_pointer_cast<STR_params>(fixed_parameters)->data;
   shared_ptr<Model> model = static_pointer_cast<STR_params>(fixed_parameters)->model;
 
-  vector<double> pars = {model_parameters};
-  pars = model->update_parameters(pars);
+  model->set_parameter_values({model_parameter});
 
   double c2 = 0;
   
   for (int i=data->x_down(); i<data->x_up(); i++)
     for (int j=data->y_down(); j<data->y_up(); j++)
-      c2 += pow((data->fxy(i,j)-model->operator()(data->xx(i),data->yy(j),pars))/data->error_fxy(i,j),2);
+      c2 += pow((data->fxy(i,j)-model->operator()(data->xx(i),data->yy(j)))/data->error_fxy(i,j),2);
     
   return c2;
 }
@@ -197,12 +195,12 @@ double cosmobl::statistics::chi2_2D_error_npar (vector<double> model_parameters,
   shared_ptr<Data> data = static_pointer_cast<STR_params>(fixed_parameters)->data;
   shared_ptr<Model> model = static_pointer_cast<STR_params>(fixed_parameters)->model;
 
-  model_parameters = model->update_parameters(model_parameters);
+  model->set_parameter_values(model_parameters);
 
   double c2 = 0;
   for (int i=data->x_down(); i<data->x_up(); i++)
     for (int j=data->y_down(); j<data->y_up(); j++)
-      c2 += pow((data->fxy(i,j)-model->operator()(data->xx(i),data->yy(j),model_parameters))/data->error_fxy(i,j),2);
+      c2 += pow((data->fxy(i,j)-model->operator()(data->xx(i),data->yy(j)))/data->error_fxy(i,j),2);
  
   return c2;
 }
@@ -226,7 +224,7 @@ void cosmobl::statistics::Chi2::minimize (const double parameter, const string t
     minimize(parameter, chi2_2D_error_1par, max_iter, min, max);
   
   else
-    ErrorMsg("Error in minimize of Chi2, no such type or dim");
+    ErrorCBL("Error in minimize of Chi2.cpp, no such type or dim");
 }
 
 // ============================================================================================
@@ -247,7 +245,7 @@ void cosmobl::statistics::Chi2::minimize (const vector<double> parameters, const
     minimize(parameters, chi2_2D_error_npar, max_iter, tol);
   
   else
-    ErrorMsg("Error in minimize of Chi2, no such type or dim");
+    ErrorCBL("Error in minimize of Chi2.cpp, no such type or dim");
 }
 
 
@@ -259,7 +257,7 @@ void cosmobl::statistics::Chi2::minimize (double parameter, const chi2_1par f, c
   unsigned int npar = m_model->npar_eff();
 
   if (npar!=1)
-    ErrorMsg("Error in minimize of Chi2, wrong number of parameters");
+    ErrorCBL("Error in minimize of Chi2.cpp, wrong number of parameters");
 
   double Parameter = parameter;
   
@@ -274,9 +272,9 @@ void cosmobl::statistics::Chi2::minimize (double parameter, const chi2_1par f, c
 
   auto fixed_parameters = make_shared<STR_params>(STR_params(m_data,m_model));
 
-  GSLfunction_1D_1 func(f, fixed_parameters);
+  glob::GSLfunction_1D_1 func(f, fixed_parameters);
   func.minimize(Parameter, max_iter, Min, Max);
-  cout << "Done" << endl;
+  coutCBL << "Done" << endl;
 }
 
 
@@ -287,27 +285,26 @@ void cosmobl::statistics::Chi2::minimize (const vector<double> parameters, const
 {
   unsigned int npar = m_model->npar_eff();
   if(npar==0)
-    ErrorMsg("Error in minimize of Chi2, there is no parameter to vary");
+    ErrorCBL("Error in minimize of Chi2.cpp, there is no parameter to vary");
 
   auto fixed_parameters = make_shared<STR_params>(STR_params(m_data,m_model));
 
   vector<double> pars ;
-  if(parameters.size() == npar){
+  if (parameters.size() == npar) 
     pars = parameters;
-  }
-  else if(parameters.size() == m_model->npar()){
-    for(unsigned int i=0;i<m_model->npar();i++){
-      if(!m_model->parameter(i)->isFreezed())
+  
+  else if (parameters.size() == m_model->npar()) {
+    for (unsigned int i=0; i<m_model->npar(); i++)
+      if (!m_model->parameter(i)->isFixed())
         pars.push_back(parameters[i]);
-    }
   }
-  else{ErrorMsg("Error in minimize of Chi2, unrecognized number of parameters");}
-
-  vector<double> step_size(npar,1);
+  else { ErrorCBL("Error in minimize of Chi2.cpp, unrecognized number of parameters"); }
+  
+  vector<double> step_size(npar, 1.);
   int nn = 0;
 
   for (unsigned int i=0; i<m_model->npar(); i++) {
-    if (!m_model->parameter(i)->isFreezed()) {
+    if (!m_model->parameter(i)->isFixed()) {
       
       if(!m_model->parameter(i)->prior()->isIncluded(pars[nn])) { 
         string msg = "Warning, starting value for parameter '"+m_model->parameter(i)->name()+"' is out of range, it will be changed";
@@ -322,7 +319,7 @@ void cosmobl::statistics::Chi2::minimize (const vector<double> parameters, const
     }
   }
 
-  GSLfunction_nD_1 func(npar, f, fixed_parameters);
+  glob::GSLfunction_nD_1 func(npar, f, fixed_parameters);
   func.minimize(pars, step_size, max_iter, tol);
-  cout << "Done" << endl;
+  coutCBL << "Done" << endl;
 }
